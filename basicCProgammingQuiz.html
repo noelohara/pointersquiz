@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>c·quiz — 30 shuffled arrays & basics</title>
+  <title>c·quiz </title>
   <style>
     * {
       margin: 0;
@@ -373,107 +373,107 @@
 </div>
 
 <script>
-  // ---------- 30 ORIGINAL QUESTIONS ----------
+  // ---------- 30 QUESTIONS WITH OBFUSCATED VARIABLE NAMES ----------
   const baseQuestions = [
     { question: "What is the output of this C code?",
-      code: `#include <stdio.h>\nint main() {\n    int arr[3] = {10, 20, 30};\n    printf("%d", arr[1] + arr[2]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int x[3] = {10, 20, 30};\n    printf("%d", x[1] + x[2]);\n    return 0;\n}`,
       answer: "50" },
     { question: "What is the output? (watch the type!)",
-      code: `#include <stdio.h>\nint main() {\n    char str[] = "hello";\n    printf("%c", str[1]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    char q[] = "hello";\n    printf("%c", q[1]);\n    return 0;\n}`,
       answer: "e" },
     { question: "What will be printed?",
-      code: `#include <stdio.h>\nint main() {\n    int arr[] = {2, 4, 6, 8};\n    int *p = arr;\n    printf("%d", *(p + 2));\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int z[] = {2, 4, 6, 8};\n    int *w = z;\n    printf("%d", *(w + 2));\n    return 0;\n}`,
       answer: "6" },
     { question: "What is the output? (sizeof / array size)",
-      code: `#include <stdio.h>\nint main() {\n    int arr[5] = {1, 2, 3, 4, 5};\n    printf("%lu", sizeof(arr) / sizeof(arr[0]));\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int v[5] = {1, 2, 3, 4, 5};\n    printf("%lu", sizeof(v) / sizeof(v[0]));\n    return 0;\n}`,
       answer: "5" },
     { question: "What does this print? (post-increment inside array index)",
-      code: `#include <stdio.h>\nint main() {\n    int i = 0;\n    int arr[3] = {100, 200, 300};\n    printf("%d", arr[i++]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int k = 0;\n    int u[3] = {100, 200, 300};\n    printf("%d", u[k++]);\n    return 0;\n}`,
       answer: "100" },
     { question: "What is the output?",
-      code: `#include <stdio.h>\nint main() {\n    int arr[4] = {1, 2, 3, 4};\n    printf("%d", arr[0] + arr[3]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int t[4] = {1, 2, 3, 4};\n    printf("%d", t[0] + t[3]);\n    return 0;\n}`,
       answer: "5" },
     { question: "What character is printed?",
-      code: `#include <stdio.h>\nint main() {\n    char s[] = "world";\n    printf("%c", s[4]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    char m[] = "world";\n    printf("%c", m[4]);\n    return 0;\n}`,
       answer: "d" },
     { question: "What is the output?",
-      code: `#include <stdio.h>\nint main() {\n    int a[3] = {5, 10, 15};\n    printf("%d", a[2] - a[0]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int r[3] = {5, 10, 15};\n    printf("%d", r[2] - r[0]);\n    return 0;\n}`,
       answer: "10" },
     { question: "What is the output? (pointer arithmetic)",
-      code: `#include <stdio.h>\nint main() {\n    int arr[] = {10, 20, 30, 40};\n    int *ptr = arr + 1;\n    printf("%d", *ptr);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int y[] = {10, 20, 30, 40};\n    int *h = y + 1;\n    printf("%d", *h);\n    return 0;\n}`,
       answer: "20" },
     { question: "What is the output?",
-      code: `#include <stdio.h>\nint main() {\n    int arr[2] = {7, 8};\n    printf("%d", arr[0] * arr[1]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int b[2] = {7, 8};\n    printf("%d", b[0] * b[1]);\n    return 0;\n}`,
       answer: "56" },
     { question: "What is the output? (string indexing)",
-      code: `#include <stdio.h>\nint main() {\n    char str[] = "cprogram";\n    printf("%c", str[0]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    char f[] = "cprogram";\n    printf("%c", f[0]);\n    return 0;\n}`,
       answer: "c" },
     { question: "What will be printed?",
-      code: `#include <stdio.h>\nint main() {\n    int arr[5] = {0};\n    printf("%d", arr[3]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int c[5] = {0};\n    printf("%d", c[3]);\n    return 0;\n}`,
       answer: "0" },
     { question: "What is the output? (pointer to array)",
-      code: `#include <stdio.h>\nint main() {\n    int arr[] = {1, 2, 3};\n    printf("%d", *(arr + 1));\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int n[] = {1, 2, 3};\n    printf("%d", *(n + 1));\n    return 0;\n}`,
       answer: "2" },
     { question: "What is the output? (array size)",
-      code: `#include <stdio.h>\nint main() {\n    int arr[7];\n    printf("%lu", sizeof(arr) / sizeof(int));\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int d[7];\n    printf("%lu", sizeof(d) / sizeof(int));\n    return 0;\n}`,
       answer: "7" },
     { question: "What does this print? (pre-increment)",
-      code: `#include <stdio.h>\nint main() {\n    int i = 0;\n    int arr[3] = {10, 20, 30};\n    printf("%d", arr[++i]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int p = 0;\n    int g[3] = {10, 20, 30};\n    printf("%d", g[++p]);\n    return 0;\n}`,
       answer: "20" },
     { question: "What is the output?",
-      code: `#include <stdio.h>\nint main() {\n    char s[] = "abc";\n    printf("%c", s[2]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    char j[] = "abc";\n    printf("%c", j[2]);\n    return 0;\n}`,
       answer: "c" },
     { question: "What is the output? (array + loop)",
-      code: `#include <stdio.h>\nint main() {\n    int arr[3] = {2, 4, 6};\n    int sum = 0;\n    for(int i=0; i<3; i++) sum += arr[i];\n    printf("%d", sum);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int s[3] = {2, 4, 6};\n    int a = 0;\n    for(int i=0; i<3; i++) a += s[i];\n    printf("%d", a);\n    return 0;\n}`,
       answer: "12" },
     { question: "What is the output? (pointer dereference)",
-      code: `#include <stdio.h>\nint main() {\n    int arr[] = {9, 8, 7};\n    int *p = arr + 2;\n    printf("%d", *p);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int e[] = {9, 8, 7};\n    int *o = e + 2;\n    printf("%d", *o);\n    return 0;\n}`,
       answer: "7" },
     { question: "What is the output?",
-      code: `#include <stdio.h>\nint main() {\n    int arr[4] = {1, 2, 3, 4};\n    printf("%d", arr[1] * arr[3]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int l[4] = {1, 2, 3, 4};\n    printf("%d", l[1] * l[3]);\n    return 0;\n}`,
       answer: "8" },
     { question: "What is the output? (string length logic)",
-      code: `#include <stdio.h>\nint main() {\n    char str[] = "hi";\n    printf("%c", str[1]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    char i[] = "hi";\n    printf("%c", i[1]);\n    return 0;\n}`,
       answer: "i" },
     { question: "What is the output? (array initialization)",
-      code: `#include <stdio.h>\nint main() {\n    int arr[3] = {5};\n    printf("%d", arr[1] + arr[2]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int w[3] = {5};\n    printf("%d", w[1] + w[2]);\n    return 0;\n}`,
       answer: "0" },
     { question: "What is the output? (pointer arithmetic)",
-      code: `#include <stdio.h>\nint main() {\n    int arr[] = {2, 4, 6, 8};\n    int *p = arr;\n    p += 3;\n    printf("%d", *p);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int x[] = {2, 4, 6, 8};\n    int *v = x;\n    v += 3;\n    printf("%d", *v);\n    return 0;\n}`,
       answer: "8" },
     { question: "What is the output? (char array)",
-      code: `#include <stdio.h>\nint main() {\n    char str[] = "C";\n    printf("%c", str[0]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    char z[] = "C";\n    printf("%c", z[0]);\n    return 0;\n}`,
       answer: "C" },
     { question: "What is the output? (array index expression)",
-      code: `#include <stdio.h>\nint main() {\n    int i = 1;\n    int arr[3] = {100, 200, 300};\n    printf("%d", arr[i + 1]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int a = 1;\n    int b[3] = {100, 200, 300};\n    printf("%d", b[a + 1]);\n    return 0;\n}`,
       answer: "300" },
     { question: "What is the output? (sizeof on array)",
-      code: `#include <stdio.h>\nint main() {\n    double arr[4];\n    printf("%lu", sizeof(arr) / sizeof(double));\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    double q[4];\n    printf("%lu", sizeof(q) / sizeof(double));\n    return 0;\n}`,
       answer: "4" },
     { question: "What is the output?",
-      code: `#include <stdio.h>\nint main() {\n    int arr[3] = {1, 2, 3};\n    printf("%d", arr[0] + arr[1] + arr[2]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int k[3] = {1, 2, 3};\n    printf("%d", k[0] + k[1] + k[2]);\n    return 0;\n}`,
       answer: "6" },
     { question: "What is the output? (pointer and index)",
-      code: `#include <stdio.h>\nint main() {\n    int arr[] = {5, 10, 15};\n    printf("%d", *(arr + 2));\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int u[] = {5, 10, 15};\n    printf("%d", *(u + 2));\n    return 0;\n}`,
       answer: "15" },
     { question: "What is the output? (character array indexing)",
-      code: `#include <stdio.h>\nint main() {\n    char s[] = "code";\n    printf("%c", s[1]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    char t[] = "code";\n    printf("%c", t[1]);\n    return 0;\n}`,
       answer: "o" },
     { question: "What is the output? (array subtraction)",
-      code: `#include <stdio.h>\nint main() {\n    int a[3] = {10, 20, 30};\n    printf("%d", a[2] - a[1]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int r[3] = {10, 20, 30};\n    printf("%d", r[2] - r[1]);\n    return 0;\n}`,
       answer: "10" },
     { question: "What is the output? (post-increment in expression)",
-      code: `#include <stdio.h>\nint main() {\n    int i = 2;\n    int arr[4] = {1, 2, 3, 4};\n    printf("%d", arr[i++]);\n    return 0;\n}`,
+      code: `#include <stdio.h>\nint main() {\n    int m = 2;\n    int n[4] = {1, 2, 3, 4};\n    printf("%d", n[m++]);\n    return 0;\n}`,
       answer: "3" }
   ];
 
   // ---------- state ----------
-  let questions = [];           // will be shuffled copy
+  let questions = [];
   let currentQIndex = 0;
   let score = 0;
   let answered = false;
   let correctAnswer = "";
-  let answeredCount = 0;        // how many questions the user answered (attempted)
+  let answeredCount = 0;
   let quizEndedEarly = false;
 
   // DOM elements
@@ -509,7 +509,6 @@
   }
 
   function resetQuiz() {
-    // shuffle questions fresh each time
     questions = shuffleArray(baseQuestions);
     currentQIndex = 0;
     score = 0;
@@ -523,7 +522,6 @@
     answerInput.disabled = false;
     answerInput.focus();
     submitBtn.textContent = 'submit ⏎';
-    // Enable/disable end button
     endQuizBtn.disabled = false;
   }
 
@@ -585,20 +583,16 @@
       currentQIndex++;
       loadQuestion(currentQIndex);
     } else {
-      showResults(false); // false = not early ended
+      showResults(false);
     }
   }
 
   function endQuizEarly() {
-    // If user already answered all? Then just show results
     if (currentQIndex === questions.length - 1 && answered) {
-      // already at end, just finish
       showResults(false);
       return;
     }
-    // If no answers yet and at first question with no answer, maybe confirm?
-    // But we just show results based on answeredCount
-    showResults(true); // true = ended early
+    showResults(true);
   }
 
   function showResults(endedEarly) {
@@ -607,9 +601,7 @@
 
     const total = questions.length;
     const attempted = answeredCount;
-    const percentage = attempted > 0 ? Math.round((score / attempted) * 100) : 0;
 
-    // If ended early, show attempted score
     if (endedEarly) {
       finalScore.textContent = `${score}/${attempted}`;
     } else {
@@ -649,7 +641,6 @@
   });
 
   endQuizBtn.addEventListener('click', () => {
-    // If no questions answered yet, maybe still allow? Yes, just show results with 0.
     endQuizEarly();
   });
 
@@ -678,7 +669,6 @@
     switchScreen('startScreen');
   });
 
-  // initialize
   submitBtn.textContent = 'submit ⏎';
   endQuizBtn.disabled = false;
 </script>
