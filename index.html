@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>C Programming - Pointers Quiz</title>
+
+<style>
+
+:root{
+    --navy:#002147;
+    --gold:#d4af37;
+    --light:#f5f7fb;
+    --success:#198754;
+    --danger:#dc3545;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Segoe UI,Tahoma,sans-serif;
+    background:var(--light);
+    color:#333;
+}
+
+header{
+    background:var(--navy);
+    color:white;
+    text-align:center;
+    padding:30px;
+}
+
+header h1{
+    margin-bottom:10px;
+}
+
+header h2{
+    color:var(--gold);
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:25px;
+}
+
+.card{
+    background:white;
+    margin-bottom:20px;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+}
+
+.question-title{
+    color:var(--navy);
+    margin-bottom:10px;
+}
+
+.option{
+    background:#f8f8f8;
+    padding:10px;
+    border-radius:6px;
+    margin:8px 0;
+}
+
+.option:hover{
+    background:#e9f0ff;
+}
+
+button{
+    background:var(--navy);
+    color:white;
+    border:none;
+    padding:15px 30px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    background:#003d7a;
+}
+
+input[type=text]{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+.progress-container{
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:25px;
+}
+
+.progress-bar{
+    background:var(--gold);
+    height:20px;
+    width:0%;
+    transition:0.5s;
+}
+
+.correct{
+    color:var(--success);
+    font-weight:bold;
+}
+
+.incorrect{
+    color:var(--danger);
+    font-weight:bold;
+}
+
+.score{
+    font-size:2rem;
+    font-weight:bold;
+    color:var(--navy);
+}
+
+.pass{
+    color:var(--success);
+    font-weight:bold;
+}
+
+.fail{
+    color:var(--danger);
+    font-weight:bold;
+}
+
+footer{
+    text-align:center;
+    padding:30px;
+    color:#666;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Advanced Programming</h1>
+<h2>C Pointers Quiz</h2>
+<p>South East Technological University</p>
+</header>
+
+<div class="container">
+
+<div id="quizPage">
+
+<div class="card">
+<h3>Student Details</h3>
+<br>
+<input type="text" id="studentName" placeholder="Enter Student Name">
+</div>
+
+<div class="progress-container">
+<div class="progress-bar" id="progressBar"></div>
+</div>
+
+<form id="quizForm">
+<div id="questions"></div>
+
+<div style="text-align:center">
+<button type="submit">Submit Assessment</button>
+</div>
+
+</form>
+
+</div>
+
+<div id="resultsPage" style="display:none;">
+<div class="card" id="summary"></div>
+
+<div style="text-align:center;margin-bottom:25px;">
+<button onclick="window.print()">Print Results</button>
+</div>
+
+<div id="review"></div>
+</div>
+
+</div>
+
+<footer>
+C Programming Assessment System
+</footer>
+
+<script>
+
+const questions = [
+
+{
+question:"Which of the following best describes a pointer?",
+options:[
+"A variable that stores a character",
+"A variable that stores a memory address",
+"A variable that stores multiple values",
+"A variable that stores only integers"
+],
+answer:1
+},
+
+{
+question:"Which statement correctly declares a pointer to an integer?",
+options:[
+"int p;",
+"pointer p;",
+"int *p;",
+"*int p;"
+],
+answer:2
+},
+
+{
+question:"Which operator is used to obtain the address of a variable?",
+options:[
+"*",
+"%",
+"&",
+"#"
+],
+answer:2
+},
+
+{
+question:"What is stored in p?",
+options:[
+"10",
+"The value of x multiplied by 2",
+"The address of x",
+"An undefined value"
+],
+answer:2
+},
+
+{
+question:"What is the output of *p when p points to x = 15?",
+options:[
+"Address of x",
+"15",
+"0",
+"Error"
+],
+answer:1
+},
+
+{
+question:"What does printf('%p', p) display when p points to x?",
+options:[
+"20",
+"0",
+"The address of x",
+"Error"
+],
+answer:2
+},
+
+{
+question:"If *p = 12 and p points to x, what happens?",
+options:[
+"x becomes 12",
+"p becomes 12",
+"x remains unchanged",
+"Compilation error"
+],
+answer:0
+},
+
+{
+question:"Which is the safest way to initialize an unused pointer?",
+options:[
+"int *p;",
+"int *p = NULL;",
+"int p = NULL;",
+"int *p = 1;"
+],
+answer:1
+},
+
+{
+question:"What is wrong with: int *p; *p = 50;",
+options:[
+"Syntax error",
+"Pointer not initialized",
+"Integers cannot be assigned",
+"NULL cannot store integers"
+],
+answer:1
+},
+
+{
+question:"Which statement correctly stores the address of x in p?",
+options:[
+"p = x;",
+"*p = x;",
+"p = &x;",
+"&p = x;"
+],
+answer:2
+},
+
+{
+question:"Pointer arithmetic is commonly used for:",
+options:[
+"Multiplying addresses",
+"Accessing array elements",
+"Converting integers to strings",
+"Sorting automatically"
+],
+answer:1
+},
+
+{
+question:"What is printed by *(p+1) for array {10,20,30}?",
+options:[
+"10",
+"20",
+"30",
+"Address of arr[1]"
+],
+answer:1
+},
+
+{
+question:"In most expressions an array name represents:",
+options:[
+"Array size",
+"Last element",
+"Address of first element",
+"Number of bytes used"
+],
+answer:2
+},
+
+{
+question:"What is printed by *p when p = arr and arr = {1,2,3}?",
+options:[
+"1",
+"2",
+"3",
+"Address of arr"
+],
+answer:0
+},
+
+{
+question:"Which parameter allows a function to modify the original variable?",
+options:[
+"int x",
+"float x",
+"char x",
+"int *x"
+],
+answer:3
+},
+
+{
+question:"After change(&x) sets *p = 50, what is x?",
+options:[
+"10",
+"50",
+"Address of x",
+"Error"
+],
+answer:1
+},
+
+{
+question:"What is a pointer to a pointer?",
+options:[
+"Stores two addresses",
+"Stores address of another pointer",
+"Pointer to an array",
+"Pointer storing characters"
+],
+answer:1
+},
+
+{
+question:"If **pp is used and pp points to p, what is obtained?",
+options:[
+"Address of x",
+"Address of p",
+"Value stored in x",
+"Error"
+],
+answer:2
+},
+
+{
+question:"Which declaration creates a pointer to a pointer to an integer?",
+options:[
+"int p;",
+"int *p;",
+"int **p;",
+"int ***p;"
+],
+answer:2
+},
+
+{
+question:"What is printed by printf('%d %d', x,*p) when p=&x and x=25?",
+options:[
+"25 25",
+"Address Address",
+"25 Address",
+"Error"
+],
+answer:0
+}
+
+];
+
+const container=document.getElementById("questions");
+
+questions.forEach((q,index)=>{
+
+let html=`
+<div class="card">
+<h3 class="question-title">
+Question ${index+1}
+</h3>
+
+<p>${q.question}</p>
+<br>
+`;
+
+q.options.forEach((option,optIndex)=>{
+
+html+=`
+<div class="option">
+<label>
+<input type="radio"
+name="q${index}"
+value="${optIndex}"
+required>
+${option}
+</label>
+</div>
+`;
+});
+
+html+="</div>";
+
+container.innerHTML+=html;
+
+});
+
+document.addEventListener("change",()=>{
+
+let answered=0;
+
+questions.forEach((q,index)=>{
+
+if(document.querySelector(`input[name=q${index}]:checked`))
+answered++;
+
+});
+
+const percent=(answered/questions.length)*100;
+
+document.getElementById("progressBar").style.width=
+percent+"%";
+
+});
+
+document.getElementById("quizForm")
+.addEventListener("submit",function(e){
+
+e.preventDefault();
+
+let score=0;
+
+let student=
+document.getElementById("studentName").value;
+
+let review="";
+
+questions.forEach((q,index)=>{
+
+let selected=
+parseInt(document.querySelector(
+`input[name=q${index}]:checked`
+).value);
+
+let correct=
+selected===q.answer;
+
+if(correct)
+score++;
+
+review+=`
+
+<div class="card">
+
+<h3>Question ${index+1}</h3>
+
+<p>${q.question}</p>
+
+<br>
+
+<p>
+Your Answer:
+<span class="${
+correct?"correct":"incorrect"
+}">
+${q.options[selected]}
+</span>
+</p>
+
+<br>
+
+<p class="correct">
+Correct Answer:
+${q.options[q.answer]}
+</p>
+
+</div>
+
+`;
+
+});
+
+let percentage=
+((score/questions.length)*100)
+.toFixed(1);
+
+let result=
+percentage>=50
+?
+"<span class='pass'>PASS</span>"
+:
+"<span class='fail'>FAIL</span>";
+
+document.getElementById("quizPage")
+.style.display="none";
+
+document.getElementById("resultsPage")
+.style.display="block";
+
+document.getElementById("summary")
+.innerHTML=`
+
+<h2>${student}</h2>
+
+<br>
+
+<div class="score">
+${score} / ${questions.length}
+</div>
+
+<br>
+
+<p><strong>Percentage:</strong>
+${percentage}%</p>
+
+<br>
+
+<p><strong>Result:</strong>
+${result}</p>
+
+`;
+
+document.getElementById("review")
+.innerHTML=review;
+
+window.scrollTo(0,0);
+
+});
+
+</script>
+
+</body>
+</html>
