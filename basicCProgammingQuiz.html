@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>c·quiz — 30 arrays & basics</title>
+  <title>c·quiz — 30 shuffled arrays & basics</title>
   <style>
     * {
       margin: 0;
@@ -93,7 +93,7 @@
       max-width: 500px;
     }
 
-    .start-btn, .next-btn, .restart-btn {
+    .start-btn, .next-btn, .restart-btn, .end-btn {
       background: #1d2b3f;
       border: none;
       padding: 1rem 2.8rem;
@@ -112,7 +112,7 @@
       gap: 0.6rem;
     }
 
-    .start-btn:hover, .next-btn:hover, .restart-btn:hover {
+    .start-btn:hover, .next-btn:hover, .restart-btn:hover, .end-btn:hover {
       background: #263b55;
       border-color: #5f7e9e;
       transform: translateY(-2px);
@@ -120,9 +120,24 @@
       color: white;
     }
 
-    .start-btn:active, .next-btn:active {
+    .start-btn:active, .next-btn:active, .end-btn:active {
       transform: translateY(4px);
       box-shadow: 0 2px 0 #0b0f18, 0 6px 12px #00000050;
+    }
+
+    .end-btn {
+      background: #2c1a1f;
+      border-color: #7a3a4a;
+      color: #ffb8c6;
+      padding: 0.9rem 2rem;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 0 #0b0f18;
+    }
+
+    .end-btn:hover {
+      background: #3d2229;
+      border-color: #b35c70;
+      color: #ffd0d9;
     }
 
     .progress {
@@ -204,10 +219,23 @@
     .action-row {
       display: flex;
       gap: 1rem;
-      justify-content: flex-end;
+      justify-content: space-between;
       align-items: center;
       margin-top: 0.5rem;
       flex-wrap: wrap;
+    }
+
+    .action-row-left {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .action-row-right {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
     }
 
     .next-btn {
@@ -282,11 +310,15 @@
       text-align: center;
     }
 
-    @media (max-width: 550px) {
+    @media (max-width: 650px) {
       .quiz-container { padding: 1.5rem; }
       .glitch-title { font-size: 2.4rem; }
       .code-block { font-size: 0.95rem; padding: 1rem; }
       .question-text { font-size: 1.1rem; }
+      .action-row { flex-direction: column; }
+      .action-row-left, .action-row-right { width: 100%; justify-content: center; }
+      .end-btn { width: 100%; justify-content: center; }
+      .next-btn { width: 100%; justify-content: center; }
     }
   </style>
 </head>
@@ -298,9 +330,9 @@
     <div class="glitch-title">
       <span>⚡</span> c·quiz <span>⚡</span>
     </div>
-    <div class="subhead">30 questions — arrays & basics</div>
+    <div class="subhead">30 shuffled questions — arrays & basics</div>
     <div class="start-card">
-      <p>› 30 questions<br>› type the exact output or value<br>› no compiler, just your brain</p>
+      <p>› 30 questions (shuffled)<br>› type the exact output or value<br>› end anytime to get a partial score</p>
       <button class="start-btn" id="startQuizBtn">▶ start_quiz()</button>
       <div class="mini-note">// no name entry, just code</div>
     </div>
@@ -319,8 +351,13 @@
       <input type="text" id="answerInput" class="answer-input" placeholder="e.g. 42 or hello" autocomplete="off">
     </div>
     <div class="action-row">
-      <div class="feedback" id="feedbackMsg"></div>
-      <button class="next-btn" id="submitBtn">submit ⏎</button>
+      <div class="action-row-left">
+        <button class="end-btn" id="endQuizBtn">⏹ end quiz</button>
+      </div>
+      <div class="action-row-right">
+        <div class="feedback" id="feedbackMsg"></div>
+        <button class="next-btn" id="submitBtn">submit ⏎</button>
+      </div>
     </div>
   </div>
 
@@ -336,135 +373,108 @@
 </div>
 
 <script>
-  // ---------- 30 QUESTIONS ----------
-  const questions = [
-    // 1
+  // ---------- 30 ORIGINAL QUESTIONS ----------
+  const baseQuestions = [
     { question: "What is the output of this C code?",
       code: `#include <stdio.h>\nint main() {\n    int arr[3] = {10, 20, 30};\n    printf("%d", arr[1] + arr[2]);\n    return 0;\n}`,
       answer: "50" },
-    // 2
     { question: "What is the output? (watch the type!)",
       code: `#include <stdio.h>\nint main() {\n    char str[] = "hello";\n    printf("%c", str[1]);\n    return 0;\n}`,
       answer: "e" },
-    // 3
     { question: "What will be printed?",
       code: `#include <stdio.h>\nint main() {\n    int arr[] = {2, 4, 6, 8};\n    int *p = arr;\n    printf("%d", *(p + 2));\n    return 0;\n}`,
       answer: "6" },
-    // 4
     { question: "What is the output? (sizeof / array size)",
       code: `#include <stdio.h>\nint main() {\n    int arr[5] = {1, 2, 3, 4, 5};\n    printf("%lu", sizeof(arr) / sizeof(arr[0]));\n    return 0;\n}`,
       answer: "5" },
-    // 5
     { question: "What does this print? (post-increment inside array index)",
       code: `#include <stdio.h>\nint main() {\n    int i = 0;\n    int arr[3] = {100, 200, 300};\n    printf("%d", arr[i++]);\n    return 0;\n}`,
       answer: "100" },
-    // 6
     { question: "What is the output?",
       code: `#include <stdio.h>\nint main() {\n    int arr[4] = {1, 2, 3, 4};\n    printf("%d", arr[0] + arr[3]);\n    return 0;\n}`,
       answer: "5" },
-    // 7
     { question: "What character is printed?",
       code: `#include <stdio.h>\nint main() {\n    char s[] = "world";\n    printf("%c", s[4]);\n    return 0;\n}`,
       answer: "d" },
-    // 8
     { question: "What is the output?",
       code: `#include <stdio.h>\nint main() {\n    int a[3] = {5, 10, 15};\n    printf("%d", a[2] - a[0]);\n    return 0;\n}`,
       answer: "10" },
-    // 9
     { question: "What is the output? (pointer arithmetic)",
       code: `#include <stdio.h>\nint main() {\n    int arr[] = {10, 20, 30, 40};\n    int *ptr = arr + 1;\n    printf("%d", *ptr);\n    return 0;\n}`,
       answer: "20" },
-    // 10
     { question: "What is the output?",
       code: `#include <stdio.h>\nint main() {\n    int arr[2] = {7, 8};\n    printf("%d", arr[0] * arr[1]);\n    return 0;\n}`,
       answer: "56" },
-    // 11
     { question: "What is the output? (string indexing)",
       code: `#include <stdio.h>\nint main() {\n    char str[] = "cprogram";\n    printf("%c", str[0]);\n    return 0;\n}`,
       answer: "c" },
-    // 12
     { question: "What will be printed?",
       code: `#include <stdio.h>\nint main() {\n    int arr[5] = {0};\n    printf("%d", arr[3]);\n    return 0;\n}`,
       answer: "0" },
-    // 13
     { question: "What is the output? (pointer to array)",
       code: `#include <stdio.h>\nint main() {\n    int arr[] = {1, 2, 3};\n    printf("%d", *(arr + 1));\n    return 0;\n}`,
       answer: "2" },
-    // 14
     { question: "What is the output? (array size)",
       code: `#include <stdio.h>\nint main() {\n    int arr[7];\n    printf("%lu", sizeof(arr) / sizeof(int));\n    return 0;\n}`,
       answer: "7" },
-    // 15
     { question: "What does this print? (pre-increment)",
       code: `#include <stdio.h>\nint main() {\n    int i = 0;\n    int arr[3] = {10, 20, 30};\n    printf("%d", arr[++i]);\n    return 0;\n}`,
       answer: "20" },
-    // 16
     { question: "What is the output?",
       code: `#include <stdio.h>\nint main() {\n    char s[] = "abc";\n    printf("%c", s[2]);\n    return 0;\n}`,
       answer: "c" },
-    // 17
     { question: "What is the output? (array + loop)",
       code: `#include <stdio.h>\nint main() {\n    int arr[3] = {2, 4, 6};\n    int sum = 0;\n    for(int i=0; i<3; i++) sum += arr[i];\n    printf("%d", sum);\n    return 0;\n}`,
       answer: "12" },
-    // 18
     { question: "What is the output? (pointer dereference)",
       code: `#include <stdio.h>\nint main() {\n    int arr[] = {9, 8, 7};\n    int *p = arr + 2;\n    printf("%d", *p);\n    return 0;\n}`,
       answer: "7" },
-    // 19
     { question: "What is the output?",
       code: `#include <stdio.h>\nint main() {\n    int arr[4] = {1, 2, 3, 4};\n    printf("%d", arr[1] * arr[3]);\n    return 0;\n}`,
       answer: "8" },
-    // 20
     { question: "What is the output? (string length logic)",
       code: `#include <stdio.h>\nint main() {\n    char str[] = "hi";\n    printf("%c", str[1]);\n    return 0;\n}`,
       answer: "i" },
-    // 21
     { question: "What is the output? (array initialization)",
       code: `#include <stdio.h>\nint main() {\n    int arr[3] = {5};\n    printf("%d", arr[1] + arr[2]);\n    return 0;\n}`,
       answer: "0" },
-    // 22
     { question: "What is the output? (pointer arithmetic)",
       code: `#include <stdio.h>\nint main() {\n    int arr[] = {2, 4, 6, 8};\n    int *p = arr;\n    p += 3;\n    printf("%d", *p);\n    return 0;\n}`,
       answer: "8" },
-    // 23
     { question: "What is the output? (char array)",
       code: `#include <stdio.h>\nint main() {\n    char str[] = "C";\n    printf("%c", str[0]);\n    return 0;\n}`,
       answer: "C" },
-    // 24
     { question: "What is the output? (array index expression)",
       code: `#include <stdio.h>\nint main() {\n    int i = 1;\n    int arr[3] = {100, 200, 300};\n    printf("%d", arr[i + 1]);\n    return 0;\n}`,
       answer: "300" },
-    // 25
     { question: "What is the output? (sizeof on array)",
       code: `#include <stdio.h>\nint main() {\n    double arr[4];\n    printf("%lu", sizeof(arr) / sizeof(double));\n    return 0;\n}`,
       answer: "4" },
-    // 26
     { question: "What is the output?",
       code: `#include <stdio.h>\nint main() {\n    int arr[3] = {1, 2, 3};\n    printf("%d", arr[0] + arr[1] + arr[2]);\n    return 0;\n}`,
       answer: "6" },
-    // 27
     { question: "What is the output? (pointer and index)",
       code: `#include <stdio.h>\nint main() {\n    int arr[] = {5, 10, 15};\n    printf("%d", *(arr + 2));\n    return 0;\n}`,
       answer: "15" },
-    // 28
     { question: "What is the output? (character array indexing)",
       code: `#include <stdio.h>\nint main() {\n    char s[] = "code";\n    printf("%c", s[1]);\n    return 0;\n}`,
       answer: "o" },
-    // 29
     { question: "What is the output? (array subtraction)",
       code: `#include <stdio.h>\nint main() {\n    int a[3] = {10, 20, 30};\n    printf("%d", a[2] - a[1]);\n    return 0;\n}`,
       answer: "10" },
-    // 30
     { question: "What is the output? (post-increment in expression)",
       code: `#include <stdio.h>\nint main() {\n    int i = 2;\n    int arr[4] = {1, 2, 3, 4};\n    printf("%d", arr[i++]);\n    return 0;\n}`,
       answer: "3" }
   ];
 
   // ---------- state ----------
+  let questions = [];           // will be shuffled copy
   let currentQIndex = 0;
   let score = 0;
   let answered = false;
   let correctAnswer = "";
+  let answeredCount = 0;        // how many questions the user answered (attempted)
+  let quizEndedEarly = false;
 
   // DOM elements
   const startScreen = document.getElementById('startScreen');
@@ -472,6 +482,7 @@
   const resultScreen = document.getElementById('resultScreen');
   const startBtn = document.getElementById('startQuizBtn');
   const submitBtn = document.getElementById('submitBtn');
+  const endQuizBtn = document.getElementById('endQuizBtn');
   const restartBtn = document.getElementById('restartBtn');
   const questionText = document.getElementById('questionText');
   const codeBlock = document.getElementById('codeBlock');
@@ -482,16 +493,29 @@
   const finalScore = document.getElementById('finalScore');
   const resultMessage = document.getElementById('resultMessage');
 
-  // ---------- helper functions ----------
+  // ---------- helpers ----------
+  function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
   function switchScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
   }
 
   function resetQuiz() {
+    // shuffle questions fresh each time
+    questions = shuffleArray(baseQuestions);
     currentQIndex = 0;
     score = 0;
     answered = false;
+    answeredCount = 0;
+    quizEndedEarly = false;
     updateScoreDisplay();
     answerInput.value = '';
     feedbackMsg.textContent = '';
@@ -499,6 +523,8 @@
     answerInput.disabled = false;
     answerInput.focus();
     submitBtn.textContent = 'submit ⏎';
+    // Enable/disable end button
+    endQuizBtn.disabled = false;
   }
 
   function updateScoreDisplay() {
@@ -531,6 +557,7 @@
     }
 
     const isCorrect = (userAnswer === correctAnswer);
+    answeredCount++;
 
     if (isCorrect) {
       score++;
@@ -558,20 +585,51 @@
       currentQIndex++;
       loadQuestion(currentQIndex);
     } else {
-      showResults();
+      showResults(false); // false = not early ended
     }
   }
 
-  function showResults() {
+  function endQuizEarly() {
+    // If user already answered all? Then just show results
+    if (currentQIndex === questions.length - 1 && answered) {
+      // already at end, just finish
+      showResults(false);
+      return;
+    }
+    // If no answers yet and at first question with no answer, maybe confirm?
+    // But we just show results based on answeredCount
+    showResults(true); // true = ended early
+  }
+
+  function showResults(endedEarly) {
+    quizEndedEarly = endedEarly;
     switchScreen('resultScreen');
-    finalScore.textContent = `${score}/${questions.length}`;
+
+    const total = questions.length;
+    const attempted = answeredCount;
+    const percentage = attempted > 0 ? Math.round((score / attempted) * 100) : 0;
+
+    // If ended early, show attempted score
+    if (endedEarly) {
+      finalScore.textContent = `${score}/${attempted}`;
+    } else {
+      finalScore.textContent = `${score}/${total}`;
+    }
+
     let msg = '';
-    const percent = (score / questions.length) * 100;
-    if (percent === 100) msg = '🏆 perfect! arrays are your friend.';
-    else if (percent >= 80) msg = '🔥 solid! just a bit more polish.';
-    else if (percent >= 60) msg = '📘 not bad — review array indexing.';
-    else if (percent >= 40) msg = '🧠 keep practicing, you\'ll get there.';
-    else msg = '💻 time to revisit the basics — you got this.';
+    if (attempted === 0) {
+      msg = '🤔 you didn\'t answer any questions.';
+    } else {
+      const pct = (score / attempted) * 100;
+      if (pct === 100) msg = '🏆 perfect! arrays are your friend.';
+      else if (pct >= 80) msg = '🔥 solid! just a bit more polish.';
+      else if (pct >= 60) msg = '📘 not bad — review array indexing.';
+      else if (pct >= 40) msg = '🧠 keep practicing, you\'ll get there.';
+      else msg = '💻 time to revisit the basics — you got this.';
+      if (endedEarly) {
+        msg += ` (ended early — ${attempted} attempted)`;
+      }
+    }
     resultMessage.textContent = msg;
   }
 
@@ -588,6 +646,11 @@
     } else {
       goToNext();
     }
+  });
+
+  endQuizBtn.addEventListener('click', () => {
+    // If no questions answered yet, maybe still allow? Yes, just show results with 0.
+    endQuizEarly();
   });
 
   answerInput.addEventListener('keypress', (e) => {
@@ -617,6 +680,7 @@
 
   // initialize
   submitBtn.textContent = 'submit ⏎';
+  endQuizBtn.disabled = false;
 </script>
 </body>
 </html>
