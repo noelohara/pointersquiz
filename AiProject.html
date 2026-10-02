@@ -431,10 +431,6 @@
 };
 
   // Check if config is placeholder (show warning)
-  const isConfigPlaceholder = firebaseConfig.apiKey.includes("DOC") || firebaseConfig.databaseURL.includes("default-rtdb");
-  if (isConfigPlaceholder) {
-    document.getElementById('firebaseWarning').classList.remove('hidden');
-  }
 
   // ============================================================
   // 2. INITIALISE FIREBASE
