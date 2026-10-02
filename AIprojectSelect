@@ -418,14 +418,15 @@
   // ============================================================
   // 1. FIREBASE CONFIGURATION – REPLACE WITH YOUR OWN
   // ============================================================
-  const firebaseConfig = {
-    apiKey: "AIzaSyDOCAbC123dEf456GhI789jKl012-MnO",    // ⚠️ replace
-    authDomain: "gesma-project.firebaseapp.com",        // ⚠️ replace
-    databaseURL: "https://gesma-project-default-rtdb.firebaseio.com", // ⚠️ replace
-    projectId: "gesma-project",
-    storageBucket: "gesma-project.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abc123def456"
+   const firebaseConfig = {
+    apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
+    authDomain: "ai-project-tool.firebaseapp.com",
+    databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "ai-project-tool",
+    storageBucket: "ai-project-tool.firebasestorage.app",
+    messagingSenderId: "658331100512",
+    appId: "1:658331100512:web:72208dc0c1561b95bcaa05",
+    measurementId: "G-R36B3T9FLW"
   };
 
   // Check if config is placeholder (show warning)
