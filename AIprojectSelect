@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Software Challenge - Project Selection</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
+    background:
+    radial-gradient(circle at top,#102040,#050816 70%);
+    color:white;
+    min-height:100vh;
+}
+
+header{
+    text-align:center;
+    padding:25px;
+    border-bottom:2px solid #00ffff44;
+    background:#00000044;
+}
+
+h1{
+    font-size:3rem;
+    color:#00ffff;
+    text-shadow:0 0 20px cyan;
+}
+
+.subtitle{
+    margin-top:10px;
+    color:#cccccc;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
+    padding:20px;
+}
+
+.project-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:18px;
+}
+
+.card{
+    background:#111827;
+    border:2px solid #00ffff33;
+    border-radius:16px;
+    padding:16px;
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+    border-color:#00ffff;
+    box-shadow:0 0 20px #00ffff55;
+}
+
+.category{
+    color:#ffcc00;
+    font-size:0.85rem;
+    margin-bottom:8px;
+}
+
+.card h3{
+    margin-bottom:10px;
+}
+
+.difficulty{
+    color:gold;
+    margin-bottom:12px;
+}
+
+.card button{
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:#00c2ff;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.card button:hover{
+    background:white;
+}
+
+.sidebar{
+    position:sticky;
+    top:10px;
+    height:fit-content;
+}
+
+.panel{
+    background:#111827;
+    border:2px solid #00ffff66;
+    border-radius:16px;
+    padding:20px;
+}
+
+.panel h2{
+    color:#00ffff;
+    margin-bottom:20px;
+}
+
+.slot{
+    background:black;
+    border:2px dashed #444;
+    padding:15px;
+    margin-bottom:15px;
+    min-height:70px;
+    border-radius:10px;
+}
+
+.progress{
+    background:#222;
+    height:20px;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:20px;
+}
+
+.progress-bar{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg,#00ffff,#00ff88);
+    transition:0.4s;
+}
+
+.complete{
+    color:#00ff88;
+    font-weight:bold;
+    margin-top:15px;
+}
+
+.search{
+    margin:20px;
+    text-align:center;
+}
+
+.search input{
+    width:60%;
+    padding:10px;
+    border-radius:10px;
+    border:none;
+}
+
+.footer{
+    text-align:center;
+    padding:25px;
+    color:#aaa;
+}
+
+@media(max-width:1000px){
+    .container{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>⚡ AI SOFTWARE ENGINEERING CHALLENGE ⚡</h1>
+    <div class="subtitle">
+        Select Your Project Quest
+    </div>
+</header>
+
+<div class="search">
+    <input id="searchBox" type="text" placeholder="Search projects...">
+</div>
+
+<div class="container">
+
+<div class="project-grid" id="projectGrid"></div>
+
+<div class="sidebar">
+    <div class="panel">
+
+        <h2>🎯 YOUR TEAM PICKS</h2>
+
+        <div class="slot" id="pick1">
+            Choice #1
+        </div>
+
+        <div class="slot" id="pick2">
+            Choice #2
+        </div>
+
+        <div class="slot" id="pick3">
+            Choice #3
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="bar"></div>
+        </div>
+
+        <p style="margin-top:10px">
+            Progress: <span id="percent">0%</span>
+        </p>
+
+        <div class="complete" id="complete"></div>
+
+    </div>
+</div>
+
+</div>
+
+<div class="footer">
+    Maximum 3 projects. First choice should be your preferred project.
+</div>
+
+<script>
+
+const projects = [
+
+["AI Research Assistant","AI","★★★★★"],
+["AI Study Coach","AI","★★★★★"],
+["AI Interview Coach","AI","★★★★☆"],
+["AI Code Review Platform","AI","★★★★★"],
+["AI Documentation Generator","AI","★★★★☆"],
+
+["Learning Analytics Dashboard","Education","★★★★☆"],
+["Programming Assessment Platform","Education","★★★★★"],
+["Virtual Laboratory Platform","Education","★★★★★"],
+["Student Success Predictor","Education","★★★★★"],
+
+["CRM System","Business","★★★★☆"],
+["Inventory Management System","Business","★★★★☆"],
+["Appointment Scheduling Platform","Business","★★★★☆"],
+["Customer Support Platform","Business","★★★★★"],
+
+["Mini Jira","Software Engineering","★★★★★"],
+["Mini GitHub","Software Engineering","★★★★★"],
+["API Testing Platform","Software Engineering","★★★★☆"],
+["CI/CD Dashboard","Software Engineering","★★★★★"],
+["Code Quality Analytics","Software Engineering","★★★★★"],
+
+["Sports Analytics Platform","Analytics","★★★★☆"],
+["Financial Analytics Platform","Analytics","★★★★★"],
+["Traffic Analysis Platform","Analytics","★★★★★"],
+
+["Hospital Resource Simulator","Simulation","★★★★★"],
+["Airport Operations Simulator","Simulation","★★★★★"],
+["Supply Chain Simulator","Simulation","★★★★★"],
+["Smart City Simulator","Simulation","★★★★★"],
+["Emergency Response Simulator","Simulation","★★★★★"]
+
+];
+
+const selections=[];
+const grid=document.getElementById("projectGrid");
+
+function renderProjects(filter=""){
+
+grid.innerHTML="";
+
+projects
+.filter(p=>p[0].toLowerCase().includes(filter.toLowerCase()))
+.forEach(project=>{
+
+const card=document.createElement("div");
+card.className="card";
+
+card.innerHTML=`
+<div class="category">${project[1]}</div>
+<h3>${project[0]}</h3>
+<div class="difficulty">${project[2]}</div>
+<button>Select Project</button>
+`;
+
+card.querySelector("button").onclick=()=>selectProject(project[0]);
+
+grid.appendChild(card);
+
+});
+}
+
+function selectProject(name){
+
+if(selections.includes(name)) return;
+
+if(selections.length>=3){
+    alert("You can only select 3 projects.");
+    return;
+}
+
+selections.push(name);
+
+updateSidebar();
+}
+
+function updateSidebar(){
+
+document.getElementById("pick1").innerHTML=
+selections[0] ? "🥇 " + selections[0] : "Choice #1";
+
+document.getElementById("pick2").innerHTML=
+selections[1] ? "🥈 " + selections[1] : "Choice #2";
+
+document.getElementById("pick3").innerHTML=
+selections[2] ? "🥉 " + selections[2] : "Choice #3";
+
+const percent=(selections.length/3)*100;
+
+document.getElementById("bar").style.width=percent+"%";
+
+document.getElementById("percent").innerText=
+Math.round(percent)+"%";
+
+if(selections.length===3){
+
+document.getElementById("complete").innerHTML=
+"✅ Project selection complete!";
+}
+}
+
+document.getElementById("searchBox")
+.addEventListener("input",e=>{
+renderProjects(e.target.value);
+});
+
+renderProjects();
+
+</script>
+
+</body>
+</html>
