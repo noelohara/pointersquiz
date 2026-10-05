@@ -16,25 +16,7 @@
       color: #1f2a3a;
     }
     .container { max-width: 1300px; margin: 0 auto; }
-    header {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      position: relative;
-    }
-    .back-link {
-      position: absolute;
-      left: 0;
-      top: 0;
-      color: #5b7b9c;
-      text-decoration: none;
-      font-size: 0.9rem;
-      padding: 0.5rem 1rem;
-      border-radius: 30px;
-      background: white;
-      box-shadow: 0 4px 10px rgba(0,20,40,0.06);
-      transition: all 0.15s;
-    }
-    .back-link:hover { color: #0b2b4f; transform: translateX(-3px); }
+    header { text-align: center; margin-bottom: 1.5rem; }
     h1 { font-size: 2.2rem; color: #0b2b4f; letter-spacing: -0.02em; }
     .subtitle { color: #4f6b88; margin-top: 0.4rem; }
 
@@ -299,7 +281,6 @@
 <body>
   <div class="container">
     <header>
-      <a href="index.html" class="back-link">← Back</a>
       <h1>🎮 Gameplay</h1>
       <p class="subtitle">Register your team and pick one project</p>
     </header>
@@ -317,10 +298,6 @@
     <!-- FORM -->
     <div class="card">
       <div class="form-grid">
-        <div class="input-group">
-          <label>Group name</label>
-          <input type="text" id="groupName" placeholder="e.g. Team Alpha" autocomplete="off">
-        </div>
         <div class="input-group">
           <label>Student number 1</label>
           <input type="text" id="student1" placeholder="e.g. 20240001" autocomplete="off">
@@ -353,7 +330,7 @@
 const CLASS_ID = 'gameplay';
 const CLASS_NAME = 'Gameplay';
 
-  const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
   authDomain: "ai-project-tool.firebaseapp.com",
   databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
@@ -364,7 +341,6 @@ const CLASS_NAME = 'Gameplay';
   measurementId: "G-R36B3T9FLW"
 };
 
-// Default project catalog for this class
 const DEFAULT_PROJECTS = [
   { id: 'gmp_platformer', name: '2D Platformer Game', category: 'Gameplay' },
   { id: 'gmp_puzzle', name: 'Puzzle Game Engine', category: 'Gameplay' },
@@ -389,7 +365,6 @@ let selectedProjectId = null;
 let isRegistering = false;
 
 // DOM
-const groupNameInput = document.getElementById('groupName');
 const student1Input = document.getElementById('student1');
 const student2Input = document.getElementById('student2');
 const registerBtn = document.getElementById('registerBtn');
@@ -412,7 +387,6 @@ function showMessage(text, type = 'info') {
   showMessage._t = setTimeout(() => formMessage.classList.remove('show'), 6000);
 }
 function clearForm() {
-  groupNameInput.value = '';
   student1Input.value = '';
   student2Input.value = '';
 }
@@ -427,8 +401,7 @@ function escapeHtml(s) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  DUPLICATE STUDENT CHECKER
-//  Scans BOTH classes for any student number already registered
+//  DUPLICATE STUDENT CHECKER (scans both classes)
 // ═══════════════════════════════════════════════════════════
 async function findDuplicateStudents(studentNumbers) {
   const CLASS_NAMES = {
@@ -451,7 +424,6 @@ async function findDuplicateStudents(studentNumbers) {
         if (registered.includes(s)) {
           found.push({
             student: s,
-            groupName: info.groupName || '(unknown group)',
             className: CLASS_NAMES[classId],
             projectId
           });
@@ -509,12 +481,13 @@ function renderProjects() {
   projectsContainer.innerHTML = list.map(p => {
     const taken = takenProjects[p.id];
     const selected = selectedProjectId === p.id;
+    const takenBy = taken ? `${escapeHtml(taken.student1)} & ${escapeHtml(taken.student2)}` : '';
     return `
       <div class="project-card ${taken ? 'taken' : ''} ${selected ? 'selected' : ''}"
            data-id="${escapeHtml(p.id)}" data-taken="${!!taken}">
         <div class="project-name">${escapeHtml(p.name)}</div>
         <div class="project-cat">${escapeHtml(p.category || 'General')}</div>
-        ${taken ? `<div class="team-info">👥 ${escapeHtml(taken.groupName)}</div>` : ''}
+        ${taken ? `<div class="team-info">👥 ${takenBy}</div>` : ''}
         <div class="project-footer">
           ${taken ? '<span class="taken-badge">🔒 taken</span>' : '<span class="pick-indicator">⬤ click to select</span>'}
         </div>
@@ -552,16 +525,15 @@ function updateBanner() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  REGISTER (with duplicate student check)
+//  REGISTER
 // ═══════════════════════════════════════════════════════════
 registerBtn.addEventListener('click', async () => {
   if (isRegistering) return;
-  const groupName = groupNameInput.value.trim();
   const s1 = student1Input.value.trim();
   const s2 = student2Input.value.trim();
 
-  if (!groupName || !s1 || !s2) {
-    return showMessage('Please fill in group name and both student numbers.', 'error');
+  if (!s1 || !s2) {
+    return showMessage('Please enter both student numbers.', 'error');
   }
   if (!selectedProjectId) {
     return showMessage('Please click a project from the list to select it.', 'error');
@@ -573,15 +545,16 @@ registerBtn.addEventListener('click', async () => {
     return showMessage('The two student numbers must be different.', 'error');
   }
 
+  const groupName = `${s1} & ${s2}`;
+
   isRegistering = true;
   setLoading(true);
 
-  // ---- Check for duplicates across ALL classes ----
   try {
     const duplicates = await findDuplicateStudents([s1, s2]);
     if (duplicates.length > 0) {
       const list = duplicates.map(d =>
-        `• ${d.student} is already in "${d.groupName}" (${d.className})`
+        `• ${d.student} is already registered (${d.className})`
       ).join('\n');
       showMessage(`❌ These student numbers are already registered:\n${list}`, 'error');
       isRegistering = false;
@@ -596,7 +569,6 @@ registerBtn.addEventListener('click', async () => {
     return;
   }
 
-  // ---- Proceed with transaction ----
   try {
     const ref = db.ref(`classes/${CLASS_ID}/selections/${selectedProjectId}`);
     const result = await ref.transaction(cur => {
@@ -637,7 +609,7 @@ refreshBtn.addEventListener('click', () => {
   renderProjects();
 });
 
-[groupNameInput, student1Input, student2Input].forEach(i => {
+[student1Input, student2Input].forEach(i => {
   i.addEventListener('keypress', e => { if (e.key === 'Enter') registerBtn.click(); });
 });
 
