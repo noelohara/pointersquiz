@@ -186,6 +186,7 @@
       background: #d9e8f7;
       color: #0b2b4f;
       display: none;
+      white-space: pre-line;
     }
     .message.show { display: block; }
     .message.error { background: #f8d7da; color: #8b1e2b; }
@@ -298,8 +299,8 @@
 <body>
   <div class="container">
     <header>
-     
-      <h1>Gameplay Programming Project</h1>
+      <a href="index.html" class="back-link">← Back</a>
+      <h1>🎮 Gameplay</h1>
       <p class="subtitle">Register your team and pick one project</p>
     </header>
 
@@ -352,11 +353,7 @@
 const CLASS_ID = 'gameplay';
 const CLASS_NAME = 'Gameplay';
 
-
-  // ============================================================
-  // 1. FIREBASE CONFIGURATION – REPLACE WITH YOUR OWN
-  // ============================================================
-   const firebaseConfig = {
+  const firebaseConfig = {
   apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
   authDomain: "ai-project-tool.firebaseapp.com",
   databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
@@ -367,39 +364,16 @@ const CLASS_NAME = 'Gameplay';
   measurementId: "G-R36B3T9FLW"
 };
 
-
+// Default project catalog for this class
 const DEFAULT_PROJECTS = [
-  { id: 'adv_mini_jira', name: 'Mini Jira', category: 'Software Engineering' },
-  { id: 'adv_mini_github', name: 'Mini GitHub', category: 'Software Engineering' },
-  { id: 'adv_bug_tracking', name: 'Bug Tracking Platform', category: 'Software Engineering' },
-  { id: 'adv_cicd_dashboard', name: 'CI/CD Dashboard', category: 'Software Engineering' },
-  { id: 'adv_api_testing', name: 'API Testing Platform', category: 'Software Engineering' },
-  { id: 'adv_requirements', name: 'Requirements Management System', category: 'Software Engineering' },
-  { id: 'adv_prog_assessment', name: 'Programming Assessment Platform', category: 'Education' },
-  { id: 'adv_learning_analytics', name: 'Learning Analytics Dashboard', category: 'Education' },
-  { id: 'adv_virtual_lab', name: 'Virtual Laboratory Platform', category: 'Education' },
-  { id: 'adv_timetabling', name: 'Automated Timetabling System', category: 'Education' },
-  { id: 'adv_crm', name: 'CRM Platform', category: 'Business' },
-  { id: 'adv_inventory', name: 'Inventory Management System', category: 'Business' },
-  { id: 'adv_appointment', name: 'Appointment Scheduling Platform', category: 'Business' },
-  { id: 'adv_support', name: 'Customer Support Platform', category: 'Business' },
-  { id: 'adv_bi_dashboard', name: 'Business Intelligence Dashboard', category: 'Business' },
-  { id: 'adv_sports_analytics', name: 'Sports Analytics Platform', category: 'Analytics' },
-  { id: 'adv_financial_analytics', name: 'Financial Analytics Platform', category: 'Analytics' },
-  { id: 'adv_traffic', name: 'Traffic Analysis Platform', category: 'Analytics' },
-  { id: 'adv_environmental', name: 'Environmental Monitoring Dashboard', category: 'Analytics' },
-  { id: 'adv_hospital_sim', name: 'Hospital Resource Simulator', category: 'Simulation' },
-  { id: 'adv_airport_sim', name: 'Airport Operations Simulator', category: 'Simulation' },
-  { id: 'adv_supply_chain', name: 'Supply Chain Simulator', category: 'Simulation' },
-  { id: 'adv_smart_city', name: 'Smart City Simulator', category: 'Simulation' },
-  { id: 'adv_emergency', name: 'Emergency Response Simulator', category: 'Simulation' },
-  { id: 'adv_manufacturing', name: 'Manufacturing Process Simulator', category: 'Simulation' },
-  { id: 'adv_asset', name: 'Asset Management System', category: 'Engineering' },
-  { id: 'adv_fleet', name: 'Fleet Management Platform', category: 'Engineering' },
-  { id: 'adv_smart_building', name: 'Smart Building Controller', category: 'Engineering' },
-  { id: 'adv_network_mon', name: 'Network Monitoring Dashboard', category: 'Engineering' },
-  { id: 'adv_iot_mon', name: 'IoT Monitoring System', category: 'Engineering' },
+  { id: 'gmp_platformer', name: '2D Platformer Game', category: 'Gameplay' },
+  { id: 'gmp_puzzle', name: 'Puzzle Game Engine', category: 'Gameplay' },
+  { id: 'gmp_rpg', name: 'Mini RPG System', category: 'Gameplay' },
+  { id: 'gmp_physics', name: 'Physics Playground', category: 'Gameplay' },
+  { id: 'gmp_ai', name: 'Game AI Behaviour System', category: 'Gameplay' },
+  { id: 'gmp_procedural', name: 'Procedural Level Generator', category: 'Gameplay' },
 ];
+
 // ═══════════════════════════════════════════════════════════
 //  FIREBASE
 // ═══════════════════════════════════════════════════════════
@@ -409,8 +383,8 @@ const db = firebase.database();
 // ═══════════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════════
-let allProjects = [];      // from /classes/{CLASS_ID}/projects
-let takenProjects = {};    // from /classes/{CLASS_ID}/selections
+let allProjects = [];
+let takenProjects = {};
 let selectedProjectId = null;
 let isRegistering = false;
 
@@ -435,7 +409,7 @@ function showMessage(text, type = 'info') {
   if (type === 'error') formMessage.classList.add('error');
   if (type === 'success') formMessage.classList.add('success');
   clearTimeout(showMessage._t);
-  showMessage._t = setTimeout(() => formMessage.classList.remove('show'), 5000);
+  showMessage._t = setTimeout(() => formMessage.classList.remove('show'), 6000);
 }
 function clearForm() {
   groupNameInput.value = '';
@@ -453,7 +427,43 @@ function escapeHtml(s) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  SEED PROJECTS (if empty)
+//  DUPLICATE STUDENT CHECKER
+//  Scans BOTH classes for any student number already registered
+// ═══════════════════════════════════════════════════════════
+async function findDuplicateStudents(studentNumbers) {
+  const CLASS_NAMES = {
+    gameplay: 'Gameplay',
+    advanced: 'Advanced Programming'
+  };
+  const toCheck = studentNumbers.map(s => s.trim().toLowerCase());
+  const found = [];
+
+  for (const classId of Object.keys(CLASS_NAMES)) {
+    const snap = await db.ref(`classes/${classId}/selections`).once('value');
+    const selections = snap.val() || {};
+
+    for (const [projectId, info] of Object.entries(selections)) {
+      const registered = [
+        (info.student1 || '').trim().toLowerCase(),
+        (info.student2 || '').trim().toLowerCase()
+      ];
+      for (const s of toCheck) {
+        if (registered.includes(s)) {
+          found.push({
+            student: s,
+            groupName: info.groupName || '(unknown group)',
+            className: CLASS_NAMES[classId],
+            projectId
+          });
+        }
+      }
+    }
+  }
+  return found;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SEED PROJECTS
 // ═══════════════════════════════════════════════════════════
 async function ensureProjectsSeeded() {
   const ref = db.ref(`classes/${CLASS_ID}/projects`);
@@ -481,7 +491,7 @@ function attachListeners() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  RENDER PROJECTS + BANNER
+//  RENDER
 // ═══════════════════════════════════════════════════════════
 function renderProjects() {
   const list = [...allProjects].sort((a, b) => {
@@ -542,7 +552,7 @@ function updateBanner() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  REGISTER
+//  REGISTER (with duplicate student check)
 // ═══════════════════════════════════════════════════════════
 registerBtn.addEventListener('click', async () => {
   if (isRegistering) return;
@@ -559,10 +569,34 @@ registerBtn.addEventListener('click', async () => {
   if (takenProjects[selectedProjectId]) {
     return showMessage('That project was just taken. Pick another.', 'error');
   }
+  if (s1.toLowerCase() === s2.toLowerCase()) {
+    return showMessage('The two student numbers must be different.', 'error');
+  }
 
   isRegistering = true;
   setLoading(true);
 
+  // ---- Check for duplicates across ALL classes ----
+  try {
+    const duplicates = await findDuplicateStudents([s1, s2]);
+    if (duplicates.length > 0) {
+      const list = duplicates.map(d =>
+        `• ${d.student} is already in "${d.groupName}" (${d.className})`
+      ).join('\n');
+      showMessage(`❌ These student numbers are already registered:\n${list}`, 'error');
+      isRegistering = false;
+      setLoading(false);
+      return;
+    }
+  } catch (e) {
+    console.error('Duplicate check failed:', e);
+    showMessage('Could not verify student numbers. Try again.', 'error');
+    isRegistering = false;
+    setLoading(false);
+    return;
+  }
+
+  // ---- Proceed with transaction ----
   try {
     const ref = db.ref(`classes/${CLASS_ID}/selections/${selectedProjectId}`);
     const result = await ref.transaction(cur => {
