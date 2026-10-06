@@ -22,12 +22,13 @@
       box-shadow: 0 20px 40px -14px rgba(0,30,60,0.15);
       margin-bottom: 1.5rem; }
 
-    input[type="password"], input[type="text"], input[type="email"], select {
+    input[type="text"], input[type="email"], select, textarea {
       width: 100%; padding: 0.95rem 1.3rem; border-radius: 60px;
       border: 1.5px solid #cbd5e1; font-size: 1rem; font-family: inherit;
       outline: none; margin-bottom: 0.9rem; background: white;
     }
-    input:focus, select:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
+    input:focus, select:focus, textarea:focus {
+      border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
 
     .btn { background: #1e4c7a; color: white; font-weight: 600; border: none;
       padding: 0.95rem 2rem; border-radius: 60px; font-size: 1rem;
@@ -35,7 +36,6 @@
       box-shadow: 0 8px 16px -4px rgba(20,60,110,0.3); }
     .btn:hover { background: #123a5e; }
     .btn:disabled { opacity: 0.5; pointer-events: none; }
-    .btn-block { width: 100%; }
     .btn-secondary { background: #e2e8f0; color: #1e2e44; box-shadow: none; }
     .btn-secondary:hover { background: #cfdae6; }
     .btn-danger { background: #b91c1c; }
@@ -44,17 +44,14 @@
     .btn-success:hover { background: #155c2d; }
     .btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; }
 
-    .error-msg { color: #b91c1c; margin-top: 0.5rem; font-size: 0.9rem;
-      min-height: 1.2rem; font-weight: 500; text-align: center; }
-
     .toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem;
       align-items: center; }
     .search-input { flex: 1 1 240px; padding: 0.7rem 1.3rem; border-radius: 60px;
       border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.95rem;
-      outline: none; }
+      outline: none; margin-bottom: 0; }
     .filter-select { padding: 0.7rem 1.3rem; border-radius: 60px;
       border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.95rem;
-      outline: none; background: white; }
+      outline: none; background: white; margin-bottom: 0; width: auto; }
 
     table { width: 100%; border-collapse: collapse; background: white;
       border-radius: 14px; overflow: hidden;
@@ -94,8 +91,7 @@
     .bulk-textarea { width: 100%; min-height: 120px; padding: 1rem;
       border-radius: 16px; border: 1.5px solid #cbd5e1;
       font-family: 'Courier New', monospace; font-size: 0.9rem;
-      outline: none; resize: vertical; }
-    .bulk-textarea:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
+      outline: none; resize: vertical; margin-bottom: 0.9rem; }
 
     .class-pill { display: inline-block; font-size: 0.7rem; padding: 0.2rem 0.7rem;
       border-radius: 20px; font-weight: 700; text-transform: uppercase;
@@ -140,19 +136,7 @@
     <p>Add, edit, and view the GESMA roster</p>
   </header>
 
-  <!-- LOGIN -->
-  <div class="card" id="loginView">
-    <h3 style="color:#0b2b4f; margin-bottom:0.5rem;">🔒 Admin Access</h3>
-    <p style="color:#5b7b9c; font-size:0.9rem; margin-bottom:1rem;">
-      Enter the admin password to continue.
-    </p>
-    <input type="password" id="passwordInput" placeholder="Admin password" autofocus>
-    <button class="btn btn-block" id="loginBtn">Unlock</button>
-    <div class="error-msg" id="loginError"></div>
-  </div>
-
-  <!-- MAIN -->
-  <div id="mainView" class="hidden">
+  <div id="mainView">
 
     <!-- SEED ROSTER -->
     <div class="card">
@@ -170,7 +154,7 @@
         <div class="seed-card">
           <h4>🎮 Gameplay</h4>
           <div class="count" id="gmpCount">no students yet</div>
-          <div class="desc">Add Gameplay students manually or via bulk add below.</div>
+          <div class="desc">Add gameplay students via bulk add or the single-add form.</div>
           <button class="btn btn-sm" id="seedGmpBtn">Load Gameplay</button>
         </div>
       </div>
@@ -205,7 +189,7 @@
         <option value="advanced">💻 Advanced Programming</option>
       </select>
       <textarea class="bulk-textarea" id="bulkInput" placeholder="c00400001, John, Smith, , gameplay"></textarea>
-      <button class="btn" id="bulkBtn" style="margin-top:0.9rem;">Add all lines</button>
+      <button class="btn" id="bulkBtn">Add all lines</button>
       <div id="bulkMsg" style="margin-top:0.7rem; font-size:0.9rem;"></div>
     </div>
 
@@ -264,7 +248,7 @@
       <button class="btn btn-secondary" onclick="closeEdit()">Cancel</button>
       <button class="btn" id="saveEditBtn">Save</button>
     </div>
-    <div class="error-msg" id="editError"></div>
+    <div class="error-msg" id="editError" style="color:#b91c1c;margin-top:0.5rem;font-size:0.9rem;text-align:center;min-height:1.2rem;"></div>
   </div>
 </div>
 
@@ -272,8 +256,6 @@
 // ═══════════════════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════════════════
-var ADMIN_PASSWORD = "gesma2026";
-
 var firebaseConfig = {
   apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
   authDomain: "ai-project-tool.firebaseapp.com",
@@ -347,167 +329,85 @@ var GAMEPLAY_STUDENTS = [
 ];
 
 // ═══════════════════════════════════════════════════════════
-//  DOM
+//  DOM REFS
 // ═══════════════════════════════════════════════════════════
-var loginView, mainView, passwordInput, loginBtn, loginError;
-var rosterBody, rosterCount, searchInput, classFilter;
-var newStudentNumber, newFirstName, newLastName, newEmail, newClass, addStudentBtn, addMsg;
-var bulkInput, bulkBtn, bulkMsg, bulkClass;
-var seedAdvBtn, seedGmpBtn, advCount, gmpCount;
-var exportBtn, wipeBtn, successBox;
-var editModal, editStudentNumber, editFirstName, editLastName, editEmail, editClass, saveEditBtn, editError;
+var rosterBody = document.getElementById('rosterBody');
+var rosterCount = document.getElementById('rosterCount');
+var searchInput = document.getElementById('searchInput');
+var classFilter = document.getElementById('classFilter');
+var newStudentNumber = document.getElementById('newStudentNumber');
+var newFirstName = document.getElementById('newFirstName');
+var newLastName = document.getElementById('newLastName');
+var newEmail = document.getElementById('newEmail');
+var newClass = document.getElementById('newClass');
+var addStudentBtn = document.getElementById('addStudentBtn');
+var addMsg = document.getElementById('addMsg');
+var bulkInput = document.getElementById('bulkInput');
+var bulkBtn = document.getElementById('bulkBtn');
+var bulkMsg = document.getElementById('bulkMsg');
+var bulkClass = document.getElementById('bulkClass');
+var seedAdvBtn = document.getElementById('seedAdvBtn');
+var seedGmpBtn = document.getElementById('seedGmpBtn');
+var advCount = document.getElementById('advCount');
+var gmpCount = document.getElementById('gmpCount');
+var exportBtn = document.getElementById('exportBtn');
+var wipeBtn = document.getElementById('wipeBtn');
+var successBox = document.getElementById('successBox');
+var editModal = document.getElementById('editModal');
+var editStudentNumber = document.getElementById('editStudentNumber');
+var editFirstName = document.getElementById('editFirstName');
+var editLastName = document.getElementById('editLastName');
+var editEmail = document.getElementById('editEmail');
+var editClass = document.getElementById('editClass');
+var saveEditBtn = document.getElementById('saveEditBtn');
+var editError = document.getElementById('editError');
 
 var studentsCache = {};
 var rosterListener = null;
 var editingKey = null;
 
 // ═══════════════════════════════════════════════════════════
-//  INIT
+//  INIT — runs on load
 // ═══════════════════════════════════════════════════════════
-function init() {
-  loginView = document.getElementById('loginView');
-  mainView = document.getElementById('mainView');
-  passwordInput = document.getElementById('passwordInput');
-  loginBtn = document.getElementById('loginBtn');
-  loginError = document.getElementById('loginError');
-  rosterBody = document.getElementById('rosterBody');
-  rosterCount = document.getElementById('rosterCount');
-  searchInput = document.getElementById('searchInput');
-  classFilter = document.getElementById('classFilter');
-  newStudentNumber = document.getElementById('newStudentNumber');
-  newFirstName = document.getElementById('newFirstName');
-  newLastName = document.getElementById('newLastName');
-  newEmail = document.getElementById('newEmail');
-  newClass = document.getElementById('newClass');
-  addStudentBtn = document.getElementById('addStudentBtn');
-  addMsg = document.getElementById('addMsg');
-  bulkInput = document.getElementById('bulkInput');
-  bulkBtn = document.getElementById('bulkBtn');
-  bulkMsg = document.getElementById('bulkMsg');
-  bulkClass = document.getElementById('bulkClass');
-  seedAdvBtn = document.getElementById('seedAdvBtn');
-  seedGmpBtn = document.getElementById('seedGmpBtn');
-  advCount = document.getElementById('advCount');
-  gmpCount = document.getElementById('gmpCount');
-  exportBtn = document.getElementById('exportBtn');
-  wipeBtn = document.getElementById('wipeBtn');
-  successBox = document.getElementById('successBox');
-  editModal = document.getElementById('editModal');
-  editStudentNumber = document.getElementById('editStudentNumber');
-  editFirstName = document.getElementById('editFirstName');
-  editLastName = document.getElementById('editLastName');
-  editEmail = document.getElementById('editEmail');
-  editClass = document.getElementById('editClass');
-  saveEditBtn = document.getElementById('saveEditBtn');
-  editError = document.getElementById('editError');
+advCount.textContent = ADVANCED_STUDENTS.length + ' students';
+gmpCount.textContent = GAMEPLAY_STUDENTS.length === 0
+  ? 'no students yet'
+  : GAMEPLAY_STUDENTS.length + ' students';
 
-  advCount.textContent = ADVANCED_STUDENTS.length + ' students';
-  gmpCount.textContent = GAMEPLAY_STUDENTS.length === 0 ? 'no students yet' : GAMEPLAY_STUDENTS.length + ' students';
-
-  // Login handlers
-  loginBtn.addEventListener('click', doLogin);
-  passwordInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') doLogin();
-  });
-
-  // Seed buttons
-  seedAdvBtn.addEventListener('click', function() {
-    seedClass(ADVANCED_STUDENTS, 'advanced', 'Advanced Programming', seedAdvBtn, 'Load Advanced');
-  });
-  seedGmpBtn.addEventListener('click', function() {
-    if (GAMEPLAY_STUDENTS.length === 0) {
-      alert('No Gameplay students in the source list.');
-      return;
-    }
-    seedClass(GAMEPLAY_STUDENTS, 'gameplay', 'Gameplay', seedGmpBtn, 'Load Gameplay');
-  });
-
-  // Add single
-  addStudentBtn.addEventListener('click', addSingleStudent);
-
-  // Bulk
-  bulkBtn.addEventListener('click', bulkAdd);
-
-  // Filters
-  searchInput.addEventListener('input', renderRoster);
-  classFilter.addEventListener('change', renderRoster);
-
-  // Export / Wipe
-  exportBtn.addEventListener('click', exportExcel);
-  wipeBtn.addEventListener('click', wipeAll);
-
-  // Edit modal
-  saveEditBtn.addEventListener('click', saveEdit);
-  editModal.addEventListener('click', function(e) {
-    if (e.target === editModal) closeEdit();
-  });
-
-  // Auto-login if session is set
-  if (sessionStorage.getItem('load_students_auth') === 'true') {
-    showMain();
-  }
-}
+// Roster listener
+rosterListener = db.ref('students');
+rosterListener.on('value', function(snap) {
+  studentsCache = snap.val() || {};
+  renderRoster();
+}, function(err) {
+  console.error('Roster read error:', err);
+  rosterBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#b91c1c;">❌ Error reading roster: ' + escapeHtml(err.message) + '</td></tr>';
+});
 
 // ═══════════════════════════════════════════════════════════
-//  LOGIN
-// ═══════════════════════════════════════════════════════════
-function doLogin() {
-  var entered = passwordInput.value;
-  if (entered === ADMIN_PASSWORD) {
-    sessionStorage.setItem('load_students_auth', 'true');
-    loginError.textContent = '';
-    showMain();
-  } else {
-    loginError.textContent = '❌ Incorrect password.';
-    passwordInput.value = '';
-    passwordInput.focus();
-  }
-}
-
-function showMain() {
-  loginView.classList.add('hidden');
-  mainView.classList.remove('hidden');
-  attachRosterListener();
-}
-
-// ═══════════════════════════════════════════════════════════
-//  ROSTER LISTENER
-// ═══════════════════════════════════════════════════════════
-function attachRosterListener() {
-  if (rosterListener) rosterListener.off();
-  rosterListener = db.ref('students');
-  rosterListener.on('value', function(snap) {
-    studentsCache = snap.val() || {};
-    renderRoster();
-  }, function(err) {
-    console.error('Roster read error:', err);
-    rosterBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#b91c1c;">❌ Error reading roster: ' + escapeHtml(err.message) + '</td></tr>';
-  });
-}
-
-// ═══════════════════════════════════════════════════════════
-//  RENDER
+//  RENDER ROSTER
 // ═══════════════════════════════════════════════════════════
 function renderRoster() {
   var q = searchInput.value.trim().toLowerCase();
   var filter = classFilter.value;
 
-  var entries = Object.keys(studentsCache).map(function(key) {
+  var entries = [];
+  Object.keys(studentsCache).forEach(function(key) {
     var s = studentsCache[key];
-    return {
+    entries.push({
       key: key,
       studentNumber: s.studentNumber || '',
       firstName: s.firstName || '',
       lastName: s.lastName || '',
       email: s.email || '',
-      class: s.class || ''
-    };
+      cls: s.class || ''
+    });
   });
 
   entries = entries.filter(function(s) {
     if (filter) {
-      if (filter === '__none__' && s.class) return false;
-      if (filter !== '__none__' && s.class !== filter) return false;
+      if (filter === '__none__' && s.cls) return false;
+      if (filter !== '__none__' && s.cls !== filter) return false;
     }
     if (!q) return true;
     return (
@@ -527,17 +427,17 @@ function renderRoster() {
 
   if (entries.length === 0) {
     var msg = Object.keys(studentsCache).length === 0
-      ? 'No students yet. Click a "Load …" button above, or add one manually.'
+      ? 'No students yet. Click a "Load ..." button above or add one manually.'
       : 'No matches.';
-    rosterBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#5b7b9c;">' + msg + '</td></tr>';
+    rosterBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#5b7b9c;">' + msg + '</td></tr>';
     return;
   }
 
   var html = '';
   entries.forEach(function(s, i) {
     var clsPill;
-    if (s.class === 'advanced') clsPill = '<span class="class-pill pill-advanced">💻 Advanced</span>';
-    else if (s.class === 'gameplay') clsPill = '<span class="class-pill pill-gameplay">🎮 Gameplay</span>';
+    if (s.cls === 'advanced') clsPill = '<span class="class-pill pill-advanced">💻 Advanced</span>';
+    else if (s.cls === 'gameplay') clsPill = '<span class="class-pill pill-gameplay">🎮 Gameplay</span>';
     else clsPill = '<span class="class-pill pill-none">— None —</span>';
 
     html += '<tr>' +
@@ -556,9 +456,23 @@ function renderRoster() {
   rosterBody.innerHTML = html;
 }
 
+searchInput.addEventListener('input', renderRoster);
+classFilter.addEventListener('change', renderRoster);
+
 // ═══════════════════════════════════════════════════════════
-//  SEED
+//  SEED ROSTERS
 // ═══════════════════════════════════════════════════════════
+seedAdvBtn.addEventListener('click', function() {
+  seedClass(ADVANCED_STUDENTS, 'advanced', 'Advanced Programming', seedAdvBtn, 'Load Advanced');
+});
+seedGmpBtn.addEventListener('click', function() {
+  if (GAMEPLAY_STUDENTS.length === 0) {
+    alert('No Gameplay students in the source list.\n\nUse the bulk-add section below to add them.');
+    return;
+  }
+  seedClass(GAMEPLAY_STUDENTS, 'gameplay', 'Gameplay', seedGmpBtn, 'Load Gameplay');
+});
+
 function seedClass(list, classId, className, btn, btnText) {
   btn.disabled = true;
   btn.textContent = 'Loading…';
@@ -606,7 +520,7 @@ function seedClass(list, classId, className, btn, btnText) {
 // ═══════════════════════════════════════════════════════════
 //  ADD SINGLE
 // ═══════════════════════════════════════════════════════════
-function addSingleStudent() {
+addStudentBtn.addEventListener('click', function() {
   var num = newStudentNumber.value.trim();
   var first = newFirstName.value.trim();
   var last = newLastName.value.trim();
@@ -620,4 +534,231 @@ function addSingleStudent() {
 
   var key = num.toLowerCase();
   if (studentsCache[key]) {
-    addMsg.innerHTML = '<span style="color:#b91
+    addMsg.innerHTML = '<span style="color:#b91c1c;">⚠️ Student ' + escapeHtml(num) + ' already exists.</span>';
+    return;
+  }
+
+  addStudentBtn.disabled = true;
+  addStudentBtn.textContent = 'Adding…';
+
+  db.ref('students/' + key).set({
+    studentNumber: num,
+    firstName: first,
+    lastName: last,
+    email: email,
+    class: cls
+  }).then(function() {
+    addMsg.innerHTML = '<span style="color:#15803d;">✅ Added ' + escapeHtml(first) + ' ' + escapeHtml(last) + ' (' + escapeHtml(num) + ')</span>';
+    newStudentNumber.value = '';
+    newFirstName.value = '';
+    newLastName.value = '';
+    newEmail.value = '';
+    newStudentNumber.focus();
+    setTimeout(function() { addMsg.innerHTML = ''; }, 4000);
+  }).catch(function(e) {
+    addMsg.innerHTML = '<span style="color:#b91c1c;">❌ ' + escapeHtml(e.message) + '</span>';
+  }).then(function() {
+    addStudentBtn.disabled = false;
+    addStudentBtn.textContent = 'Add';
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+//  BULK ADD
+// ═══════════════════════════════════════════════════════════
+bulkBtn.addEventListener('click', function() {
+  var lines = bulkInput.value.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+  if (lines.length === 0) {
+    bulkMsg.innerHTML = '<span style="color:#b91c1c;">Nothing to add — paste some lines first.</span>';
+    return;
+  }
+
+  var updates = {};
+  var errors = [];
+  var added = 0, updated = 0;
+
+  lines.forEach(function(line, idx) {
+    var parts = line.split(',').map(function(p) { return p.trim(); });
+    if (parts.length < 3) {
+      errors.push('Line ' + (idx + 1) + ': needs at least studentNumber, firstName, lastName');
+      return;
+    }
+    var num = parts[0];
+    var first = parts[1];
+    var last = parts[2];
+    var email = parts[3] || '';
+    var cls = parts[4] || bulkClass.value || 'gameplay';
+
+    if (!num || !first || !last) {
+      errors.push('Line ' + (idx + 1) + ': missing fields');
+      return;
+    }
+    var key = num.toLowerCase();
+    if (studentsCache[key]) updated++; else added++;
+    updates[key] = {
+      studentNumber: num,
+      firstName: first,
+      lastName: last,
+      email: email,
+      class: cls
+    };
+  });
+
+  if (Object.keys(updates).length === 0) {
+    bulkMsg.innerHTML = '<span style="color:#b91c1c;">No valid lines to add.</span>';
+    return;
+  }
+
+  bulkBtn.disabled = true;
+  bulkBtn.textContent = 'Adding…';
+
+  db.ref('students').update(updates).then(function() {
+    bulkMsg.innerHTML = '<span style="color:#15803d;">✅ Added ' + added + ', updated ' + updated +
+      (errors.length ? ' — ' + errors.length + ' skipped' : '') + '.</span>' +
+      (errors.length ? '<br><span style="color:#92400e;font-size:0.85rem;">' + errors.map(escapeHtml).join('<br>') + '</span>' : '');
+    bulkInput.value = '';
+    setTimeout(function() { bulkMsg.innerHTML = ''; }, 6000);
+  }).catch(function(e) {
+    bulkMsg.innerHTML = '<span style="color:#b91c1c;">❌ ' + escapeHtml(e.message) + '</span>';
+  }).then(function() {
+    bulkBtn.disabled = false;
+    bulkBtn.textContent = 'Add all lines';
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+//  EDIT
+// ═══════════════════════════════════════════════════════════
+function openEdit(key) {
+  var s = studentsCache[key];
+  if (!s) return;
+  editingKey = key;
+  editStudentNumber.value = s.studentNumber || key;
+  editFirstName.value = s.firstName || '';
+  editLastName.value = s.lastName || '';
+  editEmail.value = s.email || '';
+  editClass.value = s.class || '';
+  editError.textContent = '';
+  editModal.classList.add('show');
+  editFirstName.focus();
+}
+window.openEdit = openEdit;
+
+function closeEdit() {
+  editModal.classList.remove('show');
+  editingKey = null;
+}
+window.closeEdit = closeEdit;
+
+saveEditBtn.addEventListener('click', function() {
+  if (!editingKey) return;
+  var first = editFirstName.value.trim();
+  var last = editLastName.value.trim();
+  var email = editEmail.value.trim();
+  var cls = editClass.value;
+
+  if (!first || !last) {
+    editError.textContent = '⚠️ First and last name are required.';
+    return;
+  }
+
+  saveEditBtn.disabled = true;
+  saveEditBtn.textContent = 'Saving…';
+
+  db.ref('students/' + editingKey).update({
+    firstName: first,
+    lastName: last,
+    email: email,
+    class: cls
+  }).then(function() {
+    closeEdit();
+  }).catch(function(e) {
+    editError.textContent = '❌ ' + e.message;
+  }).then(function() {
+    saveEditBtn.disabled = false;
+    saveEditBtn.textContent = 'Save';
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+//  DELETE
+// ═══════════════════════════════════════════════════════════
+function deleteStudent(key, num) {
+  if (!confirm('Delete student "' + num + '"?')) return;
+  db.ref('students/' + key).remove().catch(function(e) {
+    alert('Error: ' + e.message);
+  });
+}
+window.deleteStudent = deleteStudent;
+
+// ═══════════════════════════════════════════════════════════
+//  EXPORT
+// ═══════════════════════════════════════════════════════════
+exportBtn.addEventListener('click', function() {
+  var entries = Object.keys(studentsCache).map(function(k) {
+    return { key: k, data: studentsCache[k] };
+  });
+  if (entries.length === 0) { alert('No students to export.'); return; }
+
+  var rows = [['#', 'Student Number', 'First Name', 'Last Name', 'Email', 'Class']];
+  entries
+    .map(function(e) { return Object.assign({ key: e.key }, e.data); })
+    .sort(function(a, b) { return (a.lastName || '').localeCompare(b.lastName || ''); })
+    .forEach(function(s, i) {
+      rows.push([
+        i + 1,
+        s.studentNumber || '',
+        s.firstName || '',
+        s.lastName || '',
+        s.email || '',
+        s.class || ''
+      ]);
+    });
+
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:4},{wch:16},{wch:22},{wch:22},{wch:30},{wch:16}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Roster');
+  var stamp = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, 'GESMA_Roster_' + stamp + '.xlsx');
+});
+
+// ═══════════════════════════════════════════════════════════
+//  WIPE
+// ═══════════════════════════════════════════════════════════
+wipeBtn.addEventListener('click', function() {
+  var count = Object.keys(studentsCache).length;
+  if (count === 0) { alert('No students to wipe.'); return; }
+  if (!confirm('⚠️ DELETE ALL ' + count + ' students from Firebase?')) return;
+  if (!confirm('Are you absolutely sure? Click OK to confirm.')) return;
+  db.ref('students').remove().then(function() {
+    showSuccess('🗑️ Removed ' + count + ' students.');
+  }).catch(function(e) {
+    alert('Error: ' + e.message);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function showSuccess(msg) {
+  successBox.textContent = msg;
+  successBox.classList.remove('hidden');
+  clearTimeout(showSuccess._t);
+  showSuccess._t = setTimeout(function() {
+    successBox.classList.add('hidden');
+  }, 5000);
+}
+
+// Close modal on background click
+editModal.addEventListener('click', function(e) {
+  if (e.target === editModal) closeEdit();
+});
+</script>
+</body>
+</html>
