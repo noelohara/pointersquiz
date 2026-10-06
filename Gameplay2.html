@@ -360,64 +360,60 @@ registerBtn.addEventListener('click', async () => {
       isRegistering = false; setLoading(false); return;
     }
 
-    // Generate group ID + password
-    const groupId = makeGroupId();
-    const password = generatePassword();
-    const groupName = `${st1.firstName} ${st1.lastName} & ${st2.firstName} ${st2.lastName}`;
-    const projectName = allProjects.find(p => p.id === selectedProjectId)?.name || selectedProjectId;
+    // Generate group ID (no password — first login sets it)
+const groupId = makeGroupId();
+const groupName = `${st1.firstName} ${st1.lastName} & ${st2.firstName} ${st2.lastName}`;
+const projectName = allProjects.find(p => p.id === selectedProjectId)?.name || selectedProjectId;
 
-    // Transaction: claim project
-    const ref = db.ref(`classes/${CLASS_ID}/selections/${selectedProjectId}`);
-    const result = await ref.transaction(cur => {
-      if (cur === null) {
-        return {
-          groupId,
-          groupName,
-          student1: s1,
-          student2: s2,
-          student1Name: `${st1.firstName} ${st1.lastName}`,
-          student2Name: `${st2.firstName} ${st2.lastName}`,
-          class: CLASS_NAME,
-          timestamp: Date.now()
-        };
-      }
-      return; // abort
-    });
-
-    if (!result.committed) {
-      showMessage('Sorry — that project was taken by another team. Pick another.', 'error');
-      selectedProjectId = null; renderProjects();
-      isRegistering = false; setLoading(false); return;
-    }
-
-    // Create group record
-    await db.ref(`groups/${groupId}`).set({
+// Transaction: claim project
+const ref = db.ref(`classes/${CLASS_ID}/selections/${selectedProjectId}`);
+const result = await ref.transaction(cur => {
+  if (cur === null) {
+    return {
       groupId,
       groupName,
-      class: CLASS_ID,
-      className: CLASS_NAME,
-      projectId: selectedProjectId,
-      projectName,
       student1: s1,
       student2: s2,
       student1Name: `${st1.firstName} ${st1.lastName}`,
       student2Name: `${st2.firstName} ${st2.lastName}`,
-      password,
-      mustChangePassword: true,
-      createdAt: Date.now(),
-      screencasts: {},
-      githubLink: ''
-    });
+      class: CLASS_NAME,
+      timestamp: Date.now()
+    };
+  }
+  return; // abort
+});
 
-    showMessage(
-      `✅ Registered!\n\nGroup: ${groupName}\nProject: ${projectName}\n\n` +
-      `🔑 YOUR LOGIN DETAILS:\n` +
-      `Student number: ${s1} (or ${s2})\n` +
-      `Password: ${password}\n\n` +
-      `👉 Save this! Go to group.html to log in.\n` +
-      `You'll be asked to change this password on first login.`,
-      'success'
-    );
+if (!result.committed) {
+  showMessage('Sorry — that project was taken by another team. Pick another.', 'error');
+  selectedProjectId = null; renderProjects();
+  isRegistering = false; setLoading(false); return;
+}
+
+// Create group record — password left BLANK
+await db.ref(`groups/${groupId}`).set({
+  groupId,
+  groupName,
+  class: CLASS_ID,
+  className: CLASS_NAME,
+  projectId: selectedProjectId,
+  projectName,
+  student1: s1,
+  student2: s2,
+  student1Name: `${st1.firstName} ${st1.lastName}`,
+  student2Name: `${st2.firstName} ${st2.lastName}`,
+  password: '',              // ← blank until first login
+  createdAt: Date.now(),
+  screencasts: {},
+  githubLink: ''
+});
+
+showMessage(
+  `✅ Registered!\n\nGroup: ${groupName}\nProject: ${projectName}\n\n` +
+  `🔑 NEXT STEP:\n` +
+  `Go to group.html and log in with your student number\n` +
+  `(${s1} or ${s2}) — you'll be asked to create a password.`,
+  'success'
+);
     clearForm();
     selectedProjectId = null;
     updateBanner();
