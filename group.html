@@ -13,7 +13,7 @@
       min-height: 100vh; padding: 2rem 1.5rem; color: #1f2a3a; }
     .container { max-width: 1050px; margin: 0 auto; }
 
-    /* LOGIN */
+    /* LOGIN CARD */
     #loginView { max-width: 440px; margin: 5rem auto; text-align: center;
       background: white; padding: 2.5rem 2rem; border-radius: 26px;
       box-shadow: 0 20px 40px -12px rgba(0,30,60,0.18); }
@@ -35,8 +35,7 @@
     .btn-secondary { background: #e2e8f0; color: #1e2e44; box-shadow: none; }
     .btn-secondary:hover { background: #cfdae6; }
     .btn-sm { padding: 0.5rem 1.2rem; font-size: 0.85rem; }
-    .btn-danger { background: #b91c1c; }
-    .btn-danger:hover { background: #8b1e2b; }
+    .btn-block { width: 100%; }
     .error-msg { color: #b91c1c; margin-top: 0.5rem; font-size: 0.9rem;
       min-height: 1.2rem; font-weight: 500; }
 
@@ -74,7 +73,6 @@
       color: #5b7b9c; font-weight: 700; margin-bottom: 0.3rem; }
     .info-value { font-size: 1.05rem; font-weight: 600; color: #0b2b4f; }
 
-    /* SCREENCASTS */
     .screencast-form { display: flex; flex-direction: column; gap: 0.8rem; }
     .input-row { display: flex; gap: 0.7rem; flex-wrap: wrap; }
     .input-row input { flex: 1 1 200px; padding: 0.85rem 1.2rem; border-radius: 60px;
@@ -115,8 +113,9 @@
 
     /* MODAL */
     .modal-bg { position: fixed; inset: 0; background: rgba(10,20,35,0.65);
-      display: flex; align-items: center; justify-content: center;
+      display: none; align-items: center; justify-content: center;
       padding: 1.5rem; z-index: 999; }
+    .modal-bg.show { display: flex; }
     .modal { background: white; border-radius: 22px; padding: 2rem;
       max-width: 480px; width: 100%; text-align: center;
       box-shadow: 0 30px 60px -20px rgba(0,20,40,0.4); }
@@ -135,10 +134,10 @@
   <div id="loginView">
     <div class="icon">🎓</div>
     <h2>Team Login</h2>
-    <p>Enter your student number and password</p>
+    <p id="loginSubtitle">Enter your student number</p>
     <input type="text" id="studentNumber" placeholder="Student number" autocomplete="off">
-    <input type="password" id="groupPassword" placeholder="Password" autocomplete="off">
-    <button class="btn" id="loginBtn" style="width:100%;">Log in</button>
+    <input type="password" id="groupPassword" placeholder="Password" autocomplete="off" style="display:none;">
+    <button class="btn btn-block" id="loginBtn">Continue</button>
     <div class="error-msg" id="loginError"></div>
   </div>
 
@@ -179,7 +178,7 @@
     <div class="card">
       <h3>🎬 Screencasts <span class="count" id="scCount">0</span></h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
-        Paste a <strong>public OneDrive share link</strong> to your screencast. Both team members can add.
+        Paste a <strong>public OneDrive share link</strong> to your screencast. Either team member can add.
       </p>
       <div class="screencast-form">
         <div class="input-row">
@@ -189,7 +188,7 @@
         </div>
       </div>
       <div id="scList" class="screencast-grid"></div>
-      <div id="scEmpty" class="placeholder" style="margin-top:1rem; display:none;">
+      <div id="scEmpty" class="placeholder" style="margin-top:1rem;">
         No screencasts yet. Add your first one above.
       </div>
     </div>
@@ -208,14 +207,14 @@
   </div>
 </div>
 
-<!-- CHANGE PASSWORD MODAL -->
-<div id="pwdModal" class="modal-bg hidden">
+<!-- CREATE PASSWORD MODAL (first login) -->
+<div id="pwdModal" class="modal-bg">
   <div class="modal">
-    <h3>🔐 Change your password</h3>
-    <p>For security, please set a new password before continuing.</p>
+    <h3>🔐 Create your team password</h3>
+    <p>Welcome! Choose a password that both team members will use to log in.</p>
     <input type="password" id="newPwd" placeholder="New password (min 6 chars)">
     <input type="password" id="newPwd2" placeholder="Repeat new password">
-    <button class="btn" id="savePwdBtn" style="width:100%;">Save new password</button>
+    <button class="btn btn-block" id="savePwdBtn">Save password &amp; continue</button>
     <div class="error-msg" id="pwdError"></div>
   </div>
 </div>
@@ -246,6 +245,7 @@ const dashboardView = document.getElementById('dashboardView');
 const studentNumberInput = document.getElementById('studentNumber');
 const groupPasswordInput = document.getElementById('groupPassword');
 const loginBtn = document.getElementById('loginBtn');
+const loginSubtitle = document.getElementById('loginSubtitle');
 const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
 const greeting = document.getElementById('greeting');
@@ -272,6 +272,8 @@ const pwdError = document.getElementById('pwdError');
 
 let currentGroup = null;
 let groupListener = null;
+let pendingGroup = null;   // group awaiting password creation
+let expectingPassword = false;
 
 // ═══════════════════════════════════════════════════════════
 //  LOGIN
@@ -283,10 +285,8 @@ loginBtn.addEventListener('click', doLogin);
 
 async function doLogin() {
   const studentNum = studentNumberInput.value.trim();
-  const password = groupPasswordInput.value.trim();
-
-  if (!studentNum || !password) {
-    loginError.textContent = 'Please enter both fields.';
+  if (!studentNum) {
+    loginError.textContent = 'Please enter your student number.';
     return;
   }
 
@@ -295,47 +295,81 @@ async function doLogin() {
   loginError.textContent = '';
 
   try {
-    const snap = await db.ref('groups').once('value');
-    const groups = snap.val() || {};
     const numLower = studentNum.toLowerCase();
 
+    // Step 1: find a group whose student1 or student2 matches
+    const snap = await db.ref('groups').once('value');
+    const groups = snap.val() || {};
     let match = null;
+
     for (const [groupId, g] of Object.entries(groups)) {
       const s1 = (g.student1 || '').toLowerCase();
       const s2 = (g.student2 || '').toLowerCase();
-      if ((s1 === numLower || s2 === numLower) && g.password === password) {
+      if (s1 === numLower || s2 === numLower) {
         match = { groupId, ...g };
         break;
       }
     }
 
     if (!match) {
-      loginError.textContent = '❌ Invalid student number or password.';
+      loginError.textContent = '❌ Student number not found. Have you registered your team yet?';
       loginBtn.disabled = false;
-      loginBtn.textContent = 'Log in';
+      loginBtn.textContent = 'Continue';
       return;
     }
 
-    sessionStorage.setItem('group_session', JSON.stringify({
-      groupId: match.groupId
-    }));
+    // Step 2: if this group has no password yet → ask them to create one
+    if (!match.password) {
+      // First login — show password creation modal
+      pendingGroup = match;
+      pwdModal.classList.add('show');
+      newPwd.value = '';
+      newPwd2.value = '';
+      pwdError.textContent = '';
+      newPwd.focus();
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Continue';
+      return;
+    }
 
+    // Step 3: password exists → require it now
+    if (!expectingPassword) {
+      // First press — reveal the password field
+      expectingPassword = true;
+      groupPasswordInput.style.display = 'block';
+      loginSubtitle.textContent = 'Enter your password';
+      loginBtn.textContent = 'Log in';
+      loginBtn.disabled = false;
+      groupPasswordInput.focus();
+      return;
+    }
+
+    // Step 4: verify password
+    const enteredPwd = groupPasswordInput.value.trim();
+    if (enteredPwd !== match.password) {
+      loginError.textContent = '❌ Incorrect password.';
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Log in';
+      groupPasswordInput.value = '';
+      groupPasswordInput.focus();
+      return;
+    }
+
+    // Success!
+    sessionStorage.setItem('group_session', JSON.stringify({ groupId: match.groupId }));
     currentGroup = match;
     showDashboard(match);
 
-    if (match.mustChangePassword) {
-      pwdModal.classList.remove('hidden');
-    }
   } catch (e) {
     console.error(e);
     loginError.textContent = 'Error: ' + e.message;
     loginBtn.disabled = false;
-    loginBtn.textContent = 'Log in';
+    loginBtn.textContent = 'Continue';
   }
 }
 
 // ═══════════════════════════════════════════════════════════
-//  CHANGE PASSWORD
+//  CREATE PASSWORD (first login)
 // ═══════════════════════════════════════════════════════════
 savePwdBtn.addEventListener('click', async () => {
   const p1 = newPwd.value.trim();
@@ -344,26 +378,28 @@ savePwdBtn.addEventListener('click', async () => {
   if (p1 !== p2) { pwdError.textContent = 'Passwords do not match.'; return; }
   if (p1 === '123456') { pwdError.textContent = 'Please choose a different password.'; return; }
 
+  if (!pendingGroup) return;
+
   savePwdBtn.disabled = true;
   savePwdBtn.textContent = 'Saving…';
 
   try {
-    await db.ref(`groups/${currentGroup.groupId}`).update({
+    await db.ref(`groups/${pendingGroup.groupId}`).update({
       password: p1,
       mustChangePassword: false,
-      passwordChangedAt: Date.now()
+      passwordSetAt: Date.now()
     });
-    currentGroup.password = p1;
-    currentGroup.mustChangePassword = false;
-    pwdModal.classList.add('hidden');
-    newPwd.value = '';
-    newPwd2.value = '';
-    pwdError.textContent = '';
+
+    // Log them straight in
+    currentGroup = { ...pendingGroup, password: p1 };
+    sessionStorage.setItem('group_session', JSON.stringify({ groupId: currentGroup.groupId }));
+    pwdModal.classList.remove('show');
+    pendingGroup = null;
+    showDashboard(currentGroup);
   } catch (e) {
     pwdError.textContent = 'Error: ' + e.message;
-  } finally {
     savePwdBtn.disabled = false;
-    savePwdBtn.textContent = 'Save new password';
+    savePwdBtn.textContent = 'Save password & continue';
   }
 });
 
@@ -379,7 +415,7 @@ function showDashboard(group) {
   if (group.projectCategory) projectCategory.style.display = 'inline-block';
 
   const classLabel = group.class === 'gameplay' ? 'Gameplay' : 'Advanced Programming';
-  greeting.textContent = `Hi ${group.student1Name || group.student1} & ${group.student2Name || group.student2} 👋`;
+  greeting.textContent = `Hi ${group.student1} & ${group.student2} 👋`;
   classSubtitle.textContent = classLabel;
   student1Val.textContent = group.student1;
   student2Val.textContent = group.student2;
@@ -387,7 +423,6 @@ function showDashboard(group) {
   githubInput.value = group.githubLink || '';
   renderGithubStatus();
 
-  // Load screencasts + listen for changes
   if (groupListener) groupListener.off();
   groupListener = db.ref(`groups/${group.groupId}`);
   groupListener.on('value', snap => {
@@ -481,18 +516,13 @@ async function deleteSc(id) {
 }
 window.deleteSc = deleteSc;
 
-// Convert OneDrive share link → embeddable iframe URL
 function oneDriveEmbed(url) {
   if (!url) return null;
   try {
-    // Case 1: 1drv.ms short link → can't convert easily; use direct iframe of share link
     if (url.includes('1drv.ms')) {
-      // OneDrive short links work in an iframe with ?embed=1 sometimes; fallback ok
       return url + (url.includes('?') ? '&' : '?') + 'embed=1';
     }
-    // Case 2: onedrive.live.com/embed?resid=...  → already an embed
     if (url.includes('onedrive.live.com/embed')) return url;
-    // Case 3: onedrive.live.com/...?resid=XXX → convert
     if (url.includes('onedrive.live.com')) {
       const u = new URL(url);
       const resid = u.searchParams.get('resid');
@@ -545,13 +575,17 @@ logoutBtn.addEventListener('click', () => {
   sessionStorage.removeItem('group_session');
   if (groupListener) { groupListener.off(); groupListener = null; }
   currentGroup = null;
+  pendingGroup = null;
+  expectingPassword = false;
   dashboardView.classList.add('hidden');
   loginView.classList.remove('hidden');
   studentNumberInput.value = '';
   groupPasswordInput.value = '';
+  groupPasswordInput.style.display = 'none';
+  loginSubtitle.textContent = 'Enter your student number';
   loginError.textContent = '';
   loginBtn.disabled = false;
-  loginBtn.textContent = 'Log in';
+  loginBtn.textContent = 'Continue';
   studentNumberInput.focus();
 });
 
@@ -565,7 +599,7 @@ function escapeHtml(s) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  AUTO-LOGIN
+//  AUTO-LOGIN (if session exists)
 // ═══════════════════════════════════════════════════════════
 (function init() {
   const saved = sessionStorage.getItem('group_session');
