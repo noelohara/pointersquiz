@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Students · Admin</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(145deg, #eef2f7 0%, #dde6f0 100%);
+      min-height: 100vh; padding: 2rem 1.5rem; color: #1f2a3a; }
+    .container { max-width: 1150px; margin: 0 auto; }
+
+    header { text-align: center; margin-bottom: 2rem; }
+    header h1 { font-size: 2rem; color: #0b2b4f; }
+    header p { color: #5b7b9c; margin-top: 0.3rem; }
+
+    .card { background: white; border-radius: 22px; padding: 2rem;
+      box-shadow: 0 20px 40px -14px rgba(0,30,60,0.15);
+      margin-bottom: 1.5rem; }
+
+    input[type="password"], input[type="text"], input[type="email"], select {
+      width: 100%; padding: 0.95rem 1.3rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-size: 1rem; font-family: inherit;
+      outline: none; margin-bottom: 0.9rem; background: white;
+    }
+    input:focus, select:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
+
+    .btn { background: #1e4c7a; color: white; font-weight: 600; border: none;
+      padding: 0.95rem 2rem; border-radius: 60px; font-size: 1rem;
+      cursor: pointer; font-family: inherit; transition: all 0.15s;
+      box-shadow: 0 8px 16px -4px rgba(20,60,110,0.3); }
+    .btn:hover { background: #123a5e; }
+    .btn:disabled { opacity: 0.5; pointer-events: none; }
+    .btn-block { width: 100%; }
+    .btn-secondary { background: #e2e8f0; color: #1e2e44; box-shadow: none; }
+    .btn-secondary:hover { background: #cfdae6; }
+    .btn-danger { background: #b91c1c; }
+    .btn-danger:hover { background: #8b1e2b; }
+    .btn-success { background: #1f7a3e; }
+    .btn-success:hover { background: #155c2d; }
+    .btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; }
+
+    .error-msg { color: #b91c1c; margin-top: 0.5rem; font-size: 0.9rem;
+      min-height: 1.2rem; font-weight: 500; text-align: center; }
+
+    .toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem;
+      align-items: center; }
+    .search-input { flex: 1 1 240px; padding: 0.7rem 1.3rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.95rem;
+      outline: none; }
+    .filter-select { padding: 0.7rem 1.3rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.95rem;
+      outline: none; background: white; }
+
+    table { width: 100%; border-collapse: collapse; background: white;
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0,20,40,0.05); }
+    th { background: #1e4c7a; color: white; padding: 12px 14px;
+      text-align: left; font-size: 0.73rem; text-transform: uppercase;
+      letter-spacing: 0.6px; font-weight: 700; }
+    td { padding: 12px 14px; border-bottom: 1px solid #eef2f7; font-size: 0.92rem; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f6faff; }
+    .icon-btn { background: transparent; border: none; cursor: pointer;
+      font-size: 1.05rem; padding: 0.35rem 0.55rem; border-radius: 10px;
+      transition: background 0.15s; }
+    .icon-btn:hover { background: #e6eef8; }
+    .icon-btn.danger:hover { background: #fee2e2; }
+
+    .info-box { background: #d9e8f7; border-radius: 14px; padding: 1rem 1.2rem;
+      color: #0b2b4f; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5; }
+    .success-box { background: #d4edda; border-radius: 14px; padding: 1rem 1.2rem;
+      color: #155724; font-size: 0.95rem; font-weight: 600; margin-top: 1rem; }
+    .hidden { display: none !important; }
+
+    .count-badge { display: inline-block; background: #1e4c7a; color: white;
+      padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.8rem;
+      font-weight: 700; margin-left: 0.5rem; }
+
+    .card-title { font-size: 1.2rem; font-weight: 700; color: #0b2b4f;
+      margin-bottom: 1rem; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 0.8rem; }
+
+    .add-grid { display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1.2fr 1fr auto; gap: 0.7rem;
+      align-items: start; }
+    @media (max-width: 950px) { .add-grid { grid-template-columns: 1fr; } }
+    .add-grid input, .add-grid select { margin-bottom: 0; }
+
+    .bulk-textarea { width: 100%; min-height: 120px; padding: 1rem;
+      border-radius: 16px; border: 1.5px solid #cbd5e1;
+      font-family: 'Courier New', monospace; font-size: 0.9rem;
+      outline: none; resize: vertical; }
+    .bulk-textarea:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
+
+    .class-pill { display: inline-block; font-size: 0.7rem; padding: 0.2rem 0.7rem;
+      border-radius: 20px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.4px; }
+    .pill-advanced { background: #e0e7ff; color: #3730a3; }
+    .pill-gameplay { background: #fef3c7; color: #92400e; }
+    .pill-none { background: #f1f5f9; color: #64748b; }
+
+    .seed-grid { display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.8rem; margin-bottom: 1.2rem; }
+    .seed-card { background: #f6faff; border: 2px solid #d5e0ec;
+      border-radius: 16px; padding: 1rem 1.2rem;
+      display: flex; flex-direction: column; gap: 0.6rem; }
+    .seed-card h4 { font-size: 0.95rem; color: #0b2b4f; }
+    .seed-card .desc { font-size: 0.8rem; color: #5b7b9c; flex: 1; }
+    .seed-card .count { font-size: 0.75rem; color: #5b7b9c; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .modal-bg { position: fixed; inset: 0; background: rgba(10,20,35,0.65);
+      display: none; align-items: center; justify-content: center;
+      padding: 1.5rem; z-index: 1000; }
+    .modal-bg.show { display: flex; }
+    .modal { background: white; border-radius: 22px; padding: 2rem;
+      max-width: 480px; width: 100%;
+      box-shadow: 0 30px 60px -20px rgba(0,20,40,0.5); }
+    .modal h3 { color: #0b2b4f; margin-bottom: 1rem; font-size: 1.3rem; }
+    .modal .row { margin-bottom: 0.9rem; }
+    .modal label { display: block; font-size: 0.75rem; text-transform: uppercase;
+      letter-spacing: 0.5px; color: #2b4b6e; font-weight: 700;
+      margin-bottom: 0.3rem; }
+    .modal input, .modal select { margin-bottom: 0; }
+    .modal-actions { display: flex; gap: 0.6rem; margin-top: 1rem; }
+    .modal-actions .btn { flex: 1; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>👥 Manage Students</h1>
+    <p>Add, edit, and view the GESMA roster</p>
+  </header>
+
+  <!-- LOGIN -->
+  <div class="card" id="loginView">
+    <h3 style="color:#0b2b4f; margin-bottom:0.5rem;">🔒 Admin Access</h3>
+    <p style="color:#5b7b9c; font-size:0.9rem; margin-bottom:1rem;">
+      Enter the admin password to continue.
+    </p>
+    <input type="password" id="passwordInput" placeholder="Admin password" autofocus>
+    <button class="btn btn-block" id="loginBtn">Unlock</button>
+    <div class="error-msg" id="loginError"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="mainView" class="hidden">
+
+    <!-- SEED ROSTER -->
+    <div class="card">
+      <div class="card-title">
+        <span>⬆️ Load starter rosters</span>
+      </div>
+      <div class="info-box">
+        Click a class below to add its students. Safe to re-run — only adds students that aren't already there. Existing students are never modified.
+      </div>
+      <div class="seed-grid">
+        <div class="seed-card">
+          <h4>💻 Advanced Programming</h4>
+          <div class="count" id="advCount">47 students</div>
+          <div class="desc">Loads the full Advanced Programming roster.</div>
+          <button class="btn btn-sm" id="seedAdvBtn">Load Advanced</button>
+        </div>
+        <div class="seed-card">
+          <h4>🎮 Gameplay</h4>
+          <div class="count" id="gmpCount">0 students</div>
+          <div class="desc">Add Gameplay students below first (edit the source).</div>
+          <button class="btn btn-sm" id="seedGmpBtn">Load Gameplay</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD STUDENT -->
+    <div class="card">
+      <div class="card-title">
+        <span>➕ Add a single student</span>
+      </div>
+      <div class="add-grid">
+        <input type="text" id="newStudentNumber" placeholder="Student number (e.g. c00338593)">
+        <input type="text" id="newFirstName" placeholder="First name">
+        <input type="text" id="newLastName" placeholder="Last name">
+        <input type="email" id="newEmail" placeholder="Email (optional)">
+        <select id="newClass">
+          <option value="advanced">💻 Advanced Programming</option>
+          <option value="gameplay">🎮 Gameplay</option>
+          <option value="">— No class —</option>
+        </select>
+        <button class="btn" id="addStudentBtn">Add</button>
+      </div>
+      <div id="addMsg" style="margin-top:0.7rem; font-size:0.9rem;"></div>
+    </div>
+
+    <!-- BULK ADD -->
+    <div class="card">
+      <div class="card-title">
+        <span>📥 Bulk add (paste multiple lines)</span>
+      </div>
+      <div class="info-box">
+        One student per line:<br>
+        <code>studentNumber, firstName, lastName, email(optional), class(optional)</code><br>
+        Class defaults to the value in the dropdown below.
+      </div>
+      <select id="bulkClass" style="margin-bottom:0.9rem;">
+        <option value="gameplay">🎮 Gameplay (default)</option>
+        <option value="advanced">💻 Advanced Programming</option>
+      </select>
+      <textarea class="bulk-textarea" id="bulkInput" placeholder="c00400001, John, Smith, , gameplay
+c00400002, Jane, Doe, , gameplay"></textarea>
+      <button class="btn" id="bulkBtn" style="margin-top:0.9rem;">Add all lines</button>
+      <div id="bulkMsg" style="margin-top:0.7rem; font-size:0.9rem;"></div>
+    </div>
+
+    <!-- ROSTER -->
+    <div class="card">
+      <div class="card-title">
+        <span>📋 Roster <span class="count-badge" id="rosterCount">0</span></span>
+        <div class="toolbar" style="margin-bottom:0;">
+          <button class="btn btn-secondary btn-sm" id="exportBtn">⬇️ Export Excel</button>
+          <button class="btn btn-danger btn-sm" id="wipeBtn">🗑️ Wipe all</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" class="search-input" id="searchInput"
+          placeholder="🔍 Search by name, student number, or email…">
+        <select class="filter-select" id="classFilter">
+          <option value="">All classes</option>
+          <option value="advanced">💻 Advanced Programming</option>
+          <option value="gameplay">🎮 Gameplay</option>
+          <option value="__none__">— No class —</option>
+        </select>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student Number</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Class</th>
+            <th style="width:120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rosterBody">
+          <tr><td colspan="7" style="text-align:center; padding:2rem; color:#5b7b9c;">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="success-box hidden" id="successBox"></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h3>✏️ Edit student</h3>
+    <div class="row">
+      <label>Student Number</label>
+      <input type="text" id="editStudentNumber" disabled>
+    </div>
+    <div class="row">
+      <label>First Name</label>
+      <input type="text" id="editFirstName">
+    </div>
+    <div class="row">
+      <label>Last Name</label>
+      <input type="text" id="editLastName">
+    </div>
+    <div class="row">
+      <label>Email</label>
+      <input type="email" id="editEmail">
+    </div>
+    <div class="row">
+      <label>Class</label>
+      <select id="editClass">
+        <option value="advanced">💻 Advanced Programming</option>
+        <option value="gameplay">🎮 Gameplay</option>
+        <option value="">— No class —</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeEdit()">Cancel</button>
+      <button class="btn" id="saveEditBtn">Save</button>
+    </div>
+    <div class="error-msg" id="editError"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════
+const ADMIN_PASSWORD = "gesma2026";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
+  authDomain: "ai-project-tool.firebaseapp.com",
+  databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ai-project-tool",
+  storageBucket: "ai-project-tool.firebasestorage.app",
+  messagingSenderId: "658331100512",
+  appId: "1:658331100512:web:72208dc0c1561b95bcaa05",
+  measurementId: "G-R36B3T9FLW"
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ═══════════════════════════════════════════════════════════
+//  STARTER ROSTERS
+// ═══════════════════════════════════════════════════════════
+
+// 47 Advanced Programming students
+const ADVANCED_STUDENTS = [
+  { firstName: "Ege", lastName: "Aksoy", studentNumber: "c00338593" },
+  { firstName: "Taemour", lastName: "Basharat", studentNumber: "c00295140" },
+  { firstName: "Daniel", lastName: "Belov", studentNumber: "c00306133" },
+  { firstName: "Mantas", lastName: "Bielevicius", studentNumber: "c00294564" },
+  { firstName: "Kobi", lastName: "Bourne", studentNumber: "c00249676" },
+  { firstName: "Emma", lastName: "Brennan", studentNumber: "c00313274" },
+  { firstName: "Tadhg", lastName: "Brennan", studentNumber: "c00308963" },
+  { firstName: "Scott", lastName: "Cardiff", studentNumber: "c00311728" },
+  { firstName: "Ismael", lastName: "Charaf Megrini", studentNumber: "c00313241" },
+  { firstName: "Sarah", lastName: "Crotty", studentNumber: "c00309469" },
+  { firstName: "Lucas", lastName: "De Oliveira Lima", studentNumber: "c00298828" },
+  { firstName: "Nathan", lastName: "Doyle", studentNumber: "c00310640" },
+  { firstName: "Javier", lastName: "Guallar Reyes", studentNumber: "c00312829" },
+  { firstName: "Cian", lastName: "Howard", studentNumber: "c00310966" },
+  { firstName: "Moyo", lastName: "Ibikunle", studentNumber: "c00309427" },
+  { firstName: "Dzheffriei", lastName: "Ihesinulo", studentNumber: "c00311856" },
+  { firstName: "Omotoke", lastName: "Ilori", studentNumber: "c00303445" },
+  { firstName: "Kamile", lastName: "Kacinskaite", studentNumber: "c00312390" },
+  { firstName: "Illia", lastName: "Karban", studentNumber: "c00315274" },
+  { firstName: "Damon", lastName: "Kelly", studentNumber: "c00307057" },
+  { firstName: "Joseph", lastName: "Lalor", studentNumber: "c00312883" },
+  { firstName: "Alan", lastName: "Leeder", studentNumber: "c00311483" },
+  { firstName: "Ryan", lastName: "Lowry", studentNumber: "c00305950" },
+  { firstName: "Chacholothando", lastName: "Makiwa", studentNumber: "c00311114" },
+  { firstName: "Quentin", lastName: "Malburet Allegre", studentNumber: "c00338604" },
+  { firstName: "Tymofii", lastName: "Mazurenko", studentNumber: "c00325393" },
+  { firstName: "Ihor", lastName: "Mekhtiiev", studentNumber: "c00313129" },
+  { firstName: "Ryan", lastName: "Mulcahy", studentNumber: "c00315272" },
+  { firstName: "Owen", lastName: "Nathanael", studentNumber: "c00313648" },
+  { firstName: "Oliwier", lastName: "Nowak", studentNumber: "c00307825" },
+  { firstName: "Oyindamola", lastName: "Olaosun", studentNumber: "c00313475" },
+  { firstName: "Anton", lastName: "Opria", studentNumber: "c00309433" },
+  { firstName: "Rachel", lastName: "O Shea", studentNumber: "c00248457" },
+  { firstName: "Ethan", lastName: "Payne", studentNumber: "c00309151" },
+  { firstName: "Ammar", lastName: "Salah", studentNumber: "c00313510" },
+  { firstName: "Ruochen", lastName: "Shi", studentNumber: "c00304527" },
+  { firstName: "Conor", lastName: "Shiel", studentNumber: "c00310562" },
+  { firstName: "Andrii", lastName: "Shyiko", studentNumber: "c00313127" },
+  { firstName: "Konrad", lastName: "Skoczylas", studentNumber: "c00309030" },
+  { firstName: "Maryna", lastName: "Sobol", studentNumber: "c00312784" },
+  { firstName: "Sumin", lastName: "Song", studentNumber: "c00329682" },
+  { firstName: "Oleksandr", lastName: "Storozhuk", studentNumber: "c00313344" },
+  { firstName: "Aaron", lastName: "Tierney", studentNumber: "c00312018" },
+  { firstName: "Mariia", lastName: "Vanaga", studentNumber: "c00313153" },
+  { firstName: "Umut Ali", lastName: "Yalcin", studentNumber: "c00338594" },
+  { firstName: "Michael", lastName: "Harrington", studentNumber: "C00296932" },
+  { firstName: "Michael", lastName: "Daly", studentNumber: "C00287452" }
+];
+
+// ⚠️ EDIT THIS: Add your Gameplay students here
+// Follow the same format: { firstName: "...", lastName: "...", studentNumber: "..." }
+const GAMEPLAY_STUDENTS = [
+  // { firstName: "Jane", lastName: "Smith", studentNumber: "c00400001" },
+  // { firstName: "John", lastName: "Doe", studentNumber: "c00400002" },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  DOM
+// ═══════════════════════════════════════════════════════════
+const loginView = document.getElementById('loginView');
+const mainView = document.getElementById('mainView');
+const passwordInput = document.getElementById('passwordInput');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const rosterBody = document.getElementById('rosterBody');
+const rosterCount = document.getElementById('rosterCount');
+const searchInput = document.getElementById('searchInput');
+const classFilter = document.getElementById('classFilter');
+const newStudentNumber = document.getElementById('newStudentNumber');
+const newFirstName = document.getElementById('newFirstName');
+const newLastName = document.getElementById('newLastName');
+const newEmail = document.getElementById('newEmail');
+const newClass = document.getElementById('newClass');
+const addStudentBtn = document.getElementById('addStudentBtn');
+const addMsg = document.getElementById('addMsg');
+const bulkInput = document.getElementById('bulkInput');
+const bulkBtn = document.getElementById('bulkBtn');
+const bulkMsg = document.getElementById('bulkMsg');
+const bulkClass = document.getElementById('bulkClass');
+const seedAdvBtn = document.getElementById('seedAdvBtn');
+const seedGmpBtn = document.getElementById('seedGmpBtn');
+const advCount = document.getElementById('advCount');
+const gmpCount = document.getElementById('gmpCount');
+const exportBtn = document.getElementById('exportBtn');
+const wipeBtn = document.getElementById('wipeBtn');
+const successBox = document.getElementById('successBox');
+const editModal = document.getElementById('editModal');
+const editStudentNumber = document.getElementById('editStudentNumber');
+const editFirstName = document.getElementById('editFirstName');
+const editLastName = document.getElementById('editLastName');
+const editEmail = document.getElementById('editEmail');
+const editClass = document.getElementById('editClass');
+const saveEditBtn = document.getElementById('saveEditBtn');
+const editError = document.getElementById('editError');
+
+let studentsCache = {};
+let rosterListener = null;
+let editingKey = null;
+
+// Update seed card counts on load
+advCount.textContent = `${ADVANCED_STUDENTS.length} students`;
+gmpCount.textContent = GAMEPLAY_STUDENTS.length === 0 ? 'no students yet' : `${GAMEPLAY_STUDENTS.length} students`;
+
+// ═══════════════════════════════════════════════════════════
+//  LOGIN
+// ═══════════════════════════════════════════════════════════
+loginBtn.addEventListener('click', doLogin);
+passwordInput.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogin() {
+  if (passwordInput.value === ADMIN_PASSWORD) {
+    loginError.textContent = '';
+    loginView.classList.add('hidden');
+    mainView.classList.remove('hidden');
+    attachRosterListener();
+  } else {
+    loginError.textContent = '❌ Incorrect password.';
+    passwordInput.value = '';
+    passwordInput.focus();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ROSTER
+// ═══════════════════════════════════════════════════════════
+function attachRosterListener() {
+  if (rosterListener) rosterListener.off();
+  rosterListener = db.ref('students');
+  rosterListener.on('value', snap => {
+    studentsCache = snap.val() || {};
+    renderRoster();
+  });
+}
+
+function renderRoster() {
+  const q = searchInput.value.trim().toLowerCase();
+  const filter = classFilter.value;
+
+  const entries = Object.entries(studentsCache)
+    .map(([key, s]) => ({ key, ...s }))
+    .filter(s => {
+      if (filter) {
+        if (filter === '__none__' && s.class) return false;
+        if (filter !== '__none__' && s.class !== filter) return false;
+      }
+      if (!q) return true;
+      return (
+        (s.studentNumber || '').toLowerCase().includes(q) ||
+        (s.firstName || '').toLowerCase().includes(q) ||
+        (s.lastName || '').toLowerCase().includes(q) ||
+        (s.email || '').toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => (a.lastName || '').localeCompare(b.lastName || '') ||
+                    (a.firstName || '').localeCompare(b.firstName || ''));
+
+  rosterCount.textContent = Object.keys(studentsCache).length;
+
+  if (entries.length === 0) {
+    rosterBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:#5b7b9c;">
+      ${Object.keys(studentsCache).length === 0 ? 'No students yet. Click a "Load …" button above.' : 'No matches.'}
+    </td></tr>`;
+    return;
+  }
+
+  rosterBody.innerHTML = entries.map((s, i) => {
+    const cls = s.class || '';
+    const clsPill = cls === 'advanced' ? '<span class="class-pill pill-advanced">💻 Advanced</span>' :
+                    cls === 'gameplay' ? '<span class="class-pill pill-gameplay">🎮 Gameplay</span>' :
+                    '<span class="class-pill pill-none">— None —</span>';
+    return `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong>${escapeHtml(s.studentNumber || '')}</strong></td>
+        <td>${escapeHtml(s.firstName || '')}</td>
+        <td>${escapeHtml(s.lastName || '')}</td>
+        <td>${escapeHtml(s.email || '')}</td>
+        <td>${clsPill}</td>
+        <td>
+          <button class="icon-btn" title="Edit" onclick="openEdit('${escapeHtml(s.key)}')">✏️</button>
+          <button class="icon-btn danger" title="Delete" onclick="deleteStudent('${escapeHtml(s.key)}', '${escapeHtml(s.studentNumber||'')}')">🗑️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+searchInput.addEventListener('input', renderRoster);
+classFilter.addEventListener('change', renderRoster);
+
+// ═══════════════════════════════════════════════════════════
+//  SEED ADVANCED
+// ═══════════════════════════════════════════════════════════
+seedAdvBtn.addEventListener('click', async () => {
+  if (ADVANCED_STUDENTS.length === 0) {
+    alert('No Advanced students in the source list.');
+    return;
+  }
+  seedAdvBtn.disabled = true;
+  seedAdvBtn.textContent = 'Loading…';
+  await seedClass(ADVANCED_STUDENTS, 'advanced', 'Advanced Programming');
+  seedAdvBtn.disabled = false;
+  seedAdvBtn.textContent = 'Load Advanced';
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SEED GAMEPLAY
+// ═══════════════════════════════════════════════════════════
+seedGmpBtn.addEventListener('click', async () => {
+  if (GAMEPLAY_STUDENTS.length === 0) {
+    alert('No Gameplay students in the source list.\n\nAdd them to the GAMEPLAY_STUDENTS array in this file first.');
+    return;
+  }
+  seedGmpBtn.disabled = true;
+  seedGmpBtn.textContent = 'Loading…';
+  await seedClass(GAMEPLAY_STUDENTS, 'gameplay', 'Gameplay');
+  seedGmpBtn.disabled = false;
+  seedGmpBtn.textContent = 'Load Gameplay';
+});
+
+async function seedClass(list, classId, className) {
+  const updates = {};
+  let added = 0;
+  list.forEach(s => {
+    const key = s.studentNumber.toLowerCase();
+    if (!studentsCache[key]) {
+      updates[key] = {
+        studentNumber: s.studentNumber,
+        firstName: s.firstName,
+        lastName: s.lastName,
+        email: '',
+        class: classId
+      };
+      added++;
+    }
+  });
+
+  if (added === 0) {
+    showSuccess(`✅ All ${className} students are already loaded.`);
+    return;
+  }
+
+  const go = confirm(`Add ${added} ${className} student${added === 1 ? '' : 's'} to Firebase?\n\nExisting students are never modified.`);
+  if (!go) return;
+
+  try {
+    await db.ref('students').update(updates);
+    showSuccess(`✅ Added ${added} ${className} student${added === 1 ? '' : 's'}.`);
+  } catch (e) {
+    alert('❌ ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ADD SINGLE
+// ═══════════════════════════════════════════════════════════
+addStudentBtn.addEventListener('click', async () => {
+  const num = newStudentNumber.value.trim();
+  const first = newFirstName.value.trim();
+  const last = newLastName.value.trim();
+  const email = newEmail.value.trim();
+  const cls = newClass.value;
+
+  if (!num || !first || !last) {
+    addMsg.innerHTML = '<span style="color:#b91c1c;">⚠️ Student number, first name and last name are required.</span>';
+    return;
+  }
+
+  const key = num.toLowerCase();
+  if (studentsCache[key]) {
+    addMsg.innerHTML = '<span style="color:#b91c1c;">⚠️ Student ' + escapeHtml(num) + ' already exists.</span>';
+    return;
+  }
+
+  addStudentBtn.disabled = true;
+  addStudentBtn.textContent = 'Adding…';
+
+  try {
+    await db.ref(`students/${key}`).set({
+      studentNumber: num,
+      firstName: first,
+      lastName: last,
+      email,
+      class: cls
+    });
+    addMsg.innerHTML = `<span style="color:#15803d;">✅ Added ${escapeHtml(first)} ${escapeHtml(last)} (${escapeHtml(num)})</span>`;
+    newStudentNumber.value = '';
+    newFirstName.value = '';
+    newLastName.value = '';
+    newEmail.value = '';
+    newStudentNumber.focus();
+    setTimeout(() => { addMsg.innerHTML = ''; }, 4000);
+  } catch (e) {
+    addMsg.innerHTML = '<span style="color:#b91c1c;">❌ ' + escapeHtml(e.message)
