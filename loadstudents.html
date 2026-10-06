@@ -156,11 +156,9 @@
 
     <!-- SEED ROSTER -->
     <div class="card">
-      <div class="card-title">
-        <span>⬆️ Load starter rosters</span>
-      </div>
+      <div class="card-title"><span>⬆️ Load starter rosters</span></div>
       <div class="info-box">
-        Click a class below to add its students. Safe to re-run — only adds students that aren't already there. Existing students are never modified.
+        Click a class to add its students. Safe to re-run — only adds students that aren't already there.
       </div>
       <div class="seed-grid">
         <div class="seed-card">
@@ -171,20 +169,18 @@
         </div>
         <div class="seed-card">
           <h4>🎮 Gameplay</h4>
-          <div class="count" id="gmpCount">0 students</div>
-          <div class="desc">Add Gameplay students below first (edit the source).</div>
+          <div class="count" id="gmpCount">no students yet</div>
+          <div class="desc">Add Gameplay students manually or via bulk add below.</div>
           <button class="btn btn-sm" id="seedGmpBtn">Load Gameplay</button>
         </div>
       </div>
     </div>
 
-    <!-- ADD STUDENT -->
+    <!-- ADD SINGLE -->
     <div class="card">
-      <div class="card-title">
-        <span>➕ Add a single student</span>
-      </div>
+      <div class="card-title"><span>➕ Add a single student</span></div>
       <div class="add-grid">
-        <input type="text" id="newStudentNumber" placeholder="Student number (e.g. c00338593)">
+        <input type="text" id="newStudentNumber" placeholder="Student number">
         <input type="text" id="newFirstName" placeholder="First name">
         <input type="text" id="newLastName" placeholder="Last name">
         <input type="email" id="newEmail" placeholder="Email (optional)">
@@ -200,20 +196,15 @@
 
     <!-- BULK ADD -->
     <div class="card">
-      <div class="card-title">
-        <span>📥 Bulk add (paste multiple lines)</span>
-      </div>
+      <div class="card-title"><span>📥 Bulk add</span></div>
       <div class="info-box">
-        One student per line:<br>
-        <code>studentNumber, firstName, lastName, email(optional), class(optional)</code><br>
-        Class defaults to the value in the dropdown below.
+        One student per line: <code>studentNumber, firstName, lastName, email(optional), class(optional)</code>
       </div>
       <select id="bulkClass" style="margin-bottom:0.9rem;">
         <option value="gameplay">🎮 Gameplay (default)</option>
         <option value="advanced">💻 Advanced Programming</option>
       </select>
-      <textarea class="bulk-textarea" id="bulkInput" placeholder="c00400001, John, Smith, , gameplay
-c00400002, Jane, Doe, , gameplay"></textarea>
+      <textarea class="bulk-textarea" id="bulkInput" placeholder="c00400001, John, Smith, , gameplay"></textarea>
       <button class="btn" id="bulkBtn" style="margin-top:0.9rem;">Add all lines</button>
       <div id="bulkMsg" style="margin-top:0.7rem; font-size:0.9rem;"></div>
     </div>
@@ -227,10 +218,8 @@ c00400002, Jane, Doe, , gameplay"></textarea>
           <button class="btn btn-danger btn-sm" id="wipeBtn">🗑️ Wipe all</button>
         </div>
       </div>
-
       <div class="toolbar">
-        <input type="text" class="search-input" id="searchInput"
-          placeholder="🔍 Search by name, student number, or email…">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search…">
         <select class="filter-select" id="classFilter">
           <option value="">All classes</option>
           <option value="advanced">💻 Advanced Programming</option>
@@ -238,17 +227,11 @@ c00400002, Jane, Doe, , gameplay"></textarea>
           <option value="__none__">— No class —</option>
         </select>
       </div>
-
       <table>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Student Number</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Class</th>
-            <th style="width:120px;">Actions</th>
+            <th>#</th><th>Student Number</th><th>First Name</th>
+            <th>Last Name</th><th>Email</th><th>Class</th><th>Actions</th>
           </tr>
         </thead>
         <tbody id="rosterBody">
@@ -265,22 +248,10 @@ c00400002, Jane, Doe, , gameplay"></textarea>
 <div class="modal-bg" id="editModal">
   <div class="modal">
     <h3>✏️ Edit student</h3>
-    <div class="row">
-      <label>Student Number</label>
-      <input type="text" id="editStudentNumber" disabled>
-    </div>
-    <div class="row">
-      <label>First Name</label>
-      <input type="text" id="editFirstName">
-    </div>
-    <div class="row">
-      <label>Last Name</label>
-      <input type="text" id="editLastName">
-    </div>
-    <div class="row">
-      <label>Email</label>
-      <input type="email" id="editEmail">
-    </div>
+    <div class="row"><label>Student Number</label><input type="text" id="editStudentNumber" disabled></div>
+    <div class="row"><label>First Name</label><input type="text" id="editFirstName"></div>
+    <div class="row"><label>Last Name</label><input type="text" id="editLastName"></div>
+    <div class="row"><label>Email</label><input type="email" id="editEmail"></div>
     <div class="row">
       <label>Class</label>
       <select id="editClass">
@@ -301,9 +272,9 @@ c00400002, Jane, Doe, , gameplay"></textarea>
 // ═══════════════════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════════════════
-const ADMIN_PASSWORD = "gesma2026";
+var ADMIN_PASSWORD = "gesma2026";
 
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
   authDomain: "ai-project-tool.firebaseapp.com",
   databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
@@ -315,14 +286,12 @@ const firebaseConfig = {
 };
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+var db = firebase.database();
 
 // ═══════════════════════════════════════════════════════════
 //  STARTER ROSTERS
 // ═══════════════════════════════════════════════════════════
-
-// 47 Advanced Programming students
-const ADVANCED_STUDENTS = [
+var ADVANCED_STUDENTS = [
   { firstName: "Ege", lastName: "Aksoy", studentNumber: "c00338593" },
   { firstName: "Taemour", lastName: "Basharat", studentNumber: "c00295140" },
   { firstName: "Daniel", lastName: "Belov", studentNumber: "c00306133" },
@@ -372,72 +341,122 @@ const ADVANCED_STUDENTS = [
   { firstName: "Michael", lastName: "Daly", studentNumber: "C00287452" }
 ];
 
-// ⚠️ EDIT THIS: Add your Gameplay students here
-// Follow the same format: { firstName: "...", lastName: "...", studentNumber: "..." }
-const GAMEPLAY_STUDENTS = [
+// Add Gameplay students here when you have them
+var GAMEPLAY_STUDENTS = [
   // { firstName: "Jane", lastName: "Smith", studentNumber: "c00400001" },
-  // { firstName: "John", lastName: "Doe", studentNumber: "c00400002" },
 ];
 
 // ═══════════════════════════════════════════════════════════
 //  DOM
 // ═══════════════════════════════════════════════════════════
-const loginView = document.getElementById('loginView');
-const mainView = document.getElementById('mainView');
-const passwordInput = document.getElementById('passwordInput');
-const loginBtn = document.getElementById('loginBtn');
-const loginError = document.getElementById('loginError');
-const rosterBody = document.getElementById('rosterBody');
-const rosterCount = document.getElementById('rosterCount');
-const searchInput = document.getElementById('searchInput');
-const classFilter = document.getElementById('classFilter');
-const newStudentNumber = document.getElementById('newStudentNumber');
-const newFirstName = document.getElementById('newFirstName');
-const newLastName = document.getElementById('newLastName');
-const newEmail = document.getElementById('newEmail');
-const newClass = document.getElementById('newClass');
-const addStudentBtn = document.getElementById('addStudentBtn');
-const addMsg = document.getElementById('addMsg');
-const bulkInput = document.getElementById('bulkInput');
-const bulkBtn = document.getElementById('bulkBtn');
-const bulkMsg = document.getElementById('bulkMsg');
-const bulkClass = document.getElementById('bulkClass');
-const seedAdvBtn = document.getElementById('seedAdvBtn');
-const seedGmpBtn = document.getElementById('seedGmpBtn');
-const advCount = document.getElementById('advCount');
-const gmpCount = document.getElementById('gmpCount');
-const exportBtn = document.getElementById('exportBtn');
-const wipeBtn = document.getElementById('wipeBtn');
-const successBox = document.getElementById('successBox');
-const editModal = document.getElementById('editModal');
-const editStudentNumber = document.getElementById('editStudentNumber');
-const editFirstName = document.getElementById('editFirstName');
-const editLastName = document.getElementById('editLastName');
-const editEmail = document.getElementById('editEmail');
-const editClass = document.getElementById('editClass');
-const saveEditBtn = document.getElementById('saveEditBtn');
-const editError = document.getElementById('editError');
+var loginView, mainView, passwordInput, loginBtn, loginError;
+var rosterBody, rosterCount, searchInput, classFilter;
+var newStudentNumber, newFirstName, newLastName, newEmail, newClass, addStudentBtn, addMsg;
+var bulkInput, bulkBtn, bulkMsg, bulkClass;
+var seedAdvBtn, seedGmpBtn, advCount, gmpCount;
+var exportBtn, wipeBtn, successBox;
+var editModal, editStudentNumber, editFirstName, editLastName, editEmail, editClass, saveEditBtn, editError;
 
-let studentsCache = {};
-let rosterListener = null;
-let editingKey = null;
+var studentsCache = {};
+var rosterListener = null;
+var editingKey = null;
 
-// Update seed card counts on load
-advCount.textContent = `${ADVANCED_STUDENTS.length} students`;
-gmpCount.textContent = GAMEPLAY_STUDENTS.length === 0 ? 'no students yet' : `${GAMEPLAY_STUDENTS.length} students`;
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+function init() {
+  loginView = document.getElementById('loginView');
+  mainView = document.getElementById('mainView');
+  passwordInput = document.getElementById('passwordInput');
+  loginBtn = document.getElementById('loginBtn');
+  loginError = document.getElementById('loginError');
+  rosterBody = document.getElementById('rosterBody');
+  rosterCount = document.getElementById('rosterCount');
+  searchInput = document.getElementById('searchInput');
+  classFilter = document.getElementById('classFilter');
+  newStudentNumber = document.getElementById('newStudentNumber');
+  newFirstName = document.getElementById('newFirstName');
+  newLastName = document.getElementById('newLastName');
+  newEmail = document.getElementById('newEmail');
+  newClass = document.getElementById('newClass');
+  addStudentBtn = document.getElementById('addStudentBtn');
+  addMsg = document.getElementById('addMsg');
+  bulkInput = document.getElementById('bulkInput');
+  bulkBtn = document.getElementById('bulkBtn');
+  bulkMsg = document.getElementById('bulkMsg');
+  bulkClass = document.getElementById('bulkClass');
+  seedAdvBtn = document.getElementById('seedAdvBtn');
+  seedGmpBtn = document.getElementById('seedGmpBtn');
+  advCount = document.getElementById('advCount');
+  gmpCount = document.getElementById('gmpCount');
+  exportBtn = document.getElementById('exportBtn');
+  wipeBtn = document.getElementById('wipeBtn');
+  successBox = document.getElementById('successBox');
+  editModal = document.getElementById('editModal');
+  editStudentNumber = document.getElementById('editStudentNumber');
+  editFirstName = document.getElementById('editFirstName');
+  editLastName = document.getElementById('editLastName');
+  editEmail = document.getElementById('editEmail');
+  editClass = document.getElementById('editClass');
+  saveEditBtn = document.getElementById('saveEditBtn');
+  editError = document.getElementById('editError');
+
+  advCount.textContent = ADVANCED_STUDENTS.length + ' students';
+  gmpCount.textContent = GAMEPLAY_STUDENTS.length === 0 ? 'no students yet' : GAMEPLAY_STUDENTS.length + ' students';
+
+  // Login handlers
+  loginBtn.addEventListener('click', doLogin);
+  passwordInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  // Seed buttons
+  seedAdvBtn.addEventListener('click', function() {
+    seedClass(ADVANCED_STUDENTS, 'advanced', 'Advanced Programming', seedAdvBtn, 'Load Advanced');
+  });
+  seedGmpBtn.addEventListener('click', function() {
+    if (GAMEPLAY_STUDENTS.length === 0) {
+      alert('No Gameplay students in the source list.');
+      return;
+    }
+    seedClass(GAMEPLAY_STUDENTS, 'gameplay', 'Gameplay', seedGmpBtn, 'Load Gameplay');
+  });
+
+  // Add single
+  addStudentBtn.addEventListener('click', addSingleStudent);
+
+  // Bulk
+  bulkBtn.addEventListener('click', bulkAdd);
+
+  // Filters
+  searchInput.addEventListener('input', renderRoster);
+  classFilter.addEventListener('change', renderRoster);
+
+  // Export / Wipe
+  exportBtn.addEventListener('click', exportExcel);
+  wipeBtn.addEventListener('click', wipeAll);
+
+  // Edit modal
+  saveEditBtn.addEventListener('click', saveEdit);
+  editModal.addEventListener('click', function(e) {
+    if (e.target === editModal) closeEdit();
+  });
+
+  // Auto-login if session is set
+  if (sessionStorage.getItem('load_students_auth') === 'true') {
+    showMain();
+  }
+}
 
 // ═══════════════════════════════════════════════════════════
 //  LOGIN
 // ═══════════════════════════════════════════════════════════
-loginBtn.addEventListener('click', doLogin);
-passwordInput.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
-
 function doLogin() {
-  if (passwordInput.value === ADMIN_PASSWORD) {
+  var entered = passwordInput.value;
+  if (entered === ADMIN_PASSWORD) {
+    sessionStorage.setItem('load_students_auth', 'true');
     loginError.textContent = '';
-    loginView.classList.add('hidden');
-    mainView.classList.remove('hidden');
-    attachRosterListener();
+    showMain();
   } else {
     loginError.textContent = '❌ Incorrect password.';
     passwordInput.value = '';
@@ -445,109 +464,109 @@ function doLogin() {
   }
 }
 
+function showMain() {
+  loginView.classList.add('hidden');
+  mainView.classList.remove('hidden');
+  attachRosterListener();
+}
+
 // ═══════════════════════════════════════════════════════════
-//  ROSTER
+//  ROSTER LISTENER
 // ═══════════════════════════════════════════════════════════
 function attachRosterListener() {
   if (rosterListener) rosterListener.off();
   rosterListener = db.ref('students');
-  rosterListener.on('value', snap => {
+  rosterListener.on('value', function(snap) {
     studentsCache = snap.val() || {};
     renderRoster();
+  }, function(err) {
+    console.error('Roster read error:', err);
+    rosterBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#b91c1c;">❌ Error reading roster: ' + escapeHtml(err.message) + '</td></tr>';
   });
 }
 
+// ═══════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════
 function renderRoster() {
-  const q = searchInput.value.trim().toLowerCase();
-  const filter = classFilter.value;
+  var q = searchInput.value.trim().toLowerCase();
+  var filter = classFilter.value;
 
-  const entries = Object.entries(studentsCache)
-    .map(([key, s]) => ({ key, ...s }))
-    .filter(s => {
-      if (filter) {
-        if (filter === '__none__' && s.class) return false;
-        if (filter !== '__none__' && s.class !== filter) return false;
-      }
-      if (!q) return true;
-      return (
-        (s.studentNumber || '').toLowerCase().includes(q) ||
-        (s.firstName || '').toLowerCase().includes(q) ||
-        (s.lastName || '').toLowerCase().includes(q) ||
-        (s.email || '').toLowerCase().includes(q)
-      );
-    })
-    .sort((a, b) => (a.lastName || '').localeCompare(b.lastName || '') ||
-                    (a.firstName || '').localeCompare(b.firstName || ''));
+  var entries = Object.keys(studentsCache).map(function(key) {
+    var s = studentsCache[key];
+    return {
+      key: key,
+      studentNumber: s.studentNumber || '',
+      firstName: s.firstName || '',
+      lastName: s.lastName || '',
+      email: s.email || '',
+      class: s.class || ''
+    };
+  });
+
+  entries = entries.filter(function(s) {
+    if (filter) {
+      if (filter === '__none__' && s.class) return false;
+      if (filter !== '__none__' && s.class !== filter) return false;
+    }
+    if (!q) return true;
+    return (
+      s.studentNumber.toLowerCase().indexOf(q) !== -1 ||
+      s.firstName.toLowerCase().indexOf(q) !== -1 ||
+      s.lastName.toLowerCase().indexOf(q) !== -1 ||
+      s.email.toLowerCase().indexOf(q) !== -1
+    );
+  });
+
+  entries.sort(function(a, b) {
+    return (a.lastName || '').localeCompare(b.lastName || '') ||
+           (a.firstName || '').localeCompare(b.firstName || '');
+  });
 
   rosterCount.textContent = Object.keys(studentsCache).length;
 
   if (entries.length === 0) {
-    rosterBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:#5b7b9c;">
-      ${Object.keys(studentsCache).length === 0 ? 'No students yet. Click a "Load …" button above.' : 'No matches.'}
-    </td></tr>`;
+    var msg = Object.keys(studentsCache).length === 0
+      ? 'No students yet. Click a "Load …" button above, or add one manually.'
+      : 'No matches.';
+    rosterBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#5b7b9c;">' + msg + '</td></tr>';
     return;
   }
 
-  rosterBody.innerHTML = entries.map((s, i) => {
-    const cls = s.class || '';
-    const clsPill = cls === 'advanced' ? '<span class="class-pill pill-advanced">💻 Advanced</span>' :
-                    cls === 'gameplay' ? '<span class="class-pill pill-gameplay">🎮 Gameplay</span>' :
-                    '<span class="class-pill pill-none">— None —</span>';
-    return `
-      <tr>
-        <td>${i + 1}</td>
-        <td><strong>${escapeHtml(s.studentNumber || '')}</strong></td>
-        <td>${escapeHtml(s.firstName || '')}</td>
-        <td>${escapeHtml(s.lastName || '')}</td>
-        <td>${escapeHtml(s.email || '')}</td>
-        <td>${clsPill}</td>
-        <td>
-          <button class="icon-btn" title="Edit" onclick="openEdit('${escapeHtml(s.key)}')">✏️</button>
-          <button class="icon-btn danger" title="Delete" onclick="deleteStudent('${escapeHtml(s.key)}', '${escapeHtml(s.studentNumber||'')}')">🗑️</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
+  var html = '';
+  entries.forEach(function(s, i) {
+    var clsPill;
+    if (s.class === 'advanced') clsPill = '<span class="class-pill pill-advanced">💻 Advanced</span>';
+    else if (s.class === 'gameplay') clsPill = '<span class="class-pill pill-gameplay">🎮 Gameplay</span>';
+    else clsPill = '<span class="class-pill pill-none">— None —</span>';
+
+    html += '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td><strong>' + escapeHtml(s.studentNumber) + '</strong></td>' +
+      '<td>' + escapeHtml(s.firstName) + '</td>' +
+      '<td>' + escapeHtml(s.lastName) + '</td>' +
+      '<td>' + escapeHtml(s.email) + '</td>' +
+      '<td>' + clsPill + '</td>' +
+      '<td>' +
+        '<button class="icon-btn" title="Edit" onclick="openEdit(\'' + escapeHtml(s.key) + '\')">✏️</button>' +
+        '<button class="icon-btn danger" title="Delete" onclick="deleteStudent(\'' + escapeHtml(s.key) + '\', \'' + escapeHtml(s.studentNumber) + '\')">🗑️</button>' +
+      '</td>' +
+    '</tr>';
+  });
+  rosterBody.innerHTML = html;
 }
 
-searchInput.addEventListener('input', renderRoster);
-classFilter.addEventListener('change', renderRoster);
+// ═══════════════════════════════════════════════════════════
+//  SEED
+// ═══════════════════════════════════════════════════════════
+function seedClass(list, classId, className, btn, btnText) {
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
 
-// ═══════════════════════════════════════════════════════════
-//  SEED ADVANCED
-// ═══════════════════════════════════════════════════════════
-seedAdvBtn.addEventListener('click', async () => {
-  if (ADVANCED_STUDENTS.length === 0) {
-    alert('No Advanced students in the source list.');
-    return;
-  }
-  seedAdvBtn.disabled = true;
-  seedAdvBtn.textContent = 'Loading…';
-  await seedClass(ADVANCED_STUDENTS, 'advanced', 'Advanced Programming');
-  seedAdvBtn.disabled = false;
-  seedAdvBtn.textContent = 'Load Advanced';
-});
-
-// ═══════════════════════════════════════════════════════════
-//  SEED GAMEPLAY
-// ═══════════════════════════════════════════════════════════
-seedGmpBtn.addEventListener('click', async () => {
-  if (GAMEPLAY_STUDENTS.length === 0) {
-    alert('No Gameplay students in the source list.\n\nAdd them to the GAMEPLAY_STUDENTS array in this file first.');
-    return;
-  }
-  seedGmpBtn.disabled = true;
-  seedGmpBtn.textContent = 'Loading…';
-  await seedClass(GAMEPLAY_STUDENTS, 'gameplay', 'Gameplay');
-  seedGmpBtn.disabled = false;
-  seedGmpBtn.textContent = 'Load Gameplay';
-});
-
-async function seedClass(list, classId, className) {
-  const updates = {};
-  let added = 0;
-  list.forEach(s => {
-    const key = s.studentNumber.toLowerCase();
+  var updates = {};
+  var added = 0;
+  list.forEach(function(s) {
+    var key = s.studentNumber.toLowerCase();
     if (!studentsCache[key]) {
       updates[key] = {
         studentNumber: s.studentNumber,
@@ -561,59 +580,44 @@ async function seedClass(list, classId, className) {
   });
 
   if (added === 0) {
-    showSuccess(`✅ All ${className} students are already loaded.`);
+    showSuccess('✅ All ' + className + ' students are already loaded.');
+    btn.disabled = false;
+    btn.textContent = btnText;
     return;
   }
 
-  const go = confirm(`Add ${added} ${className} student${added === 1 ? '' : 's'} to Firebase?\n\nExisting students are never modified.`);
-  if (!go) return;
-
-  try {
-    await db.ref('students').update(updates);
-    showSuccess(`✅ Added ${added} ${className} student${added === 1 ? '' : 's'}.`);
-  } catch (e) {
-    alert('❌ ' + e.message);
+  if (!confirm('Add ' + added + ' ' + className + ' student' + (added === 1 ? '' : 's') + ' to Firebase?')) {
+    btn.disabled = false;
+    btn.textContent = btnText;
+    return;
   }
+
+  db.ref('students').update(updates).then(function() {
+    showSuccess('✅ Added ' + added + ' ' + className + ' student' + (added === 1 ? '' : 's') + '.');
+    btn.disabled = false;
+    btn.textContent = btnText;
+  }).catch(function(e) {
+    alert('❌ ' + e.message);
+    btn.disabled = false;
+    btn.textContent = btnText;
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
 //  ADD SINGLE
 // ═══════════════════════════════════════════════════════════
-addStudentBtn.addEventListener('click', async () => {
-  const num = newStudentNumber.value.trim();
-  const first = newFirstName.value.trim();
-  const last = newLastName.value.trim();
-  const email = newEmail.value.trim();
-  const cls = newClass.value;
+function addSingleStudent() {
+  var num = newStudentNumber.value.trim();
+  var first = newFirstName.value.trim();
+  var last = newLastName.value.trim();
+  var email = newEmail.value.trim();
+  var cls = newClass.value;
 
   if (!num || !first || !last) {
     addMsg.innerHTML = '<span style="color:#b91c1c;">⚠️ Student number, first name and last name are required.</span>';
     return;
   }
 
-  const key = num.toLowerCase();
+  var key = num.toLowerCase();
   if (studentsCache[key]) {
-    addMsg.innerHTML = '<span style="color:#b91c1c;">⚠️ Student ' + escapeHtml(num) + ' already exists.</span>';
-    return;
-  }
-
-  addStudentBtn.disabled = true;
-  addStudentBtn.textContent = 'Adding…';
-
-  try {
-    await db.ref(`students/${key}`).set({
-      studentNumber: num,
-      firstName: first,
-      lastName: last,
-      email,
-      class: cls
-    });
-    addMsg.innerHTML = `<span style="color:#15803d;">✅ Added ${escapeHtml(first)} ${escapeHtml(last)} (${escapeHtml(num)})</span>`;
-    newStudentNumber.value = '';
-    newFirstName.value = '';
-    newLastName.value = '';
-    newEmail.value = '';
-    newStudentNumber.focus();
-    setTimeout(() => { addMsg.innerHTML = ''; }, 4000);
-  } catch (e) {
-    addMsg.innerHTML = '<span style="color:#b91c1c;">❌ ' + escapeHtml(e.message)
+    addMsg.innerHTML = '<span style="color:#b91
