@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin · Project Selection</title>
+  <title>Admin · GESMA</title>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -16,7 +16,7 @@
       padding: 2rem 1.5rem;
       color: #1f2a3a;
     }
-    .container { max-width: 1250px; margin: 0 auto; }
+    .container { max-width: 1400px; margin: 0 auto; }
 
     /* LOGIN */
     #loginView {
@@ -27,12 +27,13 @@
     #loginView .lock-icon { font-size: 3rem; margin-bottom: 1rem; }
     #loginView h2 { color: #0b2b4f; margin-bottom: 0.5rem; font-size: 1.5rem; }
     #loginView p { color: #5b7b9c; font-size: 0.9rem; margin-bottom: 1.5rem; }
-    input[type="password"] {
+    input[type="password"], input[type="text"] {
       width: 100%; padding: 1rem 1.3rem; border-radius: 60px;
       border: 1.5px solid #cbd5e1; font-size: 1rem; font-family: inherit;
-      outline: none; text-align: center; letter-spacing: 3px;
+      outline: none; text-align: center;
     }
-    input[type="password"]:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
+    input[type="text"] { text-align: left; }
+    input:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
 
     .btn {
       background: #1e4c7a; color: white; font-weight: 600;
@@ -53,7 +54,8 @@
     .btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; }
 
     #loginView .btn { width: 100%; margin-top: 1rem; }
-    .error-msg { color: #b91c1c; margin-top: 1rem; font-size: 0.9rem; min-height: 1.2rem; font-weight: 500; }
+    .error-msg { color: #b91c1c; margin-top: 1rem; font-size: 0.9rem;
+      min-height: 1.2rem; font-weight: 500; }
 
     /* HEADER */
     header { text-align: center; margin-bottom: 1.5rem; }
@@ -84,7 +86,15 @@
       border: 1px solid rgba(255,255,255,0.8);
       margin-bottom: 1.5rem;
     }
-    .card-title { font-size: 1.2rem; font-weight: 700; color: #0b2b4f; margin-bottom: 1rem; }
+    .card-title {
+      font-size: 1.2rem; font-weight: 700; color: #0b2b4f; margin-bottom: 1rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.8rem;
+    }
+    .card-title .count {
+      background: #e9f0f7; color: #5b7b9c; font-size: 0.75rem;
+      padding: 0.2rem 0.7rem; border-radius: 20px; font-weight: 700;
+    }
 
     /* STATS */
     .stats { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
@@ -138,9 +148,6 @@
       transition: background 0.15s;
     }
     .icon-btn:hover { background: #fee2e2; }
-    .icon-btn.danger:hover { background: #fee2e2; }
-
-    .class-hidden { display: none; }
 
     .live-tag {
       display: flex; align-items: center; font-size: 0.85rem;
@@ -153,7 +160,53 @@
     }
     @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
 
-    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .topbar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1.5rem; }
+
+    /* SCREENCAST THUMBNAILS */
+    .thumb-small {
+      width: 110px; height: 62px; background: #0b2b4f;
+      border-radius: 8px; overflow: hidden; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 1.3rem;
+    }
+    .sc-list { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+    .sc-item { text-align: center; }
+    .sc-item-title {
+      font-size: 0.68rem; color: #5b7b9c; max-width: 110px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      margin-top: 0.3rem;
+    }
+    .gh-link {
+      color: #1e4c7a; text-decoration: none; font-weight: 600;
+      font-size: 0.82rem; word-break: break-all;
+    }
+    .gh-link:hover { text-decoration: underline; }
+
+    /* VIDEO MODAL */
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(10,20,35,0.75);
+      display: none; align-items: center; justify-content: center;
+      padding: 1.5rem; z-index: 1000;
+    }
+    .modal-bg.show { display: flex; }
+    .modal {
+      background: white; border-radius: 22px; padding: 1.2rem;
+      max-width: 1100px; width: 100%; max-height: 90vh; overflow: auto;
+      box-shadow: 0 30px 60px -20px rgba(0,20,40,0.5);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between;
+      align-items: center; padding: 0.5rem 0.5rem 1rem;
+    }
+    .modal-header h3 { color: #0b2b4f; font-size: 1.2rem; }
+    .modal-video {
+      aspect-ratio: 16/9; width: 100%; background: #0b2b4f;
+      border-radius: 14px; overflow: hidden;
+    }
+    .modal-video iframe { width: 100%; height: 100%; border: 0; }
+
+    .class-hidden { display: none; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -173,12 +226,11 @@
   <!-- DASHBOARD -->
   <div id="dashboardView" style="display:none;">
     <div class="topbar">
-      <div></div>
       <button class="btn btn-secondary btn-sm" id="logoutBtn">Log out</button>
     </div>
     <header>
       <h1>📊 Admin Dashboard</h1>
-      <p>Manage projects and view team registrations</p>
+      <p>Manage projects, teams, and screencasts</p>
     </header>
 
     <div class="live-tag"><span class="status-dot"></span> Live sync enabled</div>
@@ -196,11 +248,28 @@
         <div class="stat"><div class="stat-num" id="statProjects">0</div><div class="stat-label">Projects Taken</div></div>
         <div class="stat"><div class="stat-num" id="statRemaining">0</div><div class="stat-label">Projects Available</div></div>
         <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total Projects</div></div>
+        <div class="stat"><div class="stat-num" id="statUnreg">0</div><div class="stat-label">Students Not Registered</div></div>
       </div>
       <div class="toolbar">
         <button class="btn btn-secondary btn-sm" id="refreshBtn">↻ Refresh</button>
         <button class="btn btn-success btn-sm" id="exportBtn">⬇ Download Excel</button>
       </div>
+    </div>
+
+    <!-- UNREGISTERED STUDENTS -->
+    <div class="card">
+      <div class="card-title">
+        <span>⏳ Students who haven't picked a project yet</span>
+        <span class="count" id="unregCount">0</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Student Number</th><th>Name</th></tr>
+        </thead>
+        <tbody id="unregTableBody">
+          <tr><td colspan="3" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- SUBMISSIONS TABLE -->
@@ -209,13 +278,15 @@
       <table>
         <thead>
           <tr>
-            <th>#</th><th>Group Name</th>
+            <th>#</th>
             <th>Student 1</th><th>Student 2</th>
-            <th>Project</th><th>Category</th><th>Registered</th><th></th>
+            <th>Project</th><th>Category</th>
+            <th>Screencasts</th><th>GitHub</th>
+            <th>Registered</th><th></th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="8" class="empty">Loading…</td></tr>
+          <tr><td colspan="9" class="empty">Loading…</td></tr>
         </tbody>
       </table>
     </div>
@@ -240,16 +311,24 @@
   </div>
 </div>
 
+<!-- VIDEO MODAL -->
+<div class="modal-bg" id="videoModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Screencast</h3>
+      <button class="btn btn-secondary btn-sm" onclick="closeVideo()">Close</button>
+    </div>
+    <div class="modal-video" id="modalVideo"></div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════════════════
-const ADMIN_PASSWORD = "gesma2026";   // 🔑 CHANGE THIS
+const ADMIN_PASSWORD = "gesma2026";
 
-// ============================================================
-  // 1. FIREBASE CONFIGURATION – REPLACE WITH YOUR OWN
-  // ============================================================
-   const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
   authDomain: "ai-project-tool.firebaseapp.com",
   databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
@@ -265,9 +344,6 @@ const CLASSES = {
   advanced: { name: 'Advanced Programming', icon: '💻' }
 };
 
-// ═══════════════════════════════════════════════════════════
-//  FIREBASE
-// ═══════════════════════════════════════════════════════════
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
@@ -275,10 +351,14 @@ const db = firebase.database();
 //  STATE
 // ═══════════════════════════════════════════════════════════
 let currentClass = 'gameplay';
-let projectsData = {};    // {projectId: {name, category}}
-let selectionsData = {};  // {projectId: {groupName, student1, student2, ...}}
+let projectsData = {};
+let selectionsData = {};
+let groupsData = {};
+let studentsData = {};
 let projectListener = null;
 let selectionListener = null;
+let groupsListener = null;
+let studentsListener = null;
 
 // DOM
 const loginView = document.getElementById('loginView');
@@ -291,10 +371,13 @@ const refreshBtn = document.getElementById('refreshBtn');
 const exportBtn = document.getElementById('exportBtn');
 const tableBody = document.getElementById('tableBody');
 const projectTableBody = document.getElementById('projectTableBody');
+const unregTableBody = document.getElementById('unregTableBody');
+const unregCount = document.getElementById('unregCount');
 const statTeams = document.getElementById('statTeams');
 const statProjects = document.getElementById('statProjects');
 const statRemaining = document.getElementById('statRemaining');
 const statTotal = document.getElementById('statTotal');
+const statUnreg = document.getElementById('statUnreg');
 const newProjectName = document.getElementById('newProjectName');
 const newProjectCat = document.getElementById('newProjectCat');
 const addProjectBtn = document.getElementById('addProjectBtn');
@@ -307,6 +390,7 @@ function checkAuth() {
 }
 loginBtn.addEventListener('click', doLogin);
 passwordInput.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+
 function doLogin() {
   if (passwordInput.value === ADMIN_PASSWORD) {
     sessionStorage.setItem('admin_auth', 'true');
@@ -318,6 +402,7 @@ function doLogin() {
     passwordInput.focus();
   }
 }
+
 logoutBtn.addEventListener('click', () => {
   sessionStorage.removeItem('admin_auth');
   detachListeners();
@@ -326,9 +411,11 @@ logoutBtn.addEventListener('click', () => {
   passwordInput.value = '';
   passwordInput.focus();
 });
+
 function showDashboard() {
   loginView.style.display = 'none';
   dashboardView.style.display = 'block';
+  attachGlobalListeners();
   attachClassListeners();
 }
 
@@ -350,9 +437,39 @@ document.querySelectorAll('.tab').forEach(tab => {
 function detachListeners() {
   if (projectListener) { projectListener.off(); projectListener = null; }
   if (selectionListener) { selectionListener.off(); selectionListener = null; }
+  if (groupsListener) { groupsListener.off(); groupsListener = null; }
+  if (studentsListener) { studentsListener.off(); studentsListener = null; }
 }
+
+function attachGlobalListeners() {
+  if (groupsListener) groupsListener.off();
+  groupsListener = db.ref('groups');
+  groupsListener.on('value', snap => {
+    groupsData = snap.val() || {};
+    renderTable();
+    renderStats();
+  });
+
+  if (studentsListener) studentsListener.off();
+  studentsListener = db.ref('students');
+  studentsListener.on('value', snap => {
+    studentsData = snap.val() || {};
+    renderUnregistered();
+    renderStats();
+  });
+}
+
 function attachClassListeners() {
-  detachListeners();
+  if (projectListener) projectListener.off();
+  if (selectionListener) selectionListener.off();
+
+  // ⚠️ Clear stale data so previous class doesn't leak
+  projectsData = {};
+  selectionsData = {};
+  renderProjectTable();
+  renderTable();
+  renderStats();
+
   projectListener = db.ref(`classes/${currentClass}/projects`);
   selectionListener = db.ref(`classes/${currentClass}/selections`);
 
@@ -364,12 +481,13 @@ function attachClassListeners() {
   selectionListener.on('value', snap => {
     selectionsData = snap.val() || {};
     renderTable();
+    renderProjectTable();  // ← refresh project status when selections change
     renderStats();
   });
 }
 
 // ═══════════════════════════════════════════════════════════
-//  RENDER: STATS
+//  STATS
 // ═══════════════════════════════════════════════════════════
 function renderStats() {
   const total = Object.keys(projectsData).length;
@@ -378,38 +496,110 @@ function renderStats() {
   statProjects.textContent = taken;
   statRemaining.textContent = Math.max(0, total - taken);
   statTotal.textContent = total;
+
+  const unreg = getUnregisteredStudents();
+  statUnreg.textContent = unreg.length;
+  unregCount.textContent = unreg.length;
 }
 
 // ═══════════════════════════════════════════════════════════
-//  RENDER: SUBMISSIONS TABLE
+//  UNREGISTERED STUDENTS
+// ═══════════════════════════════════════════════════════════
+function getRegisteredNumbers() {
+  const set = {};
+  Object.values(selectionsData).forEach(sel => {
+    if (sel.student1) set[sel.student1.toLowerCase()] = true;
+    if (sel.student2) set[sel.student2.toLowerCase()] = true;
+  });
+  return set;
+}
+
+function getUnregisteredStudents() {
+  const registered = getRegisteredNumbers();
+  const out = [];
+  for (const [id, s] of Object.entries(studentsData)) {
+    const num = (s.studentNumber || '').toLowerCase();
+    if (!num) continue;
+
+    // Filter by current class tab. Treat missing class as 'advanced'.
+    const sClass = s.class || 'advanced';
+    if (sClass !== currentClass) continue;
+
+    if (!registered[num]) {
+      out.push({ id, ...s });
+    }
+  }
+  out.sort((a, b) => (a.lastName || '').localeCompare(b.lastName || ''));
+  return out;
+}
+
+function renderUnregistered() {
+  const list = getUnregisteredStudents();
+  if (list.length === 0) {
+    unregTableBody.innerHTML = `<tr><td colspan="3" class="empty">🎉 All students in ${CLASSES[currentClass].name} have registered.</td></tr>`;
+    return;
+  }
+  unregTableBody.innerHTML = list.map((s, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><strong>${escapeHtml(s.studentNumber)}</strong></td>
+      <td>${escapeHtml(s.firstName)} ${escapeHtml(s.lastName)}</td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SUBMISSIONS TABLE
 // ═══════════════════════════════════════════════════════════
 function renderTable() {
   const entries = Object.entries(selectionsData);
   if (entries.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="8" class="empty">No teams have registered yet in ${CLASSES[currentClass].name}.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="9" class="empty">No teams have registered yet in ${CLASSES[currentClass].name}.</td></tr>`;
     return;
   }
   entries.sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+
   tableBody.innerHTML = entries.map(([pid, info], i) => {
     const proj = projectsData[pid] || { name: pid, category: '—' };
-    const time = info.timestamp
-      ? new Date(info.timestamp).toLocaleString('en-GB', {
-          day:'2-digit', month:'short', year:'numeric',
-          hour:'2-digit', minute:'2-digit'
-        })
-      : '—';
+    const group = groupsData[info.groupId] || {};
+    const scs = group.screencasts || {};
+    const scList = Object.entries(scs).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+    const scCount = scList.length;
+    const gh = group.githubLink || '';
+    const time = info.timestamp ? new Date(info.timestamp).toLocaleString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    }) : '—';
+
+    const scHTML = scCount === 0
+      ? '<span style="color:#8ba0b8; font-size:0.8rem;">—</span>'
+      : `<div class="sc-list">
+          ${scList.slice(0, 3).map(([scId, sc]) => `
+            <div class="sc-item">
+              <div class="thumb-small" onclick="playVideo('${escapeHtml(sc.url)}', '${escapeHtml(sc.title || 'Screencast')}')">▶️</div>
+              <div class="sc-item-title" title="${escapeHtml(sc.title || '')}">${escapeHtml(sc.title || 'Untitled')}</div>
+            </div>
+          `).join('')}
+          ${scCount > 3 ? `<div style="font-size:0.8rem; color:#5b7b9c;">+${scCount - 3}</div>` : ''}
+        </div>`;
+
+    const ghHTML = gh
+      ? `<a class="gh-link" href="${escapeHtml(gh)}" target="_blank">🔗 Open repo</a>`
+      : '<span style="color:#8ba0b8; font-size:0.8rem;">—</span>';
+
     return `
       <tr>
         <td>${i + 1}</td>
-        <td><strong>${escapeHtml(info.groupName)}</strong></td>
-        <td>${escapeHtml(info.student1)}</td>
+        <td><strong>${escapeHtml(info.student1)}</strong></td>
         <td>${escapeHtml(info.student2)}</td>
         <td>${escapeHtml(proj.name)}</td>
         <td><span class="cat-pill">${escapeHtml(proj.category)}</span></td>
+        <td>${scHTML}</td>
+        <td>${ghHTML}</td>
         <td>${time}</td>
         <td>
-          <button class="icon-btn danger" title="Delete this registration"
-            onclick="deleteSelection('${escapeHtml(pid)}', '${escapeHtml(info.groupName)}')">🗑️</button>
+          <button class="icon-btn" title="Delete registration"
+            onclick="deleteSelection('${escapeHtml(pid)}', '${escapeHtml(info.student1)} & ${escapeHtml(info.student2)}')">🗑️</button>
         </td>
       </tr>
     `;
@@ -417,7 +607,7 @@ function renderTable() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  RENDER: PROJECT TABLE
+//  PROJECT TABLE
 // ═══════════════════════════════════════════════════════════
 function renderProjectTable() {
   const entries = Object.entries(projectsData);
@@ -434,15 +624,55 @@ function renderProjectTable() {
         <td><strong>${escapeHtml(p.name)}</strong></td>
         <td><span class="cat-pill">${escapeHtml(p.category || '—')}</span></td>
         <td>${taken
-          ? `<span style="color:#b91c1c; font-weight:600;">🔒 Taken by ${escapeHtml(taken.groupName)}</span>`
+          ? `<span style="color:#b91c1c; font-weight:600;">🔒 Taken by ${escapeHtml(taken.student1)} & ${escapeHtml(taken.student2)}</span>`
           : '<span style="color:#15803d; font-weight:600;">✅ Available</span>'}</td>
         <td>
-          <button class="icon-btn danger" title="Delete project"
+          <button class="icon-btn" title="Delete project"
             onclick="deleteProject('${escapeHtml(pid)}', '${escapeHtml(p.name)}')">🗑️</button>
         </td>
       </tr>
     `;
   }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  VIDEO MODAL
+// ═══════════════════════════════════════════════════════════
+function playVideo(url, title) {
+  document.getElementById('modalTitle').textContent = title || 'Screencast';
+  const embed = oneDriveEmbed(url);
+  const target = document.getElementById('modalVideo');
+  if (embed) {
+    target.innerHTML = `<iframe src="${escapeHtml(embed)}" allowfullscreen></iframe>`;
+  } else {
+    target.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:1rem; align-items:center; justify-content:center; height:100%; color:white; padding:2rem;">
+        <div style="font-size:3rem;">📼</div>
+        <p>Preview not available. Open in OneDrive:</p>
+        <a href="${escapeHtml(url)}" target="_blank" class="btn" style="text-decoration:none;">🔗 Open link</a>
+      </div>`;
+  }
+  document.getElementById('videoModal').classList.add('show');
+}
+function closeVideo() {
+  document.getElementById('videoModal').classList.remove('show');
+  document.getElementById('modalVideo').innerHTML = '';
+}
+window.playVideo = playVideo;
+window.closeVideo = closeVideo;
+
+function oneDriveEmbed(url) {
+  if (!url) return null;
+  try {
+    if (url.includes('1drv.ms')) return url + (url.includes('?') ? '&' : '?') + 'embed=1';
+    if (url.includes('onedrive.live.com/embed')) return url;
+    if (url.includes('onedrive.live.com')) {
+      const u = new URL(url);
+      const resid = u.searchParams.get('resid');
+      if (resid) return `https://onedrive.live.com/embed?resid=${encodeURIComponent(resid)}&authkey=`;
+    }
+    return null;
+  } catch { return null; }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -470,6 +700,10 @@ addProjectBtn.addEventListener('click', async () => {
 async function deleteProject(pid, name) {
   if (!confirm(`Delete project "${name}"?\n\nThis also removes any team registered for it.`)) return;
   try {
+    const sel = selectionsData[pid];
+    if (sel && sel.groupId) {
+      await db.ref(`groups/${sel.groupId}`).remove();
+    }
     await db.ref(`classes/${currentClass}/projects/${pid}`).remove();
     await db.ref(`classes/${currentClass}/selections/${pid}`).remove();
   } catch (e) {
@@ -478,16 +712,22 @@ async function deleteProject(pid, name) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  DELETE SELECTION (team-project pair)
+//  DELETE SELECTION
 // ═══════════════════════════════════════════════════════════
-async function deleteSelection(pid, groupName) {
-  if (!confirm(`Remove registration of "${groupName}"?\n\nThe project will become available again.`)) return;
+async function deleteSelection(pid, label) {
+  if (!confirm(`Remove registration "${label}"?\n\nThe project will become available again.`)) return;
   try {
+    const sel = selectionsData[pid];
+    if (sel && sel.groupId) {
+      await db.ref(`groups/${sel.groupId}`).remove();
+    }
     await db.ref(`classes/${currentClass}/selections/${pid}`).remove();
   } catch (e) {
     alert('Error deleting registration: ' + e.message);
   }
 }
+window.deleteProject = deleteProject;
+window.deleteSelection = deleteSelection;
 
 // ═══════════════════════════════════════════════════════════
 //  EXCEL EXPORT
@@ -497,22 +737,24 @@ exportBtn.addEventListener('click', () => {
   if (entries.length === 0) { alert('No data to export.'); return; }
 
   entries.sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0));
-  const rows = [['#', 'Group Name', 'Student 1', 'Student 2', 'Project', 'Category', 'Registered At']];
+  const rows = [['#', 'Student 1', 'Student 2', 'Project', 'Category', 'Screencasts', 'GitHub', 'Registered At']];
   entries.forEach(([pid, info], i) => {
     const p = projectsData[pid] || { name: pid, category: '—' };
+    const g = groupsData[info.groupId] || {};
     rows.push([
       i + 1,
-      info.groupName || '',
       info.student1 || '',
       info.student2 || '',
       p.name,
       p.category,
+      Object.keys(g.screencasts || {}).length,
+      g.githubLink || '',
       info.timestamp ? new Date(info.timestamp).toLocaleString('en-GB') : ''
     ]);
   });
 
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:5},{wch:22},{wch:18},{wch:18},{wch:36},{wch:22},{wch:22}];
+  ws['!cols'] = [{wch:4},{wch:14},{wch:14},{wch:34},{wch:20},{wch:12},{wch:40},{wch:22}];
 
   const total = Object.keys(projectsData).length;
   const taken = entries.length;
@@ -527,19 +769,28 @@ exportBtn.addEventListener('click', () => {
   const ws2 = XLSX.utils.aoa_to_sheet(summaryRows);
   ws2['!cols'] = [{wch:22},{wch:30}];
 
+  // Sheet 3: unregistered students
+  const unreg = getUnregisteredStudents();
+  const rows3 = [['#', 'Student Number', 'First Name', 'Last Name']];
+  unreg.forEach((s, i) => rows3.push([i + 1, s.studentNumber, s.firstName, s.lastName]));
+  const ws3 = XLSX.utils.aoa_to_sheet(rows3);
+  ws3['!cols'] = [{wch:4},{wch:16},{wch:22},{wch:22}];
+
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Submissions');
+  XLSX.utils.book_append_sheet(wb, ws, 'Registered');
+  XLSX.utils.book_append_sheet(wb, ws3, 'Not Registered');
   XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
 
   const now = new Date();
-  const stamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-  XLSX.writeFile(wb, `${CLASSES[currentClass].name.replace(/\s+/g,'_')}_Submissions_${stamp}.xlsx`);
+  const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+  XLSX.writeFile(wb, `${CLASSES[currentClass].name.replace(/\s+/g, '_')}_Submissions_${stamp}.xlsx`);
 });
 
 // ═══════════════════════════════════════════════════════════
 //  REFRESH
 // ═══════════════════════════════════════════════════════════
 refreshBtn.addEventListener('click', () => {
+  attachGlobalListeners();
   attachClassListeners();
 });
 
@@ -548,8 +799,8 @@ refreshBtn.addEventListener('click', () => {
 // ═══════════════════════════════════════════════════════════
 function escapeHtml(s) {
   if (s == null) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // ═══════════════════════════════════════════════════════════
