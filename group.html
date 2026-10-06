@@ -59,4 +59,532 @@
       font-size: 0.75rem; padding: 0.3rem 0.9rem; border-radius: 20px;
       letter-spacing: 0.6px; text-transform: uppercase; font-weight: 600; margin-top: 0.8rem; }
 
-    .card { background: white; border-radius: 22px; padding: 
+    .card { background: white; border-radius: 22px; padding: 1.8rem;
+      box-shadow: 0 10px 26px -12px rgba(0,30,60,0.12);
+      margin-bottom: 1.2rem; border: 1px solid #eef2f7; }
+    .card h3 { font-size: 1.15rem; color: #0b2b4f; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem; }
+    .card h3 .count { background: #e9f0f7; color: #5b7b9c; font-size: 0.75rem;
+      padding: 0.15rem 0.6rem; border-radius: 20px; font-weight: 700; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem; }
+    .info-item { padding: 0.9rem 1.1rem; background: #f6faff; border-radius: 14px;
+      border-left: 4px solid #1e4c7a; }
+    .info-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px;
+      color: #5b7b9c; font-weight: 700; margin-bottom: 0.3rem; }
+    .info-value { font-size: 1.05rem; font-weight: 600; color: #0b2b4f; }
+
+    /* SCREENCASTS */
+    .screencast-form { display: flex; flex-direction: column; gap: 0.8rem; }
+    .input-row { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+    .input-row input { flex: 1 1 200px; padding: 0.85rem 1.2rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-size: 0.95rem; font-family: inherit; outline: none; }
+    .input-row input:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
+
+    .screencast-grid { display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;
+      margin-top: 1.2rem; }
+    .screencast-card { background: #f8fafc; border-radius: 16px; overflow: hidden;
+      border: 1px solid #e2eaf2; display: flex; flex-direction: column; }
+    .thumb { position: relative; width: 100%; aspect-ratio: 16/9;
+      background: #0b2b4f; display: flex; align-items: center; justify-content: center; }
+    .thumb iframe { width: 100%; height: 100%; border: 0; }
+    .thumb-placeholder { color: #5b7b9c; font-size: 0.9rem; text-align: center; padding: 1rem; }
+    .sc-body { padding: 0.9rem 1rem; flex: 1; display: flex;
+      flex-direction: column; gap: 0.4rem; }
+    .sc-title { font-weight: 600; color: #0b2b4f; font-size: 0.95rem;
+      word-break: break-word; }
+    .sc-meta { font-size: 0.75rem; color: #8ba0b8; }
+    .sc-actions { display: flex; gap: 0.4rem; margin-top: 0.4rem; flex-wrap: wrap; }
+    .chip { display: inline-block; background: #e9f0f7; color: #5b7b9c;
+      font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 20px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+
+    .placeholder { background: #f8fafc; border: 2px dashed #cbd5e1;
+      border-radius: 14px; padding: 2rem; text-align: center; color: #5b7b9c; }
+
+    .github-row { display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
+    .github-row input { flex: 1 1 300px; padding: 0.9rem 1.2rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.95rem;
+      outline: none; }
+    .github-row input:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
+    .github-link { color: #1e4c7a; text-decoration: none; font-weight: 600; }
+    .github-link:hover { text-decoration: underline; }
+
+    .hidden { display: none !important; }
+
+    /* MODAL */
+    .modal-bg { position: fixed; inset: 0; background: rgba(10,20,35,0.65);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; z-index: 999; }
+    .modal { background: white; border-radius: 22px; padding: 2rem;
+      max-width: 480px; width: 100%; text-align: center;
+      box-shadow: 0 30px 60px -20px rgba(0,20,40,0.4); }
+    .modal h3 { color: #0b2b4f; font-size: 1.4rem; margin-bottom: 0.5rem; }
+    .modal p { color: #5b7b9c; margin-bottom: 1.5rem; font-size: 0.95rem; }
+    .modal input { width: 100%; padding: 0.95rem 1.2rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 1rem;
+      outline: none; margin-bottom: 0.9rem; text-align: center; letter-spacing: 1.5px; }
+    .modal input:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- LOGIN -->
+  <div id="loginView">
+    <div class="icon">🎓</div>
+    <h2>Team Login</h2>
+    <p>Enter your student number and password</p>
+    <input type="text" id="studentNumber" placeholder="Student number" autocomplete="off">
+    <input type="password" id="groupPassword" placeholder="Password" autocomplete="off">
+    <button class="btn" id="loginBtn" style="width:100%;">Log in</button>
+    <div class="error-msg" id="loginError"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardView" class="hidden">
+    <header>
+      <div>
+        <h1 id="greeting">Welcome</h1>
+        <p id="classSubtitle">—</p>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="logoutBtn">Log out</button>
+    </header>
+
+    <div class="banner">
+      <div class="banner-label">Your project</div>
+      <div class="banner-name" id="projectName">—</div>
+      <div class="banner-cat" id="projectCategory" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+      <h3>👥 Your team</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Student 1</div>
+          <div class="info-value" id="student1Val">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Student 2</div>
+          <div class="info-value" id="student2Val">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Class</div>
+          <div class="info-value" id="classVal">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🎬 Screencasts <span class="count" id="scCount">0</span></h3>
+      <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
+        Paste a <strong>public OneDrive share link</strong> to your screencast. Both team members can add.
+      </p>
+      <div class="screencast-form">
+        <div class="input-row">
+          <input type="text" id="scTitle" placeholder="Short title (e.g. Milestone 1 demo)">
+          <input type="text" id="scUrl" placeholder="OneDrive share link (https://1drv.ms/v/... or onedrive.live.com/...)" style="flex:2 1 400px;">
+          <button class="btn btn-sm" id="addScBtn">➕ Add screencast</button>
+        </div>
+      </div>
+      <div id="scList" class="screencast-grid"></div>
+      <div id="scEmpty" class="placeholder" style="margin-top:1rem; display:none;">
+        No screencasts yet. Add your first one above.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🐙 GitHub repository</h3>
+      <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
+        Set the URL of your team's GitHub repository.
+      </p>
+      <div class="github-row">
+        <input type="url" id="githubInput" placeholder="https://github.com/username/repo">
+        <button class="btn btn-sm" id="saveGhBtn">Save</button>
+      </div>
+      <div id="ghStatus" style="margin-top:0.8rem; font-size:0.9rem;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div id="pwdModal" class="modal-bg hidden">
+  <div class="modal">
+    <h3>🔐 Change your password</h3>
+    <p>For security, please set a new password before continuing.</p>
+    <input type="password" id="newPwd" placeholder="New password (min 6 chars)">
+    <input type="password" id="newPwd2" placeholder="Repeat new password">
+    <button class="btn" id="savePwdBtn" style="width:100%;">Save new password</button>
+    <div class="error-msg" id="pwdError"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
+  authDomain: "ai-project-tool.firebaseapp.com",
+  databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ai-project-tool",
+  storageBucket: "ai-project-tool.firebasestorage.app",
+  messagingSenderId: "658331100512",
+  appId: "1:658331100512:web:72208dc0c1561b95bcaa05",
+  measurementId: "G-R36B3T9FLW"
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ═══════════════════════════════════════════════════════════
+//  DOM
+// ═══════════════════════════════════════════════════════════
+const loginView = document.getElementById('loginView');
+const dashboardView = document.getElementById('dashboardView');
+const studentNumberInput = document.getElementById('studentNumber');
+const groupPasswordInput = document.getElementById('groupPassword');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+const greeting = document.getElementById('greeting');
+const classSubtitle = document.getElementById('classSubtitle');
+const projectName = document.getElementById('projectName');
+const projectCategory = document.getElementById('projectCategory');
+const student1Val = document.getElementById('student1Val');
+const student2Val = document.getElementById('student2Val');
+const classVal = document.getElementById('classVal');
+const scTitle = document.getElementById('scTitle');
+const scUrl = document.getElementById('scUrl');
+const addScBtn = document.getElementById('addScBtn');
+const scList = document.getElementById('scList');
+const scEmpty = document.getElementById('scEmpty');
+const scCount = document.getElementById('scCount');
+const githubInput = document.getElementById('githubInput');
+const saveGhBtn = document.getElementById('saveGhBtn');
+const ghStatus = document.getElementById('ghStatus');
+const pwdModal = document.getElementById('pwdModal');
+const newPwd = document.getElementById('newPwd');
+const newPwd2 = document.getElementById('newPwd2');
+const savePwdBtn = document.getElementById('savePwdBtn');
+const pwdError = document.getElementById('pwdError');
+
+let currentGroup = null;
+let groupListener = null;
+
+// ═══════════════════════════════════════════════════════════
+//  LOGIN
+// ═══════════════════════════════════════════════════════════
+loginBtn.addEventListener('click', doLogin);
+[studentNumberInput, groupPasswordInput].forEach(inp => {
+  inp.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+});
+
+async function doLogin() {
+  const studentNum = studentNumberInput.value.trim();
+  const password = groupPasswordInput.value.trim();
+
+  if (!studentNum || !password) {
+    loginError.textContent = 'Please enter both fields.';
+    return;
+  }
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Checking…';
+  loginError.textContent = '';
+
+  try {
+    const snap = await db.ref('groups').once('value');
+    const groups = snap.val() || {};
+    const numLower = studentNum.toLowerCase();
+
+    let match = null;
+    for (const [groupId, g] of Object.entries(groups)) {
+      const s1 = (g.student1 || '').toLowerCase();
+      const s2 = (g.student2 || '').toLowerCase();
+      if ((s1 === numLower || s2 === numLower) && g.password === password) {
+        match = { groupId, ...g };
+        break;
+      }
+    }
+
+    if (!match) {
+      loginError.textContent = '❌ Invalid student number or password.';
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Log in';
+      return;
+    }
+
+    sessionStorage.setItem('group_session', JSON.stringify({
+      groupId: match.groupId
+    }));
+
+    currentGroup = match;
+    showDashboard(match);
+
+    if (match.mustChangePassword) {
+      pwdModal.classList.remove('hidden');
+    }
+  } catch (e) {
+    console.error(e);
+    loginError.textContent = 'Error: ' + e.message;
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Log in';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CHANGE PASSWORD
+// ═══════════════════════════════════════════════════════════
+savePwdBtn.addEventListener('click', async () => {
+  const p1 = newPwd.value.trim();
+  const p2 = newPwd2.value.trim();
+  if (p1.length < 6) { pwdError.textContent = 'Password must be at least 6 characters.'; return; }
+  if (p1 !== p2) { pwdError.textContent = 'Passwords do not match.'; return; }
+  if (p1 === '123456') { pwdError.textContent = 'Please choose a different password.'; return; }
+
+  savePwdBtn.disabled = true;
+  savePwdBtn.textContent = 'Saving…';
+
+  try {
+    await db.ref(`groups/${currentGroup.groupId}`).update({
+      password: p1,
+      mustChangePassword: false,
+      passwordChangedAt: Date.now()
+    });
+    currentGroup.password = p1;
+    currentGroup.mustChangePassword = false;
+    pwdModal.classList.add('hidden');
+    newPwd.value = '';
+    newPwd2.value = '';
+    pwdError.textContent = '';
+  } catch (e) {
+    pwdError.textContent = 'Error: ' + e.message;
+  } finally {
+    savePwdBtn.disabled = false;
+    savePwdBtn.textContent = 'Save new password';
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function showDashboard(group) {
+  loginView.classList.add('hidden');
+  dashboardView.classList.remove('hidden');
+
+  projectName.textContent = group.projectName || group.projectId;
+  projectCategory.textContent = group.projectCategory || '';
+  if (group.projectCategory) projectCategory.style.display = 'inline-block';
+
+  const classLabel = group.class === 'gameplay' ? 'Gameplay' : 'Advanced Programming';
+  greeting.textContent = `Hi ${group.student1Name || group.student1} & ${group.student2Name || group.student2} 👋`;
+  classSubtitle.textContent = classLabel;
+  student1Val.textContent = group.student1;
+  student2Val.textContent = group.student2;
+  classVal.textContent = classLabel;
+  githubInput.value = group.githubLink || '';
+  renderGithubStatus();
+
+  // Load screencasts + listen for changes
+  if (groupListener) groupListener.off();
+  groupListener = db.ref(`groups/${group.groupId}`);
+  groupListener.on('value', snap => {
+    const fresh = snap.val();
+    if (fresh) {
+      currentGroup = { groupId: group.groupId, ...fresh };
+      renderScreencasts(fresh.screencasts || {});
+      githubInput.value = fresh.githubLink || '';
+      renderGithubStatus();
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SCREENCASTS
+// ═══════════════════════════════════════════════════════════
+addScBtn.addEventListener('click', async () => {
+  const title = scTitle.value.trim() || 'Untitled';
+  const url = scUrl.value.trim();
+
+  if (!url) { alert('Please paste a OneDrive link.'); return; }
+  if (!/^https?:\/\//i.test(url)) { alert('URL must start with http:// or https://'); return; }
+
+  addScBtn.disabled = true;
+  addScBtn.textContent = 'Adding…';
+
+  try {
+    const id = 'sc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    await db.ref(`groups/${currentGroup.groupId}/screencasts/${id}`).set({
+      id,
+      title,
+      url,
+      addedBy: studentNumberInput.value.trim() || currentGroup.student1,
+      timestamp: Date.now()
+    });
+    scTitle.value = '';
+    scUrl.value = '';
+  } catch (e) {
+    alert('Error: ' + e.message);
+  } finally {
+    addScBtn.disabled = false;
+    addScBtn.textContent = '➕ Add screencast';
+  }
+});
+
+function renderScreencasts(scs) {
+  const entries = Object.entries(scs || {});
+  scCount.textContent = entries.length;
+
+  if (entries.length === 0) {
+    scList.innerHTML = '';
+    scEmpty.style.display = 'block';
+    return;
+  }
+  scEmpty.style.display = 'none';
+
+  entries.sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+
+  scList.innerHTML = entries.map(([id, sc]) => {
+    const embed = oneDriveEmbed(sc.url);
+    const time = sc.timestamp ? new Date(sc.timestamp).toLocaleString('en-GB', {
+      day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+    }) : '';
+    return `
+      <div class="screencast-card">
+        <div class="thumb">
+          ${embed
+            ? `<iframe src="${escapeHtml(embed)}" allowfullscreen loading="lazy"></iframe>`
+            : `<div class="thumb-placeholder">📼<br>Link preview unavailable</div>`}
+        </div>
+        <div class="sc-body">
+          <div class="sc-title">${escapeHtml(sc.title || 'Untitled')}</div>
+          <div class="sc-meta">${escapeHtml(time)} · by ${escapeHtml(sc.addedBy || '—')}</div>
+          <div class="sc-actions">
+            <a href="${escapeHtml(sc.url)}" target="_blank" class="chip" style="text-decoration:none;">🔗 Open</a>
+            <button class="chip" style="cursor:pointer; border:none;" onclick="deleteSc('${escapeHtml(id)}')">🗑️ Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function deleteSc(id) {
+  if (!confirm('Remove this screencast?')) return;
+  try {
+    await db.ref(`groups/${currentGroup.groupId}/screencasts/${id}`).remove();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+window.deleteSc = deleteSc;
+
+// Convert OneDrive share link → embeddable iframe URL
+function oneDriveEmbed(url) {
+  if (!url) return null;
+  try {
+    // Case 1: 1drv.ms short link → can't convert easily; use direct iframe of share link
+    if (url.includes('1drv.ms')) {
+      // OneDrive short links work in an iframe with ?embed=1 sometimes; fallback ok
+      return url + (url.includes('?') ? '&' : '?') + 'embed=1';
+    }
+    // Case 2: onedrive.live.com/embed?resid=...  → already an embed
+    if (url.includes('onedrive.live.com/embed')) return url;
+    // Case 3: onedrive.live.com/...?resid=XXX → convert
+    if (url.includes('onedrive.live.com')) {
+      const u = new URL(url);
+      const resid = u.searchParams.get('resid');
+      if (resid) {
+        return `https://onedrive.live.com/embed?resid=${encodeURIComponent(resid)}&authkey=`;
+      }
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GITHUB LINK
+// ═══════════════════════════════════════════════════════════
+saveGhBtn.addEventListener('click', async () => {
+  const url = githubInput.value.trim();
+  if (url && !/^https?:\/\//i.test(url)) {
+    ghStatus.innerHTML = '<span style="color:#b91c1c;">⚠️ URL must start with http:// or https://</span>';
+    return;
+  }
+  saveGhBtn.disabled = true;
+  saveGhBtn.textContent = 'Saving…';
+  try {
+    await db.ref(`groups/${currentGroup.groupId}/githubLink`).set(url);
+    ghStatus.innerHTML = '<span style="color:#15803d;">✅ Saved</span>';
+    setTimeout(() => { ghStatus.innerHTML = ''; }, 2500);
+  } catch (e) {
+    ghStatus.innerHTML = '<span style="color:#b91c1c;">Error: ' + escapeHtml(e.message) + '</span>';
+  } finally {
+    saveGhBtn.disabled = false;
+    saveGhBtn.textContent = 'Save';
+  }
+});
+
+function renderGithubStatus() {
+  const url = currentGroup.githubLink;
+  if (url) {
+    ghStatus.innerHTML = `🔗 <a class="github-link" href="${escapeHtml(url)}" target="_blank">${escapeHtml(url)}</a>`;
+  } else {
+    ghStatus.innerHTML = '<span style="color:#8ba0b8;">No GitHub link set yet.</span>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LOGOUT
+// ═══════════════════════════════════════════════════════════
+logoutBtn.addEventListener('click', () => {
+  sessionStorage.removeItem('group_session');
+  if (groupListener) { groupListener.off(); groupListener = null; }
+  currentGroup = null;
+  dashboardView.classList.add('hidden');
+  loginView.classList.remove('hidden');
+  studentNumberInput.value = '';
+  groupPasswordInput.value = '';
+  loginError.textContent = '';
+  loginBtn.disabled = false;
+  loginBtn.textContent = 'Log in';
+  studentNumberInput.focus();
+});
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AUTO-LOGIN
+// ═══════════════════════════════════════════════════════════
+(function init() {
+  const saved = sessionStorage.getItem('group_session');
+  if (!saved) return;
+  try {
+    const g = JSON.parse(saved);
+    db.ref(`groups/${g.groupId}`).once('value').then(snap => {
+      if (snap.exists()) {
+        const fresh = snap.val();
+        currentGroup = { groupId: g.groupId, ...fresh };
+        showDashboard(currentGroup);
+      } else {
+        sessionStorage.removeItem('group_session');
+      }
+    });
+  } catch (e) {
+    sessionStorage.removeItem('group_session');
+  }
+})();
+</script>
+</body>
+</html>
