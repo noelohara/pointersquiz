@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Project · GESMA</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(145deg, #f7f9fc 0%, #e9eef3 100%);
+      min-height: 100vh; padding: 2rem 1.5rem; color: #1f2a3a; }
+    .container { max-width: 1050px; margin: 0 auto; }
+
+    /* LOGIN */
+    #loginView { max-width: 440px; margin: 5rem auto; text-align: center;
+      background: white; padding: 2.5rem 2rem; border-radius: 26px;
+      box-shadow: 0 20px 40px -12px rgba(0,30,60,0.18); }
+    #loginView .icon { font-size: 3rem; margin-bottom: 1rem; }
+    #loginView h2 { color: #0b2b4f; margin-bottom: 0.4rem; font-size: 1.6rem; }
+    #loginView p { color: #5b7b9c; font-size: 0.92rem; margin-bottom: 1.8rem; }
+    #loginView input { width: 100%; padding: 1rem 1.3rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-size: 1rem; font-family: inherit;
+      outline: none; margin-bottom: 0.9rem; text-align: center; letter-spacing: 1px; }
+    #loginView input:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
+
+    .btn { background: #1e4c7a; color: white; font-weight: 600; border: none;
+      padding: 1rem 2rem; border-radius: 60px; font-size: 1rem;
+      cursor: pointer; font-family: inherit; transition: background 0.15s, transform 0.1s;
+      box-shadow: 0 8px 16px -4px rgba(20,60,110,0.3); }
+    .btn:hover { background: #123a5e; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; pointer-events: none; }
+    .btn-secondary { background: #e2e8f0; color: #1e2e44; box-shadow: none; }
+    .btn-secondary:hover { background: #cfdae6; }
+    .btn-sm { padding: 0.5rem 1.2rem; font-size: 0.85rem; }
+    .btn-danger { background: #b91c1c; }
+    .btn-danger:hover { background: #8b1e2b; }
+    .error-msg { color: #b91c1c; margin-top: 0.5rem; font-size: 0.9rem;
+      min-height: 1.2rem; font-weight: 500; }
+
+    /* DASHBOARD */
+    header { display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    header h1 { font-size: 1.9rem; color: #0b2b4f; }
+    header p { color: #5b7b9c; margin-top: 0.2rem; font-size: 0.95rem; }
+
+    .banner { background: linear-gradient(135deg, #1e4c7a 0%, #2d5a8a 100%);
+      color: white; border-radius: 24px; padding: 2rem; margin-bottom: 1.5rem;
+      position: relative; overflow: hidden;
+      box-shadow: 0 16px 32px -10px rgba(20,60,110,0.4); }
+    .banner::after { content: ""; position: absolute; right: -50px; top: -50px;
+      width: 200px; height: 200px; background: rgba(255,255,255,0.06); border-radius: 50%; }
+    .banner-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.2px;
+      opacity: 0.75; font-weight: 600; margin-bottom: 0.5rem; }
+    .banner-name { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    .banner-cat { display: inline-block; background: rgba(255,255,255,0.18);
+      font-size: 0.75rem; padding: 0.3rem 0.9rem; border-radius: 20px;
+      letter-spacing: 0.6px; text-transform: uppercase; font-weight: 600; margin-top: 0.8rem; }
+
+    .card { background: white; border-radius: 22px; padding: 
