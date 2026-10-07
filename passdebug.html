@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Class Debug</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+  body { font-family: system-ui, sans-serif; padding: 2rem; background: #f5f7fa; color: #1f2a3a; }
+  h1 { color: #0b2b4f; }
+  pre { background: white; padding: 1.5rem; border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: auto;
+        font-size: 0.9rem; line-height: 1.5; }
+  .ok { color: #15803d; font-weight: 700; }
+  .bad { color: #b91c1c; font-weight: 700; }
+  .warn { color: #d97706; font-weight: 700; }
+</style>
+</head>
+<body>
+  <h1>🔍 Class Field Debug</h1>
+  <p>Reading <code>groups/</code> from Firebase…</p>
+  <pre id="output">Loading…</pre>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
+  authDomain: "ai-project-tool.firebaseapp.com",
+  databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ai-project-tool",
+  storageBucket: "ai-project-tool.firebasestorage.app",
+  messagingSenderId: "658331100512",
+  appId: "1:658331100512:web:72208dc0c1561b95bcaa05"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+db.ref('groups').once('value').then(snap => {
+  const groups = snap.val() || {};
+  const keys = Object.keys(groups);
+  let out = '';
+
+  out += '════════════════════════════════════════════════\n';
+  out += 'TOTAL GROUPS IN DB: ' + keys.length + '\n';
+  out += '════════════════════════════════════════════════\n\n';
+
+  // Count by class field value (raw)
+  const classCounter = {};
+  keys.forEach(gid => {
+    const g = groups[gid];
+    const raw = g.class;
+    const display = raw === undefined ? '(undefined)'
+                  : raw === null ? '(null)'
+                  : raw === '' ? '(empty string)'
+                  : JSON.stringify(raw);
+    if (!classCounter[display]) classCounter[display] = [];
+    classCounter[display].push({
+      groupId: gid,
+      projectName: g.projectName || g.projectId || '?',
+      student1: g.student1 || '?',
+      student2: g.student2 || '?',
+      className: g.className || '(no className)'
+    });
+  });
+
+  out += '📊 CLASS VALUES FOUND:\n';
+  out += '────────────────────────────────────────────────\n';
+  Object.keys(classCounter).forEach(cls => {
+    out += '\n' + cls + ' → ' + classCounter[cls].length + ' group(s)\n';
+    classCounter[cls].slice(0, 5).forEach(g => {
+      out += '     • ' + g.groupId + '  |  ' + g.projectName +
+             '  |  students: ' + g.student1 + ' & ' + g.student2 + '\n';
+    });
+    if (classCounter[cls].length > 5) {
+      out += '     … and ' + (classCounter[cls].length - 5) + ' more\n';
+    }
+  });
+
+  out += '\n\n════════════════════════════════════════════════\n';
+  out += '🧪 FILTER TESTS:\n';
+  out += '════════════════════════════════════════════════\n\n';
+
+  function testFilter(label, matcher) {
+    let count = 0;
+    keys.forEach(gid => {
+      if (matcher(groups[gid])) count++;
+    });
+    const status = count > 0 ? '✅' : '❌';
+    out += status + ' ' + label + ' → ' + count + ' match\n';
+  }
+
+  testFilter('class === "Advanced Programming"',
+    g => (g.class || '').trim() === 'Advanced Programming');
+
+  testFilter('class === "advanced programming" (lowercase)',
+    g => (g.class || '').trim().toLowerCase() === 'advanced programming');
+
+  testFilter('class === "advanced"',
+    g => (g.class || '').trim().toLowerCase() === 'advanced');
+
+  testFilter('class startsWith "advanced" (lowercase)',
+    g => (g.class || '').trim().toLowerCase().startsWith('advanced'));
+
+  testFilter('class === "Gameplay"',
+    g => (g.class || '').trim() === 'Gameplay');
+
+  testFilter('class === "gameplay" (lowercase)',
+    g => (g.class || '').trim().toLowerCase() === 'gameplay');
+
+  out += '\n════════════════════════════════════════════════\n';
+  out += '📄 SAMPLE RECORD (first group, full JSON):\n';
+  out += '════════════════════════════════════════════════\n\n';
+  if (keys.length > 0) {
+    out += JSON.stringify(groups[keys[0]], null, 2);
+  }
+
+  document.getElementById('output').textContent = out;
+}).catch(err => {
+  document.getElementById('output').textContent = '❌ Error reading DB:\n' + err.message;
+});
+</script>
+</body>
+</html>
