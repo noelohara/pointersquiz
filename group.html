@@ -112,7 +112,6 @@
     .github-link { color: #1e4c7a; text-decoration: none; font-weight: 600; }
     .github-link:hover { text-decoration: underline; }
 
-    /* CALENDAR */
     .jn-cal-header { display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 0.8rem; margin-top: 1.5rem; }
     .jn-cal-title { font-size: 0.95rem; font-weight: 700; color: #5b7b9c;
@@ -121,8 +120,7 @@
     .jn-cal-nav { display: flex; gap: 0.4rem; }
     .jn-cal-nav button { background: #e2e8f0; border: none; padding: 0.4rem 0.9rem;
       border-radius: 30px; cursor: pointer; font-weight: 600;
-      font-family: inherit; font-size: 0.8rem; color: #1e2e44;
-      transition: background 0.15s; }
+      font-family: inherit; font-size: 0.8rem; color: #1e2e44; }
     .jn-cal-nav button:hover { background: #cfdae6; }
     .jn-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr);
       gap: 3px; background: #eef2f7; border-radius: 12px; padding: 6px; }
@@ -140,15 +138,10 @@
     .jn-cal-day .jn-cal-badge { font-size: 0.65rem; color: white;
       padding: 0.1rem 0.35rem; border-radius: 10px; margin-top: 0.2rem;
       font-weight: 700; }
-
-    /* Screencast calendar = green */
     .jn-cal-day.has-sc { background: #d4edda; border-color: #1f7a3e; }
     .jn-cal-day.has-sc .jn-cal-badge { background: #1f7a3e; }
-
-    /* Journal calendar = blue */
     .jn-cal-day.has-jn { background: #dbeafe; border-color: #1e4c7a; }
     .jn-cal-day.has-jn .jn-cal-badge { background: #1e4c7a; }
-
     .calendar-legend { display: flex; gap: 1rem; flex-wrap: wrap;
       font-size: 0.78rem; color: #5b7b9c; margin-top: 0.6rem; align-items: center; }
     .legend-item { display: flex; align-items: center; gap: 0.35rem; }
@@ -222,13 +215,10 @@
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════ -->
-    <!-- SCREENCASTS (shared team)                          -->
-    <!-- ═══════════════════════════════════════════════════ -->
     <div class="card">
       <h3>🎬 Team screencasts <span class="count" id="scCount">0</span></h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
-        Shared across the team — either member can add one. Paste a <strong>public OneDrive share link</strong>.
+        Shared across the team — either member can add one.
       </p>
       <div class="screencast-form">
         <div class="input-row">
@@ -238,11 +228,8 @@
         </div>
       </div>
       <div id="scList" class="screencast-grid"></div>
-      <div id="scEmpty" class="placeholder" style="margin-top:1rem;">
-        No screencasts yet.
-      </div>
+      <div id="scEmpty" class="placeholder" style="margin-top:1rem;">No screencasts yet.</div>
 
-      <!-- SCREENCAST CALENDAR -->
       <div>
         <div class="jn-cal-header">
           <div>
@@ -262,30 +249,24 @@
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════ -->
-    <!-- JOURNALS (per student, private)                    -->
-    <!-- ═══════════════════════════════════════════════════ -->
     <div class="card">
       <h3>📄 My development journals <span class="count" id="jnCount">0</span></h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
-        <strong>Private to you</strong> — only you can see these links. Upload your Word doc to OneDrive (share = <em>Anyone with the link can view</em>), then paste the link here.
+        <strong>Private to you</strong> — only you can see these links.
       </p>
       <div class="screencast-form">
         <div class="input-row">
-          <input type="text" id="jnTitle" placeholder="Title (e.g. Journal 1)">
+          <input type="text" id="jnTitle" placeholder="Title (e.g. Journal — Week 1)">
           <input type="text" id="jnUrl" placeholder="OneDrive Word doc link" style="flex:2 1 400px;">
           <button class="btn btn-sm" id="addJnBtn">➕ Add journal</button>
         </div>
         <div class="input-row">
-          <input type="text" id="jnSummary" placeholder="Short summary — what did you write about? (optional)" style="flex:1 1 100%;">
+          <input type="text" id="jnSummary" placeholder="Short summary (optional)" style="flex:1 1 100%;">
         </div>
       </div>
       <div id="jnList" class="screencast-grid"></div>
-      <div id="jnEmpty" class="placeholder" style="margin-top:1rem;">
-        No journals linked yet.
-      </div>
+      <div id="jnEmpty" class="placeholder" style="margin-top:1rem;">No journals linked yet.</div>
 
-      <!-- JOURNAL CALENDAR -->
       <div>
         <div class="jn-cal-header">
           <div>
@@ -307,9 +288,6 @@
 
     <div class="card">
       <h3>🐙 GitHub repository</h3>
-      <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
-        Shared team repository URL.
-      </p>
       <div class="github-row">
         <input type="url" id="githubInput" placeholder="https://github.com/username/repo">
         <button class="btn btn-sm" id="saveGhBtn">Save</button>
@@ -319,11 +297,10 @@
   </div>
 </div>
 
-<!-- CREATE PASSWORD MODAL (per student, first login) -->
 <div id="pwdModal" class="modal-bg">
   <div class="modal">
     <h3>🔐 Create your password</h3>
-    <p>Set a password for your own student number. Only you will use this to log in.</p>
+    <p>Set a password for your own student number.</p>
     <input type="password" id="newPwd" placeholder="New password (min 6 chars)">
     <input type="password" id="newPwd2" placeholder="Repeat new password">
     <button class="btn btn-block" id="savePwdBtn">Save password &amp; continue</button>
@@ -401,24 +378,17 @@ let currentStudentDisplay = null;
 let groupListener = null;
 let pendingGroup = null;
 let expectingPassword = false;
-
-// Two independent calendar states
-let scCalYear, scCalMonthIdx;
-let scCalData = {};
-
-let jnCalYear, jnCalMonthIdx;
-let jnCalData = {};
+let scCalYear, scCalMonthIdx, scCalData = {};
+let jnCalYear, jnCalMonthIdx, jnCalData = {};
 
 (function initCal() {
   const now = new Date();
-  scCalYear = now.getFullYear();
-  scCalMonthIdx = now.getMonth();
-  jnCalYear = now.getFullYear();
-  jnCalMonthIdx = now.getMonth();
+  scCalYear = now.getFullYear(); scCalMonthIdx = now.getMonth();
+  jnCalYear = now.getFullYear(); jnCalMonthIdx = now.getMonth();
 })();
 
 // ═══════════════════════════════════════════════════════════
-//  LOGIN
+//  LOGIN (RESILIENT — falls back to /selections if /groups missing)
 // ═══════════════════════════════════════════════════════════
 loginBtn.addEventListener('click', doLogin);
 [studentNumberInput, userPasswordInput].forEach(inp => {
@@ -439,16 +409,78 @@ async function doLogin() {
   try {
     const numLower = studentNum.toLowerCase();
 
-    const snap = await db.ref('groups').once('value');
-    const groups = snap.val() || {};
+    // ---- STEP 1: Try /groups (normal path) ----
     let match = null;
     let which = null;
 
+    const gSnap = await db.ref('groups').once('value');
+    const groups = gSnap.val() || {};
+
     for (const [groupId, g] of Object.entries(groups)) {
-      const s1 = (g.student1 || '').toLowerCase();
-      const s2 = (g.student2 || '').toLowerCase();
+      const s1 = (g.student1 || '').trim().toLowerCase();
+      const s2 = (g.student2 || '').trim().toLowerCase();
       if (s1 === numLower) { match = { groupId, ...g }; which = 'student1'; break; }
       if (s2 === numLower) { match = { groupId, ...g }; which = 'student2'; break; }
+    }
+
+    // ---- STEP 2: Fallback — scan /classes/*/selections ----
+    if (!match) {
+      console.log('Not found in /groups — scanning selections...');
+      for (const classId of ['gameplay', 'advanced']) {
+        const sSnap = await db.ref('classes/' + classId + '/selections').once('value');
+        const selections = sSnap.val() || {};
+
+        for (const [projectId, sel] of Object.entries(selections)) {
+          const s1 = (sel.student1 || '').trim().toLowerCase();
+          const s2 = (sel.student2 || '').trim().toLowerCase();
+          if (s1 === numLower || s2 === numLower) {
+            console.log('Found in selections:', classId, projectId, sel);
+
+            // Rebuild the group record
+            const pSnap = await db.ref('classes/' + classId + '/projects/' + projectId).once('value');
+            const proj = pSnap.val() || {};
+
+            let groupId = sel.groupId;
+            if (!groupId) {
+              groupId = 'grp_' + classId + '_' + projectId;
+              try {
+                await db.ref('classes/' + classId + '/selections/' + projectId + '/groupId').set(groupId);
+              } catch (e) { console.warn('Could not save groupId back:', e); }
+            }
+
+            const groupData = {
+              groupId,
+              groupName: (sel.student1 || '') + ' & ' + (sel.student2 || ''),
+              class: classId,
+              className: classId === 'gameplay' ? 'Gameplay' : 'Advanced Programming',
+              projectId,
+              projectName: proj.name || projectId,
+              projectCategory: proj.category || '',
+              student1: sel.student1,
+              student2: sel.student2,
+              passwords: sel.passwords || {},
+              createdAt: sel.timestamp || Date.now(),
+              rebuiltAt: Date.now(),
+              screencasts: sel.screencasts || {},
+              githubLink: sel.githubLink || ''
+            };
+
+            // Only write if not already there
+            const existing = await db.ref('groups/' + groupId).once('value');
+            if (!existing.exists()) {
+              await db.ref('groups/' + groupId).set(groupData);
+              console.log('Rebuilt group record:', groupId);
+            } else {
+              Object.assign(groupData, existing.val());
+            }
+
+            match = { groupId, ...groupData };
+            which = s1 === numLower ? 'student1' : 'student2';
+            break;
+          }
+        }
+        if (match) break;
+      }
     }
 
     if (!match) {
@@ -458,8 +490,15 @@ async function doLogin() {
       return;
     }
 
+    // ---- Password check (per-student OR legacy) ----
     const passwords = match.passwords || {};
-    const existingPwd = passwords[numLower];
+    let existingPwd = passwords[numLower];
+    if (!existingPwd && match.password) {
+      existingPwd = match.password;
+      try {
+        await db.ref('groups/' + match.groupId + '/passwords/' + numLower).set(match.password);
+      } catch (e) { console.warn('Migration failed:', e); }
+    }
 
     if (!existingPwd) {
       pendingGroup = { group: match, student: numLower, display: studentNum, which };
@@ -498,13 +537,10 @@ async function doLogin() {
     currentGroup = match;
 
     sessionStorage.setItem('group_session', JSON.stringify({
-      groupId: match.groupId,
-      student: numLower,
-      display: studentNum
+      groupId: match.groupId, student: numLower, display: studentNum
     }));
 
     showDashboard();
-
   } catch (e) {
     console.error(e);
     loginError.textContent = 'Error: ' + e.message;
@@ -514,14 +550,13 @@ async function doLogin() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  CREATE PASSWORD (per student, first login)
+//  CREATE PASSWORD
 // ═══════════════════════════════════════════════════════════
 savePwdBtn.addEventListener('click', async () => {
   const p1 = newPwd.value.trim();
   const p2 = newPwd2.value.trim();
   if (p1.length < 6) { pwdError.textContent = 'Password must be at least 6 characters.'; return; }
   if (p1 !== p2) { pwdError.textContent = 'Passwords do not match.'; return; }
-
   if (!pendingGroup) return;
 
   savePwdBtn.disabled = true;
@@ -529,23 +564,15 @@ savePwdBtn.addEventListener('click', async () => {
 
   try {
     await db.ref('groups/' + pendingGroup.group.groupId + '/passwords/' + pendingGroup.student).set(p1);
-
     currentStudent = pendingGroup.student;
     currentStudentDisplay = pendingGroup.display;
     currentGroup = {
       ...pendingGroup.group,
-      passwords: {
-        ...(pendingGroup.group.passwords || {}),
-        [pendingGroup.student]: p1
-      }
+      passwords: { ...(pendingGroup.group.passwords || {}), [pendingGroup.student]: p1 }
     };
-
     sessionStorage.setItem('group_session', JSON.stringify({
-      groupId: currentGroup.groupId,
-      student: currentStudent,
-      display: currentStudentDisplay
+      groupId: currentGroup.groupId, student: currentStudent, display: currentStudentDisplay
     }));
-
     pwdModal.classList.remove('show');
     pendingGroup = null;
     showDashboard();
@@ -564,7 +591,6 @@ function showDashboard() {
   dashboardView.classList.remove('hidden');
 
   const g = currentGroup;
-
   projectName.textContent = g.projectName || g.projectId || '—';
   projectCategory.textContent = g.projectCategory || '';
   if (g.projectCategory) projectCategory.style.display = 'inline-block';
@@ -573,14 +599,11 @@ function showDashboard() {
   greeting.textContent = 'Hi ' + currentStudentDisplay + ' 👋';
   classSubtitle.textContent = classLabel;
   loggedInAs.textContent = '👤 ' + currentStudentDisplay;
-
   student1Val.textContent = g.student1 || '—';
   student2Val.textContent = g.student2 || '—';
   classVal.textContent = classLabel;
-
   student1Box.classList.toggle('you', (g.student1 || '').toLowerCase() === currentStudent);
   student2Box.classList.toggle('you', (g.student2 || '').toLowerCase() === currentStudent);
-
   githubInput.value = g.githubLink || '';
   renderGithubStatus();
 
@@ -590,36 +613,29 @@ function showDashboard() {
     const fresh = snap.val();
     if (!fresh) return;
     currentGroup = { groupId: g.groupId, ...fresh };
-
-    // Shared screencasts + calendar
     const scs = fresh.screencasts || {};
     renderScreencasts(scs);
     scCalData = scs;
     renderScCalendar();
-
-    // Per-student journals + calendar
-    const myJournals = (fresh.journals && fresh.journals[currentStudent]) || {};
-    renderJournals(myJournals);
-    jnCalData = myJournals;
+    const myJn = (fresh.journals && fresh.journals[currentStudent]) || {};
+    renderJournals(myJn);
+    jnCalData = myJn;
     renderJnCalendar();
-
     githubInput.value = fresh.githubLink || '';
     renderGithubStatus();
   });
 }
 
 // ═══════════════════════════════════════════════════════════
-//  SCREENCASTS (shared)
+//  SCREENCASTS
 // ═══════════════════════════════════════════════════════════
 addScBtn.addEventListener('click', async () => {
   const title = scTitle.value.trim() || 'Untitled';
   const url = scUrl.value.trim();
   if (!url) { alert('Please paste a OneDrive link.'); return; }
   if (!/^https?:\/\//i.test(url)) { alert('URL must start with http:// or https://'); return; }
-
   addScBtn.disabled = true;
   addScBtn.textContent = 'Adding…';
-
   try {
     const id = 'sc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     await db.ref('groups/' + currentGroup.groupId + '/screencasts/' + id).set({
@@ -627,39 +643,27 @@ addScBtn.addEventListener('click', async () => {
       addedBy: currentStudentDisplay,
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
-    scTitle.value = '';
-    scUrl.value = '';
-  } catch (e) {
-    alert('Error: ' + e.message);
-  } finally {
-    addScBtn.disabled = false;
-    addScBtn.textContent = '➕ Add screencast';
-  }
+    scTitle.value = ''; scUrl.value = '';
+  } catch (e) { alert('Error: ' + e.message); }
+  finally { addScBtn.disabled = false; addScBtn.textContent = '➕ Add screencast'; }
 });
 
 function renderScreencasts(scs) {
   const entries = Object.entries(scs || {});
   scCount.textContent = entries.length;
-  if (entries.length === 0) {
-    scList.innerHTML = '';
-    scEmpty.style.display = 'block';
-    return;
-  }
+  if (entries.length === 0) { scList.innerHTML = ''; scEmpty.style.display = 'block'; return; }
   scEmpty.style.display = 'none';
   entries.sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
-
   scList.innerHTML = entries.map(([id, sc]) => {
     const embed = oneDriveEmbed(sc.url);
     const time = sc.timestamp ? new Date(sc.timestamp).toLocaleString('en-GB', {
-      weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
+      weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
     }) : '';
     return `
       <div class="screencast-card">
         <div class="thumb">
-          ${embed
-            ? '<iframe src="' + escapeHtml(embed) + '" allowfullscreen loading="lazy"></iframe>'
-            : '<div class="thumb-placeholder">📼<br>Link preview unavailable</div>'}
+          ${embed ? '<iframe src="' + escapeHtml(embed) + '" allowfullscreen loading="lazy"></iframe>'
+                  : '<div class="thumb-placeholder">📼<br>Link preview unavailable</div>'}
         </div>
         <div class="sc-body">
           <div class="sc-title">${escapeHtml(sc.title || 'Untitled')}</div>
@@ -676,11 +680,8 @@ function renderScreencasts(scs) {
 
 async function deleteSc(id) {
   if (!confirm('Remove this screencast?')) return;
-  try {
-    await db.ref('groups/' + currentGroup.groupId + '/screencasts/' + id).remove();
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
+  try { await db.ref('groups/' + currentGroup.groupId + '/screencasts/' + id).remove(); }
+  catch (e) { alert('Error: ' + e.message); }
 }
 window.deleteSc = deleteSc;
 
@@ -699,7 +700,7 @@ function oneDriveEmbed(url) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  JOURNALS — PER STUDENT
+//  JOURNALS
 // ═══════════════════════════════════════════════════════════
 addJnBtn.addEventListener('click', async () => {
   const title = jnTitle.value.trim() || 'Journal';
@@ -707,10 +708,8 @@ addJnBtn.addEventListener('click', async () => {
   const summary = jnSummary.value.trim();
   if (!url) { alert('Please paste a OneDrive link.'); return; }
   if (!/^https?:\/\//i.test(url)) { alert('URL must start with http:// or https://'); return; }
-
   addJnBtn.disabled = true;
   addJnBtn.textContent = 'Adding…';
-
   try {
     const id = 'jn_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     await db.ref('groups/' + currentGroup.groupId + '/journals/' + currentStudent + '/' + id).set({
@@ -718,32 +717,21 @@ addJnBtn.addEventListener('click', async () => {
       addedBy: currentStudentDisplay,
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
-    jnTitle.value = '';
-    jnUrl.value = '';
-    jnSummary.value = '';
-  } catch (e) {
-    alert('Error: ' + e.message);
-  } finally {
-    addJnBtn.disabled = false;
-    addJnBtn.textContent = '➕ Add journal';
-  }
+    jnTitle.value = ''; jnUrl.value = ''; jnSummary.value = '';
+  } catch (e) { alert('Error: ' + e.message); }
+  finally { addJnBtn.disabled = false; addJnBtn.textContent = '➕ Add journal'; }
 });
 
 function renderJournals(jns) {
   const entries = Object.entries(jns || {});
   jnCount.textContent = entries.length;
-
-  if (entries.length === 0) {
-    jnList.innerHTML = '';
-    jnEmpty.style.display = 'block';
-  } else {
+  if (entries.length === 0) { jnList.innerHTML = ''; jnEmpty.style.display = 'block'; }
+  else {
     jnEmpty.style.display = 'none';
     entries.sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
-
     jnList.innerHTML = entries.map(([id, jn]) => {
       const date = jn.timestamp ? new Date(jn.timestamp).toLocaleString('en-GB', {
-        weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
+        weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
       }) : '';
       return `
         <div class="screencast-card">
@@ -767,72 +755,35 @@ function renderJournals(jns) {
 
 async function deleteJn(id) {
   if (!confirm('Remove this journal link?')) return;
-  try {
-    await db.ref('groups/' + currentGroup.groupId + '/journals/' + currentStudent + '/' + id).remove();
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
+  try { await db.ref('groups/' + currentGroup.groupId + '/journals/' + currentStudent + '/' + id).remove(); }
+  catch (e) { alert('Error: ' + e.message); }
 }
 window.deleteJn = deleteJn;
 
 // ═══════════════════════════════════════════════════════════
-//  CALENDARS — 2 of them
+//  CALENDARS
 // ═══════════════════════════════════════════════════════════
 const MONTH_NAMES = ['January','February','March','April','May','June',
                      'July','August','September','October','November','December'];
 
-// --- SCREENCAST CALENDAR ---
-window.scCalPrev = function() {
-  scCalMonthIdx--;
-  if (scCalMonthIdx < 0) { scCalMonthIdx = 11; scCalYear--; }
-  renderScCalendar();
-};
-window.scCalNext = function() {
-  scCalMonthIdx++;
-  if (scCalMonthIdx > 11) { scCalMonthIdx = 0; scCalYear++; }
-  renderScCalendar();
-};
+window.scCalPrev = function() { scCalMonthIdx--; if (scCalMonthIdx < 0) { scCalMonthIdx = 11; scCalYear--; } renderScCalendar(); };
+window.scCalNext = function() { scCalMonthIdx++; if (scCalMonthIdx > 11) { scCalMonthIdx = 0; scCalYear++; } renderScCalendar(); };
+window.jnCalPrev = function() { jnCalMonthIdx--; if (jnCalMonthIdx < 0) { jnCalMonthIdx = 11; jnCalYear--; } renderJnCalendar(); };
+window.jnCalNext = function() { jnCalMonthIdx++; if (jnCalMonthIdx > 11) { jnCalMonthIdx = 0; jnCalYear++; } renderJnCalendar(); };
 
 function renderScCalendar() {
-  renderCalendar({
-    gridId: 'scCalGrid',
-    monthLabelId: 'scCalMonth',
-    year: scCalYear,
-    monthIdx: scCalMonthIdx,
-    items: scCalData,
-    dayClass: 'has-sc'
-  });
+  renderCalendar({ gridId: 'scCalGrid', monthLabelId: 'scCalMonth',
+    year: scCalYear, monthIdx: scCalMonthIdx, items: scCalData, dayClass: 'has-sc' });
 }
-
-// --- JOURNAL CALENDAR ---
-window.jnCalPrev = function() {
-  jnCalMonthIdx--;
-  if (jnCalMonthIdx < 0) { jnCalMonthIdx = 11; jnCalYear--; }
-  renderJnCalendar();
-};
-window.jnCalNext = function() {
-  jnCalMonthIdx++;
-  if (jnCalMonthIdx > 11) { jnCalMonthIdx = 0; jnCalYear++; }
-  renderJnCalendar();
-};
-
 function renderJnCalendar() {
-  renderCalendar({
-    gridId: 'jnCalGrid',
-    monthLabelId: 'jnCalMonth',
-    year: jnCalYear,
-    monthIdx: jnCalMonthIdx,
-    items: jnCalData,
-    dayClass: 'has-jn'
-  });
+  renderCalendar({ gridId: 'jnCalGrid', monthLabelId: 'jnCalMonth',
+    year: jnCalYear, monthIdx: jnCalMonthIdx, items: jnCalData, dayClass: 'has-jn' });
 }
 
-// --- SHARED RENDERER ---
 function renderCalendar(opts) {
   const grid = document.getElementById(opts.gridId);
   const label = document.getElementById(opts.monthLabelId);
   if (!grid || !label) return;
-
   label.textContent = MONTH_NAMES[opts.monthIdx] + ' ' + opts.year;
 
   const firstDay = new Date(opts.year, opts.monthIdx, 1);
@@ -840,7 +791,6 @@ function renderCalendar(opts) {
   let startOffset = firstDay.getDay() - 1;
   if (startOffset < 0) startOffset = 6;
 
-  // Build a map of dates → count from the items
   const marked = {};
   Object.values(opts.items).forEach(item => {
     if (!item.timestamp) return;
@@ -853,27 +803,21 @@ function renderCalendar(opts) {
   const todayKey = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
   let html = '';
-  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => {
-    html += '<div class="jn-cal-head">' + d + '</div>';
-  });
-  for (let i = 0; i < startOffset; i++) {
-    html += '<div class="jn-cal-day empty-day"></div>';
-  }
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => { html += '<div class="jn-cal-head">' + d + '</div>'; });
+  for (let i = 0; i < startOffset; i++) html += '<div class="jn-cal-day empty-day"></div>';
   for (let d = 1; d <= daysInMonth; d++) {
     const key = opts.year + '-' + String(opts.monthIdx + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     const classes = ['jn-cal-day'];
     if (key === todayKey) classes.push('today');
     if (marked[key]) classes.push(opts.dayClass);
     const badge = marked[key] ? '<div class="jn-cal-badge">' + marked[key] + '</div>' : '';
-    html += '<div class="' + classes.join(' ') + '">' +
-      '<div class="jn-cal-num">' + d + '</div>' + badge +
-    '</div>';
+    html += '<div class="' + classes.join(' ') + '"><div class="jn-cal-num">' + d + '</div>' + badge + '</div>';
   }
   grid.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════════════════
-//  GITHUB (shared)
+//  GITHUB
 // ═══════════════════════════════════════════════════════════
 saveGhBtn.addEventListener('click', async () => {
   const url = githubInput.value.trim();
@@ -881,27 +825,19 @@ saveGhBtn.addEventListener('click', async () => {
     ghStatus.innerHTML = '<span style="color:#b91c1c;">⚠️ URL must start with http:// or https://</span>';
     return;
   }
-  saveGhBtn.disabled = true;
-  saveGhBtn.textContent = 'Saving…';
+  saveGhBtn.disabled = true; saveGhBtn.textContent = 'Saving…';
   try {
     await db.ref('groups/' + currentGroup.groupId + '/githubLink').set(url);
     ghStatus.innerHTML = '<span style="color:#15803d;">✅ Saved</span>';
     setTimeout(() => { ghStatus.innerHTML = ''; }, 2500);
-  } catch (e) {
-    ghStatus.innerHTML = '<span style="color:#b91c1c;">Error: ' + escapeHtml(e.message) + '</span>';
-  } finally {
-    saveGhBtn.disabled = false;
-    saveGhBtn.textContent = 'Save';
-  }
+  } catch (e) { ghStatus.innerHTML = '<span style="color:#b91c1c;">Error: ' + escapeHtml(e.message) + '</span>'; }
+  finally { saveGhBtn.disabled = false; saveGhBtn.textContent = 'Save'; }
 });
 
 function renderGithubStatus() {
   const url = currentGroup.githubLink;
-  if (url) {
-    ghStatus.innerHTML = '🔗 <a class="github-link" href="' + escapeHtml(url) + '" target="_blank">' + escapeHtml(url) + '</a>';
-  } else {
-    ghStatus.innerHTML = '<span style="color:#8ba0b8;">No GitHub link set yet.</span>';
-  }
+  if (url) ghStatus.innerHTML = '🔗 <a class="github-link" href="' + escapeHtml(url) + '" target="_blank">' + escapeHtml(url) + '</a>';
+  else ghStatus.innerHTML = '<span style="color:#8ba0b8;">No GitHub link set yet.</span>';
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -910,13 +846,9 @@ function renderGithubStatus() {
 logoutBtn.addEventListener('click', () => {
   sessionStorage.removeItem('group_session');
   if (groupListener) { groupListener.off(); groupListener = null; }
-  currentGroup = null;
-  currentStudent = null;
-  currentStudentDisplay = null;
-  pendingGroup = null;
-  expectingPassword = false;
-  scCalData = {};
-  jnCalData = {};
+  currentGroup = null; currentStudent = null; currentStudentDisplay = null;
+  pendingGroup = null; expectingPassword = false;
+  scCalData = {}; jnCalData = {};
   dashboardView.classList.add('hidden');
   loginView.classList.remove('hidden');
   studentNumberInput.value = '';
@@ -924,8 +856,7 @@ logoutBtn.addEventListener('click', () => {
   userPasswordInput.style.display = 'none';
   loginSubtitle.textContent = 'Enter your student number';
   loginError.textContent = '';
-  loginBtn.disabled = false;
-  loginBtn.textContent = 'Continue';
+  loginBtn.disabled = false; loginBtn.textContent = 'Continue';
   studentNumberInput.focus();
 });
 
@@ -939,7 +870,7 @@ function escapeHtml(s) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  INIT — auto-login from session
+//  AUTO-LOGIN
 // ═══════════════════════════════════════════════════════════
 (function init() {
   const saved = sessionStorage.getItem('group_session');
@@ -956,9 +887,7 @@ function escapeHtml(s) {
         sessionStorage.removeItem('group_session');
       }
     });
-  } catch (e) {
-    sessionStorage.removeItem('group_session');
-  }
+  } catch (e) { sessionStorage.removeItem('group_session'); }
 })();
 </script>
 </body>
