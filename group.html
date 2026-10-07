@@ -13,7 +13,6 @@
       min-height: 100vh; padding: 2rem 1.5rem; color: #1f2a3a; }
     .container { max-width: 1050px; margin: 0 auto; }
 
-    /* LOGIN */
     #loginView { max-width: 440px; margin: 5rem auto; text-align: center;
       background: white; padding: 2.5rem 2rem; border-radius: 26px;
       box-shadow: 0 20px 40px -12px rgba(0,30,60,0.18); }
@@ -39,7 +38,6 @@
     .error-msg { color: #b91c1c; margin-top: 0.5rem; font-size: 0.9rem;
       min-height: 1.2rem; font-weight: 500; }
 
-    /* DASHBOARD */
     header { display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
     header h1 { font-size: 1.9rem; color: #0b2b4f; }
@@ -57,18 +55,23 @@
     .banner-cat { display: inline-block; background: rgba(255,255,255,0.18);
       font-size: 0.75rem; padding: 0.3rem 0.9rem; border-radius: 20px;
       letter-spacing: 0.6px; text-transform: uppercase; font-weight: 600; margin-top: 0.8rem; }
+    .banner-you { display: inline-block; background: rgba(255,255,255,0.25);
+      font-size: 0.75rem; padding: 0.3rem 0.9rem; border-radius: 20px;
+      font-weight: 600; margin-top: 0.8rem; margin-left: 0.5rem; }
 
     .card { background: white; border-radius: 22px; padding: 1.8rem;
       box-shadow: 0 10px 26px -12px rgba(0,30,60,0.12);
       margin-bottom: 1.2rem; border: 1px solid #eef2f7; }
     .card h3 { font-size: 1.15rem; color: #0b2b4f; margin-bottom: 1rem;
-      display: flex; align-items: center; gap: 0.5rem; }
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
     .card h3 .count { background: #e9f0f7; color: #5b7b9c; font-size: 0.75rem;
       padding: 0.15rem 0.6rem; border-radius: 20px; font-weight: 700; }
+
     .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 1rem; }
     .info-item { padding: 0.9rem 1.1rem; background: #f6faff; border-radius: 14px;
       border-left: 4px solid #1e4c7a; }
+    .info-item.you { border-left-color: #1f7a3e; background: #f0faf3; }
     .info-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px;
       color: #5b7b9c; font-weight: 700; margin-bottom: 0.3rem; }
     .info-value { font-size: 1.05rem; font-weight: 600; color: #0b2b4f; }
@@ -139,7 +142,6 @@
 
     .hidden { display: none !important; }
 
-    /* MODAL */
     .modal-bg { position: fixed; inset: 0; background: rgba(10,20,35,0.65);
       display: none; align-items: center; justify-content: center;
       padding: 1.5rem; z-index: 999; }
@@ -158,18 +160,16 @@
 <body>
 <div class="container">
 
-  <!-- LOGIN -->
   <div id="loginView">
     <div class="icon">🎓</div>
-    <h2>Team Login</h2>
+    <h2>Student Login</h2>
     <p id="loginSubtitle">Enter your student number</p>
     <input type="text" id="studentNumber" placeholder="Student number" autocomplete="off">
-    <input type="password" id="groupPassword" placeholder="Password" autocomplete="off" style="display:none;">
+    <input type="password" id="userPassword" placeholder="Password" autocomplete="off" style="display:none;">
     <button class="btn btn-block" id="loginBtn">Continue</button>
     <div class="error-msg" id="loginError"></div>
   </div>
 
-  <!-- DASHBOARD -->
   <div id="dashboardView" class="hidden">
     <header>
       <div>
@@ -183,16 +183,17 @@
       <div class="banner-label">Your project</div>
       <div class="banner-name" id="projectName">—</div>
       <div class="banner-cat" id="projectCategory" style="display:none;"></div>
+      <div class="banner-you" id="loggedInAs">—</div>
     </div>
 
     <div class="card">
       <h3>👥 Your team</h3>
       <div class="info-grid">
-        <div class="info-item">
+        <div class="info-item" id="student1Box">
           <div class="info-label">Student 1</div>
           <div class="info-value" id="student1Val">—</div>
         </div>
-        <div class="info-item">
+        <div class="info-item" id="student2Box">
           <div class="info-label">Student 2</div>
           <div class="info-value" id="student2Val">—</div>
         </div>
@@ -204,32 +205,32 @@
     </div>
 
     <div class="card">
-      <h3>🎬 Screencasts <span class="count" id="scCount">0</span></h3>
+      <h3>🎬 Team screencasts <span class="count" id="scCount">0</span></h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
-        Paste a <strong>public OneDrive share link</strong> to your screencast. Either team member can add.
+        Shared across the team — either member can add one. Paste a <strong>public OneDrive share link</strong>.
       </p>
       <div class="screencast-form">
         <div class="input-row">
           <input type="text" id="scTitle" placeholder="Short title (e.g. Milestone 1 demo)">
-          <input type="text" id="scUrl" placeholder="OneDrive share link (https://1drv.ms/v/... or onedrive.live.com/...)" style="flex:2 1 400px;">
+          <input type="text" id="scUrl" placeholder="OneDrive share link" style="flex:2 1 400px;">
           <button class="btn btn-sm" id="addScBtn">➕ Add screencast</button>
         </div>
       </div>
       <div id="scList" class="screencast-grid"></div>
       <div id="scEmpty" class="placeholder" style="margin-top:1rem;">
-        No screencasts yet. Add your first one above.
+        No screencasts yet.
       </div>
     </div>
 
     <div class="card">
-      <h3>📄 Weekly Journals <span class="count" id="jnCount">0</span></h3>
+      <h3>📄 My development journals <span class="count" id="jnCount">0</span></h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
-        Upload your journal Word doc to OneDrive (set sharing to <strong>"Anyone with the link can view"</strong>), then paste the link here.
+        <strong>Private to you</strong> — only you can see these links. Upload your Word doc to OneDrive (share = <em>Anyone with the link can view</em>), then paste the link here.
       </p>
       <div class="screencast-form">
         <div class="input-row">
           <input type="text" id="jnTitle" placeholder="Title (e.g. Journal — Week 1)">
-          <input type="text" id="jnUrl" placeholder="OneDrive Word doc link (https://1drv.ms/w/...)" style="flex:2 1 400px;">
+          <input type="text" id="jnUrl" placeholder="OneDrive Word doc link" style="flex:2 1 400px;">
           <button class="btn btn-sm" id="addJnBtn">➕ Add journal</button>
         </div>
         <div class="input-row">
@@ -256,7 +257,7 @@
     <div class="card">
       <h3>🐙 GitHub repository</h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
-        Set the URL of your team's GitHub repository.
+        Shared team repository URL.
       </p>
       <div class="github-row">
         <input type="url" id="githubInput" placeholder="https://github.com/username/repo">
@@ -267,11 +268,11 @@
   </div>
 </div>
 
-<!-- CREATE PASSWORD MODAL (first login) -->
+<!-- CREATE PASSWORD MODAL (per student, first login) -->
 <div id="pwdModal" class="modal-bg">
   <div class="modal">
-    <h3>🔐 Create your team password</h3>
-    <p>Welcome! Choose a password that both team members will use to log in.</p>
+    <h3>🔐 Create your password</h3>
+    <p>Set a password for your own student number. Only you will use this to log in.</p>
     <input type="password" id="newPwd" placeholder="New password (min 6 chars)">
     <input type="password" id="newPwd2" placeholder="Repeat new password">
     <button class="btn btn-block" id="savePwdBtn">Save password &amp; continue</button>
@@ -298,27 +299,12 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // ═══════════════════════════════════════════════════════════
-//  ADMIN BYPASS — ?admin=1&groupId=xxx
-// ═══════════════════════════════════════════════════════════
-(function checkAdminBypass() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('admin') === '1' && params.get('groupId')) {
-    const gid = params.get('groupId');
-    db.ref('groups/' + gid).once('value').then(snap => {
-      const g = snap.val();
-      if (!g) { alert('Group not found'); return; }
-      window._adminBypassGroup = { groupId: gid, ...g };
-    });
-  }
-})();
-
-// ═══════════════════════════════════════════════════════════
 //  DOM
 // ═══════════════════════════════════════════════════════════
 const loginView = document.getElementById('loginView');
 const dashboardView = document.getElementById('dashboardView');
 const studentNumberInput = document.getElementById('studentNumber');
-const groupPasswordInput = document.getElementById('groupPassword');
+const userPasswordInput = document.getElementById('userPassword');
 const loginBtn = document.getElementById('loginBtn');
 const loginSubtitle = document.getElementById('loginSubtitle');
 const loginError = document.getElementById('loginError');
@@ -327,6 +313,9 @@ const greeting = document.getElementById('greeting');
 const classSubtitle = document.getElementById('classSubtitle');
 const projectName = document.getElementById('projectName');
 const projectCategory = document.getElementById('projectCategory');
+const loggedInAs = document.getElementById('loggedInAs');
+const student1Box = document.getElementById('student1Box');
+const student2Box = document.getElementById('student2Box');
 const student1Val = document.getElementById('student1Val');
 const student2Val = document.getElementById('student2Val');
 const classVal = document.getElementById('classVal');
@@ -352,7 +341,12 @@ const newPwd2 = document.getElementById('newPwd2');
 const savePwdBtn = document.getElementById('savePwdBtn');
 const pwdError = document.getElementById('pwdError');
 
-let currentGroup = null;
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let currentGroup = null;         // full group record
+let currentStudent = null;       // student number of logged-in user (lowercased)
+let currentStudentDisplay = null; // display version
 let groupListener = null;
 let pendingGroup = null;
 let expectingPassword = false;
@@ -369,7 +363,7 @@ let jnCalJournals = {};
 //  LOGIN
 // ═══════════════════════════════════════════════════════════
 loginBtn.addEventListener('click', doLogin);
-[studentNumberInput, groupPasswordInput].forEach(inp => {
+[studentNumberInput, userPasswordInput].forEach(inp => {
   inp.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
 });
 
@@ -386,17 +380,18 @@ async function doLogin() {
 
   try {
     const numLower = studentNum.toLowerCase();
+
+    // Find a group that contains this student
     const snap = await db.ref('groups').once('value');
     const groups = snap.val() || {};
     let match = null;
+    let which = null;
 
     for (const [groupId, g] of Object.entries(groups)) {
       const s1 = (g.student1 || '').toLowerCase();
       const s2 = (g.student2 || '').toLowerCase();
-      if (s1 === numLower || s2 === numLower) {
-        match = { groupId, ...g };
-        break;
-      }
+      if (s1 === numLower) { match = { groupId, ...g }; which = 'student1'; break; }
+      if (s2 === numLower) { match = { groupId, ...g }; which = 'student2'; break; }
     }
 
     if (!match) {
@@ -406,9 +401,13 @@ async function doLogin() {
       return;
     }
 
-    // First login: no password yet → show create-password modal
-    if (!match.password) {
-      pendingGroup = match;
+    // Check if THIS student has a password yet
+    const passwords = match.passwords || {};
+    const existingPwd = passwords[numLower];
+
+    if (!existingPwd) {
+      // First login for THIS student — show create-password modal
+      pendingGroup = { group: match, student: numLower, display: studentNum, which };
       pwdModal.classList.add('show');
       newPwd.value = '';
       newPwd2.value = '';
@@ -419,31 +418,40 @@ async function doLogin() {
       return;
     }
 
-    // Password exists → reveal password field on first click
+    // Password exists — reveal password field on first press
     if (!expectingPassword) {
       expectingPassword = true;
-      groupPasswordInput.style.display = 'block';
+      userPasswordInput.style.display = 'block';
       loginSubtitle.textContent = 'Enter your password';
       loginBtn.textContent = 'Log in';
       loginBtn.disabled = false;
-      groupPasswordInput.focus();
+      userPasswordInput.focus();
       return;
     }
 
     // Verify password
-    const enteredPwd = groupPasswordInput.value.trim();
-    if (enteredPwd !== match.password) {
+    const enteredPwd = userPasswordInput.value.trim();
+    if (enteredPwd !== existingPwd) {
       loginError.textContent = '❌ Incorrect password.';
       loginBtn.disabled = false;
       loginBtn.textContent = 'Log in';
-      groupPasswordInput.value = '';
-      groupPasswordInput.focus();
+      userPasswordInput.value = '';
+      userPasswordInput.focus();
       return;
     }
 
-    sessionStorage.setItem('group_session', JSON.stringify({ groupId: match.groupId }));
+    // Success — remember who is logged in
+    currentStudent = numLower;
+    currentStudentDisplay = studentNum;
     currentGroup = match;
-    showDashboard(match);
+
+    sessionStorage.setItem('group_session', JSON.stringify({
+      groupId: match.groupId,
+      student: numLower,
+      display: studentNum
+    }));
+
+    showDashboard();
 
   } catch (e) {
     console.error(e);
@@ -454,14 +462,13 @@ async function doLogin() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  CREATE PASSWORD (first login)
+//  CREATE PASSWORD (per student, first login)
 // ═══════════════════════════════════════════════════════════
 savePwdBtn.addEventListener('click', async () => {
   const p1 = newPwd.value.trim();
   const p2 = newPwd2.value.trim();
   if (p1.length < 6) { pwdError.textContent = 'Password must be at least 6 characters.'; return; }
   if (p1 !== p2) { pwdError.textContent = 'Passwords do not match.'; return; }
-  if (p1 === '123456') { pwdError.textContent = 'Please choose a different password.'; return; }
 
   if (!pendingGroup) return;
 
@@ -469,16 +476,27 @@ savePwdBtn.addEventListener('click', async () => {
   savePwdBtn.textContent = 'Saving…';
 
   try {
-    await db.ref('groups/' + pendingGroup.groupId).update({
-      password: p1,
-      passwordSetAt: Date.now()
-    });
+    await db.ref('groups/' + pendingGroup.group.groupId + '/passwords/' + pendingGroup.student).set(p1);
 
-    currentGroup = { ...pendingGroup, password: p1 };
-    sessionStorage.setItem('group_session', JSON.stringify({ groupId: currentGroup.groupId }));
+    currentStudent = pendingGroup.student;
+    currentStudentDisplay = pendingGroup.display;
+    currentGroup = {
+      ...pendingGroup.group,
+      passwords: {
+        ...(pendingGroup.group.passwords || {}),
+        [pendingGroup.student]: p1
+      }
+    };
+
+    sessionStorage.setItem('group_session', JSON.stringify({
+      groupId: currentGroup.groupId,
+      student: currentStudent,
+      display: currentStudentDisplay
+    }));
+
     pwdModal.classList.remove('show');
     pendingGroup = null;
-    showDashboard(currentGroup);
+    showDashboard();
   } catch (e) {
     pwdError.textContent = 'Error: ' + e.message;
     savePwdBtn.disabled = false;
@@ -489,44 +507,57 @@ savePwdBtn.addEventListener('click', async () => {
 // ═══════════════════════════════════════════════════════════
 //  DASHBOARD
 // ═══════════════════════════════════════════════════════════
-function showDashboard(group) {
+function showDashboard() {
   loginView.classList.add('hidden');
   dashboardView.classList.remove('hidden');
 
-  projectName.textContent = group.projectName || group.projectId;
-  projectCategory.textContent = group.projectCategory || '';
-  if (group.projectCategory) projectCategory.style.display = 'inline-block';
+  const g = currentGroup;
 
-  const classLabel = group.class === 'gameplay' ? 'Gameplay' : 'Advanced Programming';
-  greeting.textContent = 'Hi ' + (group.student1 || '') + ' & ' + (group.student2 || '') + ' 👋';
+  projectName.textContent = g.projectName || g.projectId || '—';
+  projectCategory.textContent = g.projectCategory || '';
+  if (g.projectCategory) projectCategory.style.display = 'inline-block';
+
+  const classLabel = g.class === 'gameplay' ? 'Gameplay' : 'Advanced Programming';
+  greeting.textContent = 'Hi ' + currentStudentDisplay + ' 👋';
   classSubtitle.textContent = classLabel;
-  student1Val.textContent = group.student1 || '—';
-  student2Val.textContent = group.student2 || '—';
+  loggedInAs.textContent = '👤 ' + currentStudentDisplay;
+
+  student1Val.textContent = g.student1 || '—';
+  student2Val.textContent = g.student2 || '—';
   classVal.textContent = classLabel;
-  githubInput.value = group.githubLink || '';
+
+  // Highlight which student is you
+  student1Box.classList.toggle('you', (g.student1 || '').toLowerCase() === currentStudent);
+  student2Box.classList.toggle('you', (g.student2 || '').toLowerCase() === currentStudent);
+
+  githubInput.value = g.githubLink || '';
   renderGithubStatus();
 
   if (groupListener) groupListener.off();
-  groupListener = db.ref('groups/' + group.groupId);
+  groupListener = db.ref('groups/' + g.groupId);
   groupListener.on('value', snap => {
     const fresh = snap.val();
-    if (fresh) {
-      currentGroup = { groupId: group.groupId, ...fresh };
-      renderScreencasts(fresh.screencasts || {});
-      renderJournals(fresh.journals || {});
-      githubInput.value = fresh.githubLink || '';
-      renderGithubStatus();
-    }
+    if (!fresh) return;
+    currentGroup = { groupId: g.groupId, ...fresh };
+
+    // Shared screencasts
+    renderScreencasts(fresh.screencasts || {});
+
+    // Per-student journals
+    const myJournals = (fresh.journals && fresh.journals[currentStudent]) || {};
+    renderJournals(myJournals);
+
+    githubInput.value = fresh.githubLink || '';
+    renderGithubStatus();
   });
 }
 
 // ═══════════════════════════════════════════════════════════
-//  SCREENCASTS
+//  SCREENCASTS (shared)
 // ═══════════════════════════════════════════════════════════
 addScBtn.addEventListener('click', async () => {
   const title = scTitle.value.trim() || 'Untitled';
   const url = scUrl.value.trim();
-
   if (!url) { alert('Please paste a OneDrive link.'); return; }
   if (!/^https?:\/\//i.test(url)) { alert('URL must start with http:// or https://'); return; }
 
@@ -537,7 +568,7 @@ addScBtn.addEventListener('click', async () => {
     const id = 'sc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     await db.ref('groups/' + currentGroup.groupId + '/screencasts/' + id).set({
       id, title, url,
-      addedBy: studentNumberInput.value.trim() || currentGroup.student1 || '',
+      addedBy: currentStudentDisplay,
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
     scTitle.value = '';
@@ -553,14 +584,12 @@ addScBtn.addEventListener('click', async () => {
 function renderScreencasts(scs) {
   const entries = Object.entries(scs || {});
   scCount.textContent = entries.length;
-
   if (entries.length === 0) {
     scList.innerHTML = '';
     scEmpty.style.display = 'block';
     return;
   }
   scEmpty.style.display = 'none';
-
   entries.sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
 
   scList.innerHTML = entries.map(([id, sc]) => {
@@ -602,31 +631,25 @@ window.deleteSc = deleteSc;
 function oneDriveEmbed(url) {
   if (!url) return null;
   try {
-    if (url.includes('1drv.ms')) {
-      return url + (url.includes('?') ? '&' : '?') + 'embed=1';
-    }
+    if (url.includes('1drv.ms')) return url + (url.includes('?') ? '&' : '?') + 'embed=1';
     if (url.includes('onedrive.live.com/embed')) return url;
     if (url.includes('onedrive.live.com')) {
       const u = new URL(url);
       const resid = u.searchParams.get('resid');
-      if (resid) {
-        return 'https://onedrive.live.com/embed?resid=' + encodeURIComponent(resid) + '&authkey=';
-      }
+      if (resid) return 'https://onedrive.live.com/embed?resid=' + encodeURIComponent(resid) + '&authkey=';
     }
     return null;
-  } catch (e) {
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 // ═══════════════════════════════════════════════════════════
-//  JOURNALS
+//  JOURNALS — PER STUDENT
+//  Path: groups/{groupId}/journals/{studentNumber}/{journalId}
 // ═══════════════════════════════════════════════════════════
 addJnBtn.addEventListener('click', async () => {
   const title = jnTitle.value.trim() || 'Journal';
   const url = jnUrl.value.trim();
   const summary = jnSummary.value.trim();
-
   if (!url) { alert('Please paste a OneDrive link.'); return; }
   if (!/^https?:\/\//i.test(url)) { alert('URL must start with http:// or https://'); return; }
 
@@ -635,9 +658,9 @@ addJnBtn.addEventListener('click', async () => {
 
   try {
     const id = 'jn_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    await db.ref('groups/' + currentGroup.groupId + '/journals/' + id).set({
+    await db.ref('groups/' + currentGroup.groupId + '/journals/' + currentStudent + '/' + id).set({
       id, title, url, summary,
-      addedBy: studentNumberInput.value.trim() || currentGroup.student1 || '',
+      addedBy: currentStudentDisplay,
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
     jnTitle.value = '';
@@ -662,6 +685,7 @@ function renderJournals(jns) {
   } else {
     jnEmpty.style.display = 'none';
     entries.sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+
     jnList.innerHTML = entries.map(([id, jn]) => {
       const date = jn.timestamp ? new Date(jn.timestamp).toLocaleString('en-GB', {
         weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
@@ -675,7 +699,7 @@ function renderJournals(jns) {
           <div class="sc-body">
             <div class="sc-title">${escapeHtml(jn.title || 'Journal')}</div>
             ${jn.summary ? '<div class="sc-meta" style="font-style:italic;">"' + escapeHtml(jn.summary) + '"</div>' : ''}
-            <div class="sc-meta">${escapeHtml(date)} · by ${escapeHtml(jn.addedBy || '—')}</div>
+            <div class="sc-meta">${escapeHtml(date)}</div>
             <div class="sc-actions">
               <a href="${escapeHtml(jn.url)}" target="_blank" class="chip" style="text-decoration:none;">🔗 Open doc</a>
               <button class="chip" style="cursor:pointer; border:none;" onclick="deleteJn('${escapeHtml(id)}')">🗑️ Remove</button>
@@ -692,7 +716,7 @@ function renderJournals(jns) {
 async function deleteJn(id) {
   if (!confirm('Remove this journal link?')) return;
   try {
-    await db.ref('groups/' + currentGroup.groupId + '/journals/' + id).remove();
+    await db.ref('groups/' + currentGroup.groupId + '/journals/' + currentStudent + '/' + id).remove();
   } catch (e) {
     alert('Error: ' + e.message);
   }
@@ -700,7 +724,7 @@ async function deleteJn(id) {
 window.deleteJn = deleteJn;
 
 // ═══════════════════════════════════════════════════════════
-//  JOURNALS CALENDAR
+//  JOURNALS CALENDAR (per student)
 // ═══════════════════════════════════════════════════════════
 window.jnCalPrev = function() {
   jnCalMonthIdx--;
@@ -742,11 +766,9 @@ function renderJnCalendar() {
   ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => {
     html += '<div class="jn-cal-head">' + d + '</div>';
   });
-
   for (let i = 0; i < startOffset; i++) {
     html += '<div class="jn-cal-day empty-day"></div>';
   }
-
   for (let d = 1; d <= daysInMonth; d++) {
     const key = jnCalYear + '-' + String(jnCalMonthIdx + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     const classes = ['jn-cal-day'];
@@ -754,16 +776,14 @@ function renderJnCalendar() {
     if (journalDays[key]) classes.push('has-journal');
     const badge = journalDays[key] ? '<div class="jn-cal-badge">' + journalDays[key] + '</div>' : '';
     html += '<div class="' + classes.join(' ') + '">' +
-      '<div class="jn-cal-num">' + d + '</div>' +
-      badge +
+      '<div class="jn-cal-num">' + d + '</div>' + badge +
     '</div>';
   }
-
   grid.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════════════════
-//  GITHUB LINK
+//  GITHUB (shared)
 // ═══════════════════════════════════════════════════════════
 saveGhBtn.addEventListener('click', async () => {
   const url = githubInput.value.trim();
@@ -801,13 +821,15 @@ logoutBtn.addEventListener('click', () => {
   sessionStorage.removeItem('group_session');
   if (groupListener) { groupListener.off(); groupListener = null; }
   currentGroup = null;
+  currentStudent = null;
+  currentStudentDisplay = null;
   pendingGroup = null;
   expectingPassword = false;
   dashboardView.classList.add('hidden');
   loginView.classList.remove('hidden');
   studentNumberInput.value = '';
-  groupPasswordInput.value = '';
-  groupPasswordInput.style.display = 'none';
+  userPasswordInput.value = '';
+  userPasswordInput.style.display = 'none';
   loginSubtitle.textContent = 'Enter your student number';
   loginError.textContent = '';
   loginBtn.disabled = false;
@@ -825,34 +847,19 @@ function escapeHtml(s) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  INIT
+//  INIT — auto-login from session
 // ═══════════════════════════════════════════════════════════
 (function init() {
-  // 1) Admin bypass (fastest path)
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('admin') === '1' && params.get('groupId')) {
-    const gid = params.get('groupId');
-    db.ref('groups/' + gid).once('value').then(snap => {
-      const g = snap.val();
-      if (g) {
-        currentGroup = { groupId: gid, ...g };
-        showDashboard(currentGroup);
-      } else {
-        alert('Group not found');
-      }
-    });
-    return;
-  }
-
-  // 2) Auto-login from session
   const saved = sessionStorage.getItem('group_session');
   if (!saved) return;
   try {
-    const g = JSON.parse(saved);
-    db.ref('groups/' + g.groupId).once('value').then(snap => {
+    const s = JSON.parse(saved);
+    db.ref('groups/' + s.groupId).once('value').then(snap => {
       if (snap.exists()) {
-        currentGroup = { groupId: g.groupId, ...snap.val() };
-        showDashboard(currentGroup);
+        currentGroup = { groupId: s.groupId, ...snap.val() };
+        currentStudent = s.student;
+        currentStudentDisplay = s.display;
+        showDashboard();
       } else {
         sessionStorage.removeItem('group_session');
       }
