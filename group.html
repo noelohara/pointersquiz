@@ -112,9 +112,11 @@
     .github-link { color: #1e4c7a; text-decoration: none; font-weight: 600; }
     .github-link:hover { text-decoration: underline; }
 
-    /* JOURNALS CALENDAR */
+    /* CALENDAR */
     .jn-cal-header { display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 0.8rem; margin-top: 1.5rem; }
+    .jn-cal-title { font-size: 0.95rem; font-weight: 700; color: #5b7b9c;
+      text-transform: uppercase; letter-spacing: 0.6px; }
     .jn-cal-month { font-size: 1.05rem; font-weight: 700; color: #0b2b4f; }
     .jn-cal-nav { display: flex; gap: 0.4rem; }
     .jn-cal-nav button { background: #e2e8f0; border: none; padding: 0.4rem 0.9rem;
@@ -134,11 +136,27 @@
       border: 1.5px solid transparent; }
     .jn-cal-day.empty-day { background: #f8fafc; opacity: 0.35; }
     .jn-cal-day.today { background: #fffbe6; border-color: #f59e0b; }
-    .jn-cal-day.has-journal { background: #d4edda; border-color: #1f7a3e; }
     .jn-cal-day .jn-cal-num { font-weight: 600; }
-    .jn-cal-day .jn-cal-badge { font-size: 0.65rem; background: #1f7a3e; color: white;
+    .jn-cal-day .jn-cal-badge { font-size: 0.65rem; color: white;
       padding: 0.1rem 0.35rem; border-radius: 10px; margin-top: 0.2rem;
       font-weight: 700; }
+
+    /* Screencast calendar = green */
+    .jn-cal-day.has-sc { background: #d4edda; border-color: #1f7a3e; }
+    .jn-cal-day.has-sc .jn-cal-badge { background: #1f7a3e; }
+
+    /* Journal calendar = blue */
+    .jn-cal-day.has-jn { background: #dbeafe; border-color: #1e4c7a; }
+    .jn-cal-day.has-jn .jn-cal-badge { background: #1e4c7a; }
+
+    .calendar-legend { display: flex; gap: 1rem; flex-wrap: wrap;
+      font-size: 0.78rem; color: #5b7b9c; margin-top: 0.6rem; align-items: center; }
+    .legend-item { display: flex; align-items: center; gap: 0.35rem; }
+    .legend-swatch { width: 12px; height: 12px; border-radius: 3px;
+      border: 1.5px solid transparent; }
+    .swatch-today { background: #fffbe6; border-color: #f59e0b; }
+    .swatch-sc { background: #d4edda; border-color: #1f7a3e; }
+    .swatch-jn { background: #dbeafe; border-color: #1e4c7a; }
 
     .hidden { display: none !important; }
 
@@ -204,6 +222,9 @@
       </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SCREENCASTS (shared team)                          -->
+    <!-- ═══════════════════════════════════════════════════ -->
     <div class="card">
       <h3>🎬 Team screencasts <span class="count" id="scCount">0</span></h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
@@ -220,8 +241,30 @@
       <div id="scEmpty" class="placeholder" style="margin-top:1rem;">
         No screencasts yet.
       </div>
+
+      <!-- SCREENCAST CALENDAR -->
+      <div>
+        <div class="jn-cal-header">
+          <div>
+            <div class="jn-cal-title">📅 Screencast activity</div>
+            <div class="jn-cal-month" id="scCalMonth">—</div>
+          </div>
+          <div class="jn-cal-nav">
+            <button onclick="scCalPrev()">← Prev</button>
+            <button onclick="scCalNext()">Next →</button>
+          </div>
+        </div>
+        <div class="jn-cal-grid" id="scCalGrid"></div>
+        <div class="calendar-legend">
+          <div class="legend-item"><div class="legend-swatch swatch-today"></div>Today</div>
+          <div class="legend-item"><div class="legend-swatch swatch-sc"></div>Screencast added</div>
+        </div>
+      </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- JOURNALS (per student, private)                    -->
+    <!-- ═══════════════════════════════════════════════════ -->
     <div class="card">
       <h3>📄 My development journals <span class="count" id="jnCount">0</span></h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
@@ -242,15 +285,23 @@
         No journals linked yet.
       </div>
 
+      <!-- JOURNAL CALENDAR -->
       <div>
         <div class="jn-cal-header">
-          <div class="jn-cal-month" id="jnCalMonth">—</div>
+          <div>
+            <div class="jn-cal-title">📅 Journal activity</div>
+            <div class="jn-cal-month" id="jnCalMonth">—</div>
+          </div>
           <div class="jn-cal-nav">
             <button onclick="jnCalPrev()">← Prev</button>
             <button onclick="jnCalNext()">Next →</button>
           </div>
         </div>
         <div class="jn-cal-grid" id="jnCalGrid"></div>
+        <div class="calendar-legend">
+          <div class="legend-item"><div class="legend-swatch swatch-today"></div>Today</div>
+          <div class="legend-item"><div class="legend-swatch swatch-jn"></div>Journal added</div>
+        </div>
       </div>
     </div>
 
@@ -344,17 +395,24 @@ const pwdError = document.getElementById('pwdError');
 // ═══════════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════════
-let currentGroup = null;         // full group record
-let currentStudent = null;       // student number of logged-in user (lowercased)
-let currentStudentDisplay = null; // display version
+let currentGroup = null;
+let currentStudent = null;
+let currentStudentDisplay = null;
 let groupListener = null;
 let pendingGroup = null;
 let expectingPassword = false;
+
+// Two independent calendar states
+let scCalYear, scCalMonthIdx;
+let scCalData = {};
+
 let jnCalYear, jnCalMonthIdx;
-let jnCalJournals = {};
+let jnCalData = {};
 
 (function initCal() {
   const now = new Date();
+  scCalYear = now.getFullYear();
+  scCalMonthIdx = now.getMonth();
   jnCalYear = now.getFullYear();
   jnCalMonthIdx = now.getMonth();
 })();
@@ -381,7 +439,6 @@ async function doLogin() {
   try {
     const numLower = studentNum.toLowerCase();
 
-    // Find a group that contains this student
     const snap = await db.ref('groups').once('value');
     const groups = snap.val() || {};
     let match = null;
@@ -401,12 +458,10 @@ async function doLogin() {
       return;
     }
 
-    // Check if THIS student has a password yet
     const passwords = match.passwords || {};
     const existingPwd = passwords[numLower];
 
     if (!existingPwd) {
-      // First login for THIS student — show create-password modal
       pendingGroup = { group: match, student: numLower, display: studentNum, which };
       pwdModal.classList.add('show');
       newPwd.value = '';
@@ -418,7 +473,6 @@ async function doLogin() {
       return;
     }
 
-    // Password exists — reveal password field on first press
     if (!expectingPassword) {
       expectingPassword = true;
       userPasswordInput.style.display = 'block';
@@ -429,7 +483,6 @@ async function doLogin() {
       return;
     }
 
-    // Verify password
     const enteredPwd = userPasswordInput.value.trim();
     if (enteredPwd !== existingPwd) {
       loginError.textContent = '❌ Incorrect password.';
@@ -440,7 +493,6 @@ async function doLogin() {
       return;
     }
 
-    // Success — remember who is logged in
     currentStudent = numLower;
     currentStudentDisplay = studentNum;
     currentGroup = match;
@@ -526,7 +578,6 @@ function showDashboard() {
   student2Val.textContent = g.student2 || '—';
   classVal.textContent = classLabel;
 
-  // Highlight which student is you
   student1Box.classList.toggle('you', (g.student1 || '').toLowerCase() === currentStudent);
   student2Box.classList.toggle('you', (g.student2 || '').toLowerCase() === currentStudent);
 
@@ -540,12 +591,17 @@ function showDashboard() {
     if (!fresh) return;
     currentGroup = { groupId: g.groupId, ...fresh };
 
-    // Shared screencasts
-    renderScreencasts(fresh.screencasts || {});
+    // Shared screencasts + calendar
+    const scs = fresh.screencasts || {};
+    renderScreencasts(scs);
+    scCalData = scs;
+    renderScCalendar();
 
-    // Per-student journals
+    // Per-student journals + calendar
     const myJournals = (fresh.journals && fresh.journals[currentStudent]) || {};
     renderJournals(myJournals);
+    jnCalData = myJournals;
+    renderJnCalendar();
 
     githubInput.value = fresh.githubLink || '';
     renderGithubStatus();
@@ -644,7 +700,6 @@ function oneDriveEmbed(url) {
 
 // ═══════════════════════════════════════════════════════════
 //  JOURNALS — PER STUDENT
-//  Path: groups/{groupId}/journals/{studentNumber}/{journalId}
 // ═══════════════════════════════════════════════════════════
 addJnBtn.addEventListener('click', async () => {
   const title = jnTitle.value.trim() || 'Journal';
@@ -675,7 +730,6 @@ addJnBtn.addEventListener('click', async () => {
 });
 
 function renderJournals(jns) {
-  jnCalJournals = jns || {};
   const entries = Object.entries(jns || {});
   jnCount.textContent = entries.length;
 
@@ -709,8 +763,6 @@ function renderJournals(jns) {
       `;
     }).join('');
   }
-
-  renderJnCalendar();
 }
 
 async function deleteJn(id) {
@@ -724,8 +776,35 @@ async function deleteJn(id) {
 window.deleteJn = deleteJn;
 
 // ═══════════════════════════════════════════════════════════
-//  JOURNALS CALENDAR (per student)
+//  CALENDARS — 2 of them
 // ═══════════════════════════════════════════════════════════
+const MONTH_NAMES = ['January','February','March','April','May','June',
+                     'July','August','September','October','November','December'];
+
+// --- SCREENCAST CALENDAR ---
+window.scCalPrev = function() {
+  scCalMonthIdx--;
+  if (scCalMonthIdx < 0) { scCalMonthIdx = 11; scCalYear--; }
+  renderScCalendar();
+};
+window.scCalNext = function() {
+  scCalMonthIdx++;
+  if (scCalMonthIdx > 11) { scCalMonthIdx = 0; scCalYear++; }
+  renderScCalendar();
+};
+
+function renderScCalendar() {
+  renderCalendar({
+    gridId: 'scCalGrid',
+    monthLabelId: 'scCalMonth',
+    year: scCalYear,
+    monthIdx: scCalMonthIdx,
+    items: scCalData,
+    dayClass: 'has-sc'
+  });
+}
+
+// --- JOURNAL CALENDAR ---
 window.jnCalPrev = function() {
   jnCalMonthIdx--;
   if (jnCalMonthIdx < 0) { jnCalMonthIdx = 11; jnCalYear--; }
@@ -738,25 +817,36 @@ window.jnCalNext = function() {
 };
 
 function renderJnCalendar() {
-  const grid = document.getElementById('jnCalGrid');
-  const label = document.getElementById('jnCalMonth');
-  if (!grid) return;
+  renderCalendar({
+    gridId: 'jnCalGrid',
+    monthLabelId: 'jnCalMonth',
+    year: jnCalYear,
+    monthIdx: jnCalMonthIdx,
+    items: jnCalData,
+    dayClass: 'has-jn'
+  });
+}
 
-  const monthNames = ['January','February','March','April','May','June',
-                      'July','August','September','October','November','December'];
-  label.textContent = monthNames[jnCalMonthIdx] + ' ' + jnCalYear;
+// --- SHARED RENDERER ---
+function renderCalendar(opts) {
+  const grid = document.getElementById(opts.gridId);
+  const label = document.getElementById(opts.monthLabelId);
+  if (!grid || !label) return;
 
-  const firstDay = new Date(jnCalYear, jnCalMonthIdx, 1);
-  const daysInMonth = new Date(jnCalYear, jnCalMonthIdx + 1, 0).getDate();
+  label.textContent = MONTH_NAMES[opts.monthIdx] + ' ' + opts.year;
+
+  const firstDay = new Date(opts.year, opts.monthIdx, 1);
+  const daysInMonth = new Date(opts.year, opts.monthIdx + 1, 0).getDate();
   let startOffset = firstDay.getDay() - 1;
   if (startOffset < 0) startOffset = 6;
 
-  const journalDays = {};
-  Object.values(jnCalJournals).forEach(jn => {
-    if (!jn.timestamp) return;
-    const d = new Date(jn.timestamp);
+  // Build a map of dates → count from the items
+  const marked = {};
+  Object.values(opts.items).forEach(item => {
+    if (!item.timestamp) return;
+    const d = new Date(item.timestamp);
     const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-    journalDays[key] = (journalDays[key] || 0) + 1;
+    marked[key] = (marked[key] || 0) + 1;
   });
 
   const today = new Date();
@@ -770,11 +860,11 @@ function renderJnCalendar() {
     html += '<div class="jn-cal-day empty-day"></div>';
   }
   for (let d = 1; d <= daysInMonth; d++) {
-    const key = jnCalYear + '-' + String(jnCalMonthIdx + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    const key = opts.year + '-' + String(opts.monthIdx + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     const classes = ['jn-cal-day'];
     if (key === todayKey) classes.push('today');
-    if (journalDays[key]) classes.push('has-journal');
-    const badge = journalDays[key] ? '<div class="jn-cal-badge">' + journalDays[key] + '</div>' : '';
+    if (marked[key]) classes.push(opts.dayClass);
+    const badge = marked[key] ? '<div class="jn-cal-badge">' + marked[key] + '</div>' : '';
     html += '<div class="' + classes.join(' ') + '">' +
       '<div class="jn-cal-num">' + d + '</div>' + badge +
     '</div>';
@@ -825,6 +915,8 @@ logoutBtn.addEventListener('click', () => {
   currentStudentDisplay = null;
   pendingGroup = null;
   expectingPassword = false;
+  scCalData = {};
+  jnCalData = {};
   dashboardView.classList.add('hidden');
   loginView.classList.remove('hidden');
   studentNumberInput.value = '';
