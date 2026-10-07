@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Migrate Advanced Selections → Groups</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+  body { font-family: system-ui, sans-serif; padding: 2rem; background: #f5f7fa; color: #1f2a3a; max-width: 900px; margin: 0 auto; }
+  h1 { color: #0b2b4f; }
+  .card { background: white; padding: 1.5rem; border-radius: 14px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+  button { background: #1e4c7a; color: white; border: none;
+           padding: 0.9rem 1.8rem; border-radius: 60px; font-size: 1rem;
+           font-weight: 600; cursor: pointer; font-family: inherit; }
+  button:hover { background: #123a5e; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  pre { background: #f8fafc; padding: 1rem; border-radius: 10px;
+        border-left: 4px solid #1e4c7a; font-size: 0.85rem;
+        overflow: auto; max-height: 400px; line-height: 1.5; }
+  .success { color: #15803d; font-weight: 700; }
+  .warn { color: #d97706; font-weight: 700; }
+</style>
+</head>
+<body>
+  <h1>🔧 Migrate Advanced Selections → Groups</h1>
+
+  <div class="card">
+    <p><strong>What this does:</strong> For each of the 20 advanced programming selections in
+    <code>/classes/advanced/selections/</code>, creates a matching <code>/groups/{groupId}</code>
+    record so students can log in on <code>group.html</code>.</p>
+
+    <p><strong>What it does NOT do:</strong> It doesn't touch <code>/classes/advanced/selections</code> or any
+    existing <code>/groups/</code> records. It only adds new ones. Safe to re-run — it skips groups that already exist.</p>
+
+    <button id="goBtn">▶ Analyze and migrate</button>
+    <div id="status" style="margin-top: 1rem;"></div>
+  </div>
+
+  <div class="card">
+    <h3>Log</h3>
+    <pre id="log">Click the button to begin.</pre>
+  </div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
+  authDomain: "ai-project-tool.firebaseapp.com",
+  databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ai-project-tool",
+  storageBucket: "ai-project-tool.firebasestorage.app",
+  messagingSenderId: "658331100512",
+  appId: "1:658331100512:web:72208dc0c1561b95bcaa05"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+function log(msg) {
+  document.getElementById('log').textContent += '\n' + msg;
+}
+function replaceLog(msg) {
+  document.getElementById('log').textContent = msg;
+}
+
+function makeGroupId() {
+  return 'grp_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+document.getElementById('goBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('goBtn');
+  btn.disabled = true;
+  btn.textContent = 'Working…';
+  replaceLog('Reading database…');
+
+  try {
+    // 1. Fetch advanced selections
+    const advSelSnap = await db.ref('classes/advanced/selections').once('value');
+    const advSel = advSelSnap.val() || {};
+    const advKeys = Object.keys(advSel);
+    log('Found ' + advKeys.length + ' advanced selections');
+
+    // 2. Fetch students for name lookup
+    const studentsSnap = await db.ref('students').once('value');
+    const students = studentsSnap.val() || {};
+
+    function nameFor(num) {
+      if (!num) return 'Unknown';
+      const rec = students[num.toLowerCase()] || students[num];
+      if (rec && rec.firstName && rec.lastName) {
+        return rec.firstName + ' ' + rec.lastName;
+      }
+      return num;
+    }
+
+    // 3. Fetch existing groups
+    const groupsSnap = await db.ref('groups').once('value');
+    const existing = groupsSnap.val() || {};
+
+    // 4. Check which advanced selections already have a group
+    const advancedGroupIds = new Set();
+    Object.values(existing).forEach(g => {
+      if ((g.class || '').toLowerCase().includes('advanced')) {
+        advancedGroupIds.add(g.student1 + '|' + g.student2);
+      }
+    });
+
+    // 5. Build updates
+    const updates = {};
+    let toCreate = 0;
+    let skipped = 0;
+
+    for (const [projectId, sel] of Object.entries(advSel)) {
+      const s1 = (sel.student1 || '').trim();
+      const s2 = (sel.student2 || '').trim();
+      if (!s1 || !s2) {
+        log('  ⚠️ Skipping ' + projectId + ' — missing student numbers');
+        skipped++;
+        continue;
+      }
+
+      const pairKey = s1 + '|' + s2;
+      if (advancedGroupIds.has(pairKey)) {
+        log('  ⏭ Already has group: ' + s1 + ' & ' + s2);
+        skipped++;
+        continue;
+      }
+
+      // Generate a stable groupId based on project id (idempotent)
+      const groupId = 'grp_' + projectId.replace(/[^a-z0-9]/gi, '_');
+
+      updates['groups/' + groupId] = {
+        groupId,
+        groupName: nameFor(s1) + ' & ' + nameFor(s2),
+        class: 'advanced',                          // matches gameplay/groups convention
+        className: 'Advanced Programming',
+        projectId,
+        projectName: sel.projectName || projectId,
+        student1: s1,
+        student2: s2,
+        student1Name: nameFor(s1),
+        student2Name: nameFor(s2),
+        createdAt: sel.timestamp || Date.now(),
+        passwords: {},
+        screencasts: {},
+        journals: {},
+        githubLink: ''
+      };
+
+      // Also link the selection to the group
+      updates['classes/advanced/selections/' + projectId + '/groupId'] = groupId;
+
+      log('  ✅ Will create: ' + groupId + '  →  ' + s1 + ' & ' + s2 + '  (' + (sel.projectName || projectId) + ')');
+      toCreate++;
+    }
+
+    if (toCreate === 0) {
+      log('\n✅ Nothing to do — all advanced selections already have groups.');
+      btn.disabled = false;
+      btn.textContent = '▶ Run again';
+      return;
+    }
+
+    // 6. Confirm
+    if (!confirm('Create ' + toCreate + ' new group record(s)?\n\nSkipped: ' + skipped + '\n\nThis will also update selections to store their new groupId.')) {
+      log('\n❌ Cancelled.');
+      btn.disabled = false;
+      btn.textContent = '▶ Analyze and migrate';
+      return;
+    }
+
+    // 7. Write
+    log('\nWriting ' + toCreate + ' groups + ' + toCreate + ' selection updates…');
+    await db.ref().update(updates);
+    log('✅ Done.');
+
+    // 8. Verify
+    const afterSnap = await db.ref('groups').once('value');
+    const after = afterSnap.val() || {};
+    const advCount = Object.values(after).filter(g =>
+      (g.class || '').toLowerCase().includes('advanced')).length;
+
+    log('\n════════════════════════════════════════════════════');
+    log('Total groups in /groups now: ' + Object.keys(after).length);
+    log('Of those, advanced: ' + advCount);
+    log('════════════════════════════════════════════════════');
+    log('\nYou can now open reset-passwords.html and the Advanced tab should list these groups.');
+    log('Students can log in on group.html with their student number.');
+
+    document.getElementById('status').innerHTML =
+      '<span class="success">✅ Migration complete. Check reset-passwords.html</span>';
+
+    btn.disabled = false;
+    btn.textContent = '▶ Run again (safe — will skip existing)';
+
+  } catch (e) {
+    console.error(e);
+    log('\n❌ Error: ' + e.message);
+    document.getElementById('status').innerHTML =
+      '<span class="warn">❌ Error: ' + e.message + '</span>';
+    btn.disabled = false;
+    btn.textContent = '▶ Try again';
+  }
+});
+</script>
+</body>
+</html>
