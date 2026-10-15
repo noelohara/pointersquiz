@@ -54,46 +54,10 @@
     /* HEADER */
     header.page-head {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
     }
     header.page-head h1 { font-size: 2rem; color: #0b2b4f; font-weight: 700; }
     header.page-head p { color: #5b7b9c; font-size: 0.95rem; margin-top: 0.2rem; }
-
-    /* ═══════════════════════════════════════════════════ */
-    /* CLASS SELECTOR TABS                                 */
-    /* ═══════════════════════════════════════════════════ */
-    .class-tabs-wrap {
-      display: flex; justify-content: center;
-      margin-bottom: 1.5rem;
-    }
-    .class-tabs {
-      display: flex; gap: 0.5rem;
-      background: white; padding: 0.5rem; border-radius: 60px;
-      box-shadow: 0 8px 20px -8px rgba(0,20,40,0.15);
-      width: fit-content;
-    }
-    .class-tab {
-      padding: 0.8rem 2rem; border-radius: 60px; font-weight: 700;
-      cursor: pointer; border: none; background: transparent;
-      color: #5b7b9c; font-family: inherit; font-size: 1rem;
-      transition: all 0.18s;
-      display: flex; align-items: center; gap: 0.5rem;
-      white-space: nowrap;
-    }
-    .class-tab:hover:not(.active) { color: #0b2b4f; background: #f0f4f9; }
-    .class-tab.active {
-      background: #1e4c7a; color: white;
-      box-shadow: 0 6px 14px -2px rgba(20,60,110,0.4);
-    }
-    .class-tab .tab-count {
-      background: rgba(255,255,255,0.25); color: white;
-      font-size: 0.72rem; padding: 0.15rem 0.55rem;
-      border-radius: 20px; font-weight: 700;
-      margin-left: 0.3rem;
-    }
-    .class-tab:not(.active) .tab-count {
-      background: #e9f0f7; color: #5b7b9c;
-    }
 
     /* ═══════════════════════════════════════════════════ */
     /* CAROUSEL                                            */
@@ -337,6 +301,7 @@
 
     .hidden { display: none !important; }
 
+    /* Source badge on video */
     .video-source-badge {
       position: absolute; top: 10px; right: 10px;
       background: rgba(0,0,0,0.55); color: white;
@@ -370,18 +335,6 @@
       </div>
       <button class="btn btn-secondary btn-sm" id="logoutBtn">Log out</button>
     </header>
-
-    <!-- CLASS SELECTOR TABS -->
-    <div class="class-tabs-wrap">
-      <div class="class-tabs" id="classTabs">
-        <button class="class-tab active" data-class="gameplay">
-          🎮 Gameplay <span class="tab-count" id="tabCount-gameplay">0</span>
-        </button>
-        <button class="class-tab" data-class="advanced">
-          💻 Advanced Programming <span class="tab-count" id="tabCount-advanced">0</span>
-        </button>
-      </div>
-    </div>
 
     <!-- CAROUSEL -->
     <div class="carousel-section">
@@ -456,16 +409,10 @@ const CLASSES = {
 // ═══════════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════════
-let currentClass = 'gameplay';
-
-// FULL data from both classes
-let allProjectsRaw = [];      // every project with selections across both classes
-// FILTERED for the current tab
-let allProjects = [];         // filtered by currentClass
-let featuredReels = [];       // screencasts for carousel
 let groupsData = {};
 let studentsData = {};
-
+let allProjects = [];
+let featuredReels = [];
 let currentSlide = 0;
 let isPlaying = true;
 let isMuted = true;
@@ -473,7 +420,7 @@ let currentVideoEl = null;
 let slideFallbackTimer = null;
 let progressTimer = null;
 let progressStart = 0;
-const FALLBACK_DURATION = 8000;
+const FALLBACK_DURATION = 8000;  // 8s if video can't play
 
 // DOM
 const loginView = document.getElementById('loginView');
@@ -482,7 +429,6 @@ const passwordInput = document.getElementById('passwordInput');
 const loginBtn = document.getElementById('loginBtn');
 const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
-const classTabs = document.getElementById('classTabs');
 const carouselViewport = document.getElementById('carouselViewport');
 const carouselProject = document.getElementById('carouselProject');
 const carouselMeta = document.getElementById('carouselMeta');
@@ -495,8 +441,6 @@ const muteBtn = document.getElementById('muteBtn');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
 const progressBar = document.getElementById('progressBar');
 const projectsGrid = document.getElementById('projectsGrid');
-const tabCountGp = document.getElementById('tabCount-gameplay');
-const tabCountAdv = document.getElementById('tabCount-advanced');
 
 // ═══════════════════════════════════════════════════════════
 //  AUTH
@@ -531,38 +475,7 @@ logoutBtn.addEventListener('click', () => {
 function showDashboard() {
   loginView.classList.add('hidden');
   dashboardView.classList.remove('hidden');
-
-  // Restore last selected class (or default to gameplay)
-  const saved = sessionStorage.getItem('overview_current_class');
-  if (saved && CLASSES[saved]) currentClass = saved;
-  updateActiveTab();
-
   loadEverything();
-}
-
-// ═══════════════════════════════════════════════════════════
-//  CLASS TABS
-// ═══════════════════════════════════════════════════════════
-classTabs.querySelectorAll('.class-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    if (tab.dataset.class === currentClass) return;
-    currentClass = tab.dataset.class;
-    sessionStorage.setItem('overview_current_class', currentClass);
-    updateActiveTab();
-    // Re-filter and re-render everything
-    applyClassFilter();
-    buildFeaturedReels();
-    renderProjectsGrid();
-    startCarousel();
-    // Scroll back to top so the carousel is visible
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-});
-
-function updateActiveTab() {
-  classTabs.querySelectorAll('.class-tab').forEach(tab => {
-    tab.classList.toggle('active', tab.dataset.class === currentClass);
-  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -587,12 +500,11 @@ async function loadEverything() {
     const adv = advProjects.val() || {};
     const advS = advSel.val() || {};
 
-    allProjectsRaw = [];
+    allProjects = [];
 
-    // Gameplay
     Object.entries(gpS).forEach(([pid, sel]) => {
       const proj = gp[pid] || { name: pid, category: '—' };
-      allProjectsRaw.push({
+      allProjects.push({
         projectId: pid,
         projectName: proj.name,
         category: proj.category || 'General',
@@ -603,10 +515,9 @@ async function loadEverything() {
       });
     });
 
-    // Advanced
     Object.entries(advS).forEach(([pid, sel]) => {
       const proj = adv[pid] || { name: pid, category: '—' };
-      allProjectsRaw.push({
+      allProjects.push({
         projectId: pid,
         projectName: proj.name,
         category: proj.category || 'General',
@@ -617,11 +528,6 @@ async function loadEverything() {
       });
     });
 
-    // Update tab counts
-    updateTabCounts();
-
-    // Apply filter for current class
-    applyClassFilter();
     buildFeaturedReels();
     renderProjectsGrid();
     startCarousel();
@@ -633,17 +539,6 @@ async function loadEverything() {
       <div>Failed to load: ${escapeHtml(e.message)}</div>
     </div>`;
   }
-}
-
-function updateTabCounts() {
-  const gpCount = allProjectsRaw.filter(p => p.classId === 'gameplay').length;
-  const advCount = allProjectsRaw.filter(p => p.classId === 'advanced').length;
-  tabCountGp.textContent = gpCount;
-  tabCountAdv.textContent = advCount;
-}
-
-function applyClassFilter() {
-  allProjects = allProjectsRaw.filter(p => p.classId === currentClass);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -678,18 +573,12 @@ function buildFeaturedReels() {
 //  CAROUSEL
 // ═══════════════════════════════════════════════════════════
 function startCarousel() {
-  stopAllTimers();
-  currentSlide = 0;
   renderCarouselDots();
-
   if (featuredReels.length === 0) {
     carouselViewport.innerHTML = `
       <div class="placeholder">
         <div class="icon">📼</div>
-        <div>No screencasts uploaded yet in ${escapeHtml(CLASSES[currentClass].name)}</div>
-        <div style="font-size:0.85rem; margin-top:0.5rem; opacity:0.75;">
-          Students need to upload at least one screencast for their project.
-        </div>
+        <div>No screencasts uploaded yet</div>
       </div>`;
     carouselProject.textContent = '—';
     carouselMeta.textContent = 'Nothing to play';
@@ -697,8 +586,8 @@ function startCarousel() {
     [prevBtn, nextBtn, playPauseBtn, muteBtn, fullscreenBtn].forEach(b => b.disabled = true);
     return;
   }
-
   [prevBtn, nextBtn, playPauseBtn, muteBtn, fullscreenBtn].forEach(b => b.disabled = false);
+  currentSlide = 0;
   showSlide(currentSlide);
 }
 
@@ -736,14 +625,17 @@ function showSlide(idx) {
   const studentList = reel.students.map(s => studentEmail(s)).join(' · ');
   carouselMeta.textContent = '🎬 ' + reel.title + '  •  ' + reel.className + '  •  ' + studentList;
 
+  // Update dots
   carouselDots.querySelectorAll('.carousel-dot').forEach((d, i) => {
     d.classList.toggle('active', i === idx);
   });
 
+  // Highlight mini thumbnails
   document.querySelectorAll('.sc-mini').forEach(el => el.classList.remove('playing'));
   const mini = document.querySelector(`.sc-mini[data-url="${cssEscape(reel.url)}"]`);
   if (mini) mini.classList.add('playing');
 
+  // Build video element or fallback
   if (reel.directUrl) {
     buildVideoPlayer(reel);
   } else {
@@ -769,19 +661,25 @@ function buildVideoPlayer(reel) {
   if (!video) return;
   currentVideoEl = video;
 
+  // Try to autoplay
   if (isPlaying) {
     video.play().catch(err => {
       console.warn('Autoplay blocked:', err);
+      // Autoplay blocked — wait for user click
       video.muted = true;
       isMuted = true;
       updateMuteButton();
     });
   }
 
+  // When the video ends, advance to next
   video.addEventListener('ended', () => {
-    if (isPlaying) showSlide(currentSlide + 1);
+    if (isPlaying) {
+      showSlide(currentSlide + 1);
+    }
   });
 
+  // On error, fall back
   video.addEventListener('error', () => {
     console.warn('Video error for:', reel.directUrl.url);
     const err = video.error;
@@ -795,18 +693,21 @@ function buildVideoPlayer(reel) {
     buildFallbackCard(reel, reason, 'The direct stream URL could not be played.');
   });
 
+  // Progress bar tied to currentTime
   video.addEventListener('timeupdate', () => {
     if (!video.duration || video.duration === Infinity) return;
     const pct = (video.currentTime / video.duration) * 100;
     progressBar.style.width = pct + '%';
   });
 
+  // Metadata loaded
   video.addEventListener('loadedmetadata', () => {
     console.log('✅ Video loaded:', reel.directUrl.source, 'duration:', video.duration + 's');
   });
 
+  // Stalled detection — if no metadata after 4 seconds, fall back
   slideFallbackTimer = setTimeout(() => {
-    if (video.readyState < 2) {
+    if (video.readyState < 2) {  // no metadata loaded yet
       console.warn('Video stalled — falling back');
       buildFallbackCard(reel, 'stalled', 'The video did not start streaming in time.');
     }
@@ -836,6 +737,7 @@ function buildFallbackCard(reel, reason, message) {
     </div>
   `;
 
+  // Auto-advance after fallback display
   slideFallbackTimer = setTimeout(() => {
     if (isPlaying && featuredReels.length > 1) {
       showSlide(currentSlide + 1);
@@ -843,7 +745,9 @@ function buildFallbackCard(reel, reason, message) {
   }, FALLBACK_DURATION);
 }
 
-function gotoSlide(idx) { showSlide(idx); }
+function gotoSlide(idx) {
+  showSlide(idx);
+}
 
 prevBtn.addEventListener('click', () => showSlide(currentSlide - 1));
 nextBtn.addEventListener('click', () => showSlide(currentSlide + 1));
@@ -899,12 +803,14 @@ function renderProjectsGrid() {
   if (allProjects.length === 0) {
     projectsGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
       <div class="icon">📭</div>
-      <div>No teams have registered yet in <strong>${escapeHtml(CLASSES[currentClass].name)}</strong>.</div>
+      <div>No teams have registered for any project yet.</div>
     </div>`;
     return;
   }
 
-  allProjects.sort((a, b) => a.projectName.localeCompare(b.projectName));
+  allProjects.sort((a, b) =>
+    (a.className + a.projectName).localeCompare(b.className + b.projectName)
+  );
 
   projectsGrid.innerHTML = allProjects.map(p => renderProjectCard(p)).join('');
 
@@ -1005,7 +911,8 @@ function renderProjectCard(p) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  ONEDRIVE → DIRECT STREAM URL
+//  ONEDRIVE → DIRECT STREAM URL CONVERTER
+//  Tries multiple strategies in order. Returns { url, source } or null.
 // ═══════════════════════════════════════════════════════════
 function oneDriveDirectUrl(url) {
   if (!url) return null;
@@ -1013,10 +920,12 @@ function oneDriveDirectUrl(url) {
   if (!raw) return null;
 
   try {
+    // ── Strategy 1: Already a direct download URL ──
     if (raw.includes('onedrive.live.com/download')) {
       return { url: raw, source: 'direct-download' };
     }
 
+    // ── Strategy 2: onedrive.live.com with resid + authkey ──
     if (raw.includes('onedrive.live.com')) {
       const u = new URL(raw);
       const resid = u.searchParams.get('resid');
@@ -1027,25 +936,32 @@ function oneDriveDirectUrl(url) {
       }
     }
 
+    // ── Strategy 3: 1drv.ms short link → OneDrive API share token ──
+    // Reference: https://learn.microsoft.com/en-us/onedrive/developer/rest-api/api/shares_get
     if (raw.includes('1drv.ms')) {
       const token = 'u!' + base64UrlEncode(raw);
       const api = `https://api.onedrive.com/v1.0/shares/${token}/root/content`;
       return { url: api, source: 'api-share' };
     }
 
+    // ── Strategy 4: SharePoint share link ──
+    // SharePoint anonymous video rarely works but try ?download=1
     if (raw.includes('sharepoint.com')) {
       const sep = raw.includes('?') ? '&' : '?';
       return { url: raw + sep + 'download=1', source: 'sharepoint-dl' };
     }
 
+    // ── Strategy 5: Local file on our server ──
     if (/\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(raw)) {
       return { url: raw, source: 'local-file' };
     }
 
+    // ── Strategy 6: YouTube/Vimeo not supported by <video>, skip
     if (raw.includes('youtube.com') || raw.includes('youtu.be') || raw.includes('vimeo.com')) {
       return null;
     }
 
+    // ── Strategy 7: Fallback — try ?download=1 ──
     const sep = raw.includes('?') ? '&' : '?';
     return { url: raw + sep + 'download=1', source: 'fallback-dl' };
 
@@ -1055,6 +971,7 @@ function oneDriveDirectUrl(url) {
   }
 }
 
+// Base64 URL-safe encoding (no padding, - and _ instead of + and /)
 function base64UrlEncode(str) {
   try {
     const b64 = btoa(unescape(encodeURIComponent(str)));
