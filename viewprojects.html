@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Projects Overview · Admin</title>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
@@ -92,17 +91,21 @@
       overflow: hidden;
       display: flex; align-items: center; justify-content: center;
     }
-    .carousel-viewport iframe {
-      width: 100%; height: 100%; border: 0;
+    .carousel-viewport video {
+      width: 100%; height: 100%; border: 0; background: #000;
+      object-fit: contain;
     }
     .carousel-viewport .placeholder {
       text-align: center; color: #8ba0b8; padding: 2rem;
+      max-width: 560px;
     }
     .carousel-viewport .placeholder .icon { font-size: 4rem; margin-bottom: 1rem; }
-    .carousel-viewport .placeholder a {
-      color: #93c5fd; text-decoration: none; font-weight: 600;
+    .carousel-viewport .placeholder a.open-btn {
+      display: inline-block; background: #1f7a3e; color: white;
+      padding: 0.7rem 1.6rem; border-radius: 30px; font-weight: 700;
+      text-decoration: none; margin-top: 1rem;
     }
-    .carousel-viewport .placeholder a:hover { text-decoration: underline; }
+    .carousel-viewport .placeholder a.open-btn:hover { background: #155c2d; }
 
     .carousel-info {
       margin-top: 0.8rem;
@@ -143,7 +146,7 @@
     }
     .carousel-progress-bar {
       height: 100%; background: #22c55e; width: 0%;
-      transition: width 0.2s linear;
+      transition: width 0.3s linear;
     }
     .carousel-dots {
       display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap;
@@ -214,11 +217,8 @@
       font-family: 'Courier New', monospace; font-weight: 700;
       color: #0b2b4f; font-size: 0.88rem;
     }
-    .pc-student .icon { flex-shrink: 0; }
 
-    .pc-section {
-      margin-bottom: 0.9rem;
-    }
+    .pc-section { margin-bottom: 0.9rem; }
     .pc-section:last-child { margin-bottom: 0; }
     .pc-section-title {
       font-size: 0.78rem; font-weight: 700;
@@ -231,10 +231,7 @@
       border-radius: 20px; font-size: 0.7rem; font-weight: 700;
     }
 
-    /* Mini screencast thumbnails */
-    .sc-strip {
-      display: flex; gap: 0.5rem; flex-wrap: wrap;
-    }
+    .sc-strip { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .sc-mini {
       width: 130px; border-radius: 10px; overflow: hidden;
       background: #0b2b4f; cursor: pointer;
@@ -264,7 +261,6 @@
       background: #f8fafc;
     }
 
-    /* Journals list */
     .jn-list { display: flex; flex-direction: column; gap: 0.35rem; }
     .jn-item {
       display: flex; align-items: center; gap: 0.5rem;
@@ -286,7 +282,6 @@
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 
-    /* GitHub */
     .gh-btn {
       display: inline-flex; align-items: center; gap: 0.4rem;
       background: #0b2b4f; color: white; text-decoration: none;
@@ -305,6 +300,16 @@
     .empty-state .icon { font-size: 4rem; margin-bottom: 1rem; }
 
     .hidden { display: none !important; }
+
+    /* Source badge on video */
+    .video-source-badge {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(0,0,0,0.55); color: white;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      padding: 0.25rem 0.6rem; border-radius: 20px;
+      letter-spacing: 0.4px; pointer-events: none;
+    }
+    .carousel-viewport { position: relative; }
   </style>
 </head>
 <body>
@@ -359,6 +364,7 @@
         <button id="prevBtn" title="Previous">⏮ Prev</button>
         <button id="playPauseBtn" class="active" title="Play/Pause">⏸ Pause</button>
         <button id="nextBtn" title="Next">Next ⏭</button>
+        <button id="muteBtn" title="Toggle sound">🔇 Unmute</button>
         <div class="carousel-progress"><div class="carousel-progress-bar" id="progressBar"></div></div>
         <button id="fullscreenBtn" title="Fullscreen">⛶ Fullscreen</button>
         <div class="carousel-dots" id="carouselDots"></div>
@@ -405,14 +411,16 @@ const CLASSES = {
 // ═══════════════════════════════════════════════════════════
 let groupsData = {};
 let studentsData = {};
-let allProjects = [];      // flat list: { projectId, projectName, category, classId, className, selection, group }
-let featuredReels = [];    // screencasts for the carousel: { url, embed, title, projectName, className, students, timestamp }
+let allProjects = [];
+let featuredReels = [];
 let currentSlide = 0;
 let isPlaying = true;
-let slideTimer = null;
+let isMuted = true;
+let currentVideoEl = null;
+let slideFallbackTimer = null;
 let progressTimer = null;
 let progressStart = 0;
-const SLIDE_DURATION = 15000;   // 15 seconds per screencast
+const FALLBACK_DURATION = 8000;  // 8s if video can't play
 
 // DOM
 const loginView = document.getElementById('loginView');
@@ -429,6 +437,7 @@ const carouselDots = document.getElementById('carouselDots');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 const playPauseBtn = document.getElementById('playPauseBtn');
+const muteBtn = document.getElementById('muteBtn');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
 const progressBar = document.getElementById('progressBar');
 const projectsGrid = document.getElementById('projectsGrid');
@@ -456,7 +465,7 @@ function doLogin() {
 
 logoutBtn.addEventListener('click', () => {
   sessionStorage.removeItem('overview_admin_auth');
-  stopCarousel();
+  stopAllTimers();
   dashboardView.classList.add('hidden');
   loginView.classList.remove('hidden');
   passwordInput.value = '';
@@ -470,7 +479,7 @@ function showDashboard() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  DATA LOADING — fetch students, groups, and all project selections
+//  DATA LOADING
 // ═══════════════════════════════════════════════════════════
 async function loadEverything() {
   try {
@@ -493,7 +502,6 @@ async function loadEverything() {
 
     allProjects = [];
 
-    // Gameplay
     Object.entries(gpS).forEach(([pid, sel]) => {
       const proj = gp[pid] || { name: pid, category: '—' };
       allProjects.push({
@@ -507,7 +515,6 @@ async function loadEverything() {
       });
     });
 
-    // Advanced
     Object.entries(advS).forEach(([pid, sel]) => {
       const proj = adv[pid] || { name: pid, category: '—' };
       allProjects.push({
@@ -535,7 +542,7 @@ async function loadEverything() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  FEATURED REELS — latest screencast from each project
+//  FEATURED REELS
 // ═══════════════════════════════════════════════════════════
 function buildFeaturedReels() {
   featuredReels = [];
@@ -545,13 +552,12 @@ function buildFeaturedReels() {
     const entries = Object.entries(scs);
     if (entries.length === 0) return;
 
-    // Latest by timestamp
     entries.sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
     const latest = entries[0][1];
 
     featuredReels.push({
       url: latest.url,
-      embed: oneDriveEmbed(latest.url),
+      directUrl: oneDriveDirectUrl(latest.url),
       title: latest.title || 'Screencast',
       projectName: p.projectName,
       className: p.className,
@@ -560,7 +566,6 @@ function buildFeaturedReels() {
     });
   });
 
-  // Sort newest first
   featuredReels.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 }
 
@@ -578,19 +583,12 @@ function startCarousel() {
     carouselProject.textContent = '—';
     carouselMeta.textContent = 'Nothing to play';
     carouselCounter.textContent = '0 / 0';
-    prevBtn.disabled = true;
-    nextBtn.disabled = true;
-    playPauseBtn.disabled = true;
-    fullscreenBtn.disabled = true;
+    [prevBtn, nextBtn, playPauseBtn, muteBtn, fullscreenBtn].forEach(b => b.disabled = true);
     return;
   }
-  prevBtn.disabled = false;
-  nextBtn.disabled = false;
-  playPauseBtn.disabled = false;
-  fullscreenBtn.disabled = false;
+  [prevBtn, nextBtn, playPauseBtn, muteBtn, fullscreenBtn].forEach(b => b.disabled = false);
   currentSlide = 0;
   showSlide(currentSlide);
-  scheduleNext();
 }
 
 function renderCarouselDots() {
@@ -599,10 +597,18 @@ function renderCarouselDots() {
   ).join('');
   carouselDots.querySelectorAll('.carousel-dot').forEach(dot => {
     dot.addEventListener('click', () => {
-      const idx = parseInt(dot.dataset.idx, 10);
-      gotoSlide(idx);
+      gotoSlide(parseInt(dot.dataset.idx, 10));
     });
   });
+}
+
+function stopAllTimers() {
+  if (slideFallbackTimer) { clearTimeout(slideFallbackTimer); slideFallbackTimer = null; }
+  if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+  if (currentVideoEl) {
+    try { currentVideoEl.pause(); } catch (e) {}
+    currentVideoEl = null;
+  }
 }
 
 function showSlide(idx) {
@@ -611,93 +617,171 @@ function showSlide(idx) {
   if (idx >= featuredReels.length) idx = 0;
   currentSlide = idx;
 
+  stopAllTimers();
+
   const reel = featuredReels[idx];
   carouselCounter.textContent = (idx + 1) + ' / ' + featuredReels.length;
   carouselProject.textContent = reel.projectName;
   const studentList = reel.students.map(s => studentEmail(s)).join(' · ');
   carouselMeta.textContent = '🎬 ' + reel.title + '  •  ' + reel.className + '  •  ' + studentList;
 
-  if (reel.embed) {
-    carouselViewport.innerHTML = `<iframe src="${escapeHtml(reel.embed)}" allowfullscreen loading="eager"></iframe>`;
-  } else {
-    carouselViewport.innerHTML = `
-      <div class="placeholder">
-        <div class="icon">📼</div>
-        <div>Preview not available</div>
-        <div style="margin-top:0.8rem;">
-          <a href="${escapeHtml(reel.url)}" target="_blank">🔗 Open in OneDrive</a>
-        </div>
-      </div>`;
-  }
-
-  // update dots
+  // Update dots
   carouselDots.querySelectorAll('.carousel-dot').forEach((d, i) => {
     d.classList.toggle('active', i === idx);
   });
 
-  // highlight mini in grid
+  // Highlight mini thumbnails
   document.querySelectorAll('.sc-mini').forEach(el => el.classList.remove('playing'));
   const mini = document.querySelector(`.sc-mini[data-url="${cssEscape(reel.url)}"]`);
   if (mini) mini.classList.add('playing');
+
+  // Build video element or fallback
+  if (reel.directUrl) {
+    buildVideoPlayer(reel);
+  } else {
+    buildFallbackCard(reel, 'no-stream', 'No direct stream URL could be built for this link.');
+  }
 }
 
-function scheduleNext() {
-  stopSlideTimers();
-  if (!isPlaying) return;
+function buildVideoPlayer(reel) {
+  const sourceBadge = reel.directUrl.source
+    ? `<div class="video-source-badge">${escapeHtml(reel.directUrl.source)}</div>`
+    : '';
 
-  progressStart = Date.now();
-  progressBar.style.width = '0%';
+  carouselViewport.innerHTML = `
+    ${sourceBadge}
+    <video id="carouselVideo" controls playsinline preload="auto"
+           muted="${isMuted}"
+           style="width:100%; height:100%; background:#000; object-fit:contain;">
+      <source src="${escapeHtml(reel.directUrl.url)}" type="video/mp4">
+    </video>
+  `;
 
-  progressTimer = setInterval(() => {
-    const elapsed = Date.now() - progressStart;
-    const pct = Math.min(100, (elapsed / SLIDE_DURATION) * 100);
+  const video = document.getElementById('carouselVideo');
+  if (!video) return;
+  currentVideoEl = video;
+
+  // Try to autoplay
+  if (isPlaying) {
+    video.play().catch(err => {
+      console.warn('Autoplay blocked:', err);
+      // Autoplay blocked — wait for user click
+      video.muted = true;
+      isMuted = true;
+      updateMuteButton();
+    });
+  }
+
+  // When the video ends, advance to next
+  video.addEventListener('ended', () => {
+    if (isPlaying) {
+      showSlide(currentSlide + 1);
+    }
+  });
+
+  // On error, fall back
+  video.addEventListener('error', () => {
+    console.warn('Video error for:', reel.directUrl.url);
+    const err = video.error;
+    let reason = 'unknown';
+    if (err) {
+      if (err.code === 1) reason = 'aborted';
+      else if (err.code === 2) reason = 'network';
+      else if (err.code === 3) reason = 'decode';
+      else if (err.code === 4) reason = 'unsupported';
+    }
+    buildFallbackCard(reel, reason, 'The direct stream URL could not be played.');
+  });
+
+  // Progress bar tied to currentTime
+  video.addEventListener('timeupdate', () => {
+    if (!video.duration || video.duration === Infinity) return;
+    const pct = (video.currentTime / video.duration) * 100;
     progressBar.style.width = pct + '%';
-  }, 100);
+  });
 
-  slideTimer = setTimeout(() => {
-    showSlide(currentSlide + 1);
-    scheduleNext();
-  }, SLIDE_DURATION);
+  // Metadata loaded
+  video.addEventListener('loadedmetadata', () => {
+    console.log('✅ Video loaded:', reel.directUrl.source, 'duration:', video.duration + 's');
+  });
+
+  // Stalled detection — if no metadata after 4 seconds, fall back
+  slideFallbackTimer = setTimeout(() => {
+    if (video.readyState < 2) {  // no metadata loaded yet
+      console.warn('Video stalled — falling back');
+      buildFallbackCard(reel, 'stalled', 'The video did not start streaming in time.');
+    }
+  }, 4500);
 }
 
-function stopSlideTimers() {
-  if (slideTimer) { clearTimeout(slideTimer); slideTimer = null; }
-  if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
-}
+function buildFallbackCard(reel, reason, message) {
+  stopAllTimers();
+  progressBar.style.width = '100%';
 
-function stopCarousel() {
-  stopSlideTimers();
-  isPlaying = false;
+  carouselViewport.innerHTML = `
+    <div class="placeholder">
+      <div class="icon">🔒</div>
+      <div style="font-weight:700; color:#93c5fd; font-size:1.05rem; margin-bottom:0.4rem;">
+        Preview not available in-browser
+      </div>
+      <div style="font-size:0.88rem;">
+        ${escapeHtml(message)}<br>
+        <span style="opacity:0.75;">Reason: ${escapeHtml(reason)}</span>
+      </div>
+      <div style="margin-top:0.8rem; font-size:0.8rem; opacity:0.7;">
+        Microsoft often blocks direct streaming of OneDrive video.
+      </div>
+      <a class="open-btn" href="${escapeHtml(reel.url)}" target="_blank" rel="noopener">
+        ▶ Open in OneDrive
+      </a>
+    </div>
+  `;
+
+  // Auto-advance after fallback display
+  slideFallbackTimer = setTimeout(() => {
+    if (isPlaying && featuredReels.length > 1) {
+      showSlide(currentSlide + 1);
+    }
+  }, FALLBACK_DURATION);
 }
 
 function gotoSlide(idx) {
   showSlide(idx);
-  scheduleNext();
 }
 
-prevBtn.addEventListener('click', () => {
-  showSlide(currentSlide - 1);
-  scheduleNext();
-});
-
-nextBtn.addEventListener('click', () => {
-  showSlide(currentSlide + 1);
-  scheduleNext();
-});
+prevBtn.addEventListener('click', () => showSlide(currentSlide - 1));
+nextBtn.addEventListener('click', () => showSlide(currentSlide + 1));
 
 playPauseBtn.addEventListener('click', () => {
   isPlaying = !isPlaying;
   if (isPlaying) {
     playPauseBtn.textContent = '⏸ Pause';
     playPauseBtn.classList.add('active');
-    scheduleNext();
+    if (currentVideoEl) currentVideoEl.play().catch(() => {});
+    else showSlide(currentSlide);
   } else {
     playPauseBtn.textContent = '▶ Play';
     playPauseBtn.classList.remove('active');
-    stopSlideTimers();
-    progressBar.style.width = '0%';
+    if (currentVideoEl) currentVideoEl.pause();
+    stopAllTimers();
   }
 });
+
+muteBtn.addEventListener('click', () => {
+  isMuted = !isMuted;
+  if (currentVideoEl) currentVideoEl.muted = isMuted;
+  updateMuteButton();
+});
+
+function updateMuteButton() {
+  if (isMuted) {
+    muteBtn.textContent = '🔇 Unmute';
+    muteBtn.classList.remove('active');
+  } else {
+    muteBtn.textContent = '🔊 Mute';
+    muteBtn.classList.add('active');
+  }
+}
 
 fullscreenBtn.addEventListener('click', () => {
   const el = carouselViewport;
@@ -730,7 +814,6 @@ function renderProjectsGrid() {
 
   projectsGrid.innerHTML = allProjects.map(p => renderProjectCard(p)).join('');
 
-  // Bind mini screencast clicks
   document.querySelectorAll('.sc-mini').forEach(el => {
     el.addEventListener('click', () => {
       const url = el.dataset.url;
@@ -749,12 +832,10 @@ function renderProjectCard(p) {
   const s1 = p.selection.student1 || '—';
   const s2 = p.selection.student2 || '—';
 
-  // Class pill
   const classPill = p.classId === 'advanced'
     ? '<span class="pill pill-advanced">💻 Advanced</span>'
     : '<span class="pill pill-gameplay">🎮 Gameplay</span>';
 
-  // Screencasts
   const scs = p.group.screencasts || {};
   const scEntries = Object.entries(scs).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
   const scHTML = scEntries.length === 0
@@ -770,7 +851,6 @@ function renderProjectCard(p) {
       (scEntries.length > 4 ? `<div style="align-self:center; color:#5b7b9c; font-size:0.8rem; font-weight:600;">+${scEntries.length - 4}</div>` : '') +
       '</div>';
 
-  // Journals — merge both students' journals, tag by student
   const journalsAll = [];
   const journalsByStudent = p.group.journals || {};
   Object.entries(journalsByStudent).forEach(([studentNum, jns]) => {
@@ -792,7 +872,6 @@ function renderProjectCard(p) {
       (journalsAll.length > 5 ? `<div style="color:#5b7b9c; font-size:0.8rem; text-align:center; padding:0.3rem;">+${journalsAll.length - 5} more</div>` : '') +
       '</div>';
 
-  // GitHub
   const gh = p.group.githubLink || '';
   const ghHTML = gh
     ? `<a class="gh-btn" href="${escapeHtml(gh)}" target="_blank">🐙 Open repository</a>`
@@ -832,6 +911,77 @@ function renderProjectCard(p) {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  ONEDRIVE → DIRECT STREAM URL CONVERTER
+//  Tries multiple strategies in order. Returns { url, source } or null.
+// ═══════════════════════════════════════════════════════════
+function oneDriveDirectUrl(url) {
+  if (!url) return null;
+  const raw = String(url).trim();
+  if (!raw) return null;
+
+  try {
+    // ── Strategy 1: Already a direct download URL ──
+    if (raw.includes('onedrive.live.com/download')) {
+      return { url: raw, source: 'direct-download' };
+    }
+
+    // ── Strategy 2: onedrive.live.com with resid + authkey ──
+    if (raw.includes('onedrive.live.com')) {
+      const u = new URL(raw);
+      const resid = u.searchParams.get('resid');
+      const authkey = u.searchParams.get('authkey') || '';
+      if (resid) {
+        const direct = `https://onedrive.live.com/download?resid=${encodeURIComponent(resid)}&authkey=${encodeURIComponent(authkey)}`;
+        return { url: direct, source: 'resid-download' };
+      }
+    }
+
+    // ── Strategy 3: 1drv.ms short link → OneDrive API share token ──
+    // Reference: https://learn.microsoft.com/en-us/onedrive/developer/rest-api/api/shares_get
+    if (raw.includes('1drv.ms')) {
+      const token = 'u!' + base64UrlEncode(raw);
+      const api = `https://api.onedrive.com/v1.0/shares/${token}/root/content`;
+      return { url: api, source: 'api-share' };
+    }
+
+    // ── Strategy 4: SharePoint share link ──
+    // SharePoint anonymous video rarely works but try ?download=1
+    if (raw.includes('sharepoint.com')) {
+      const sep = raw.includes('?') ? '&' : '?';
+      return { url: raw + sep + 'download=1', source: 'sharepoint-dl' };
+    }
+
+    // ── Strategy 5: Local file on our server ──
+    if (/\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(raw)) {
+      return { url: raw, source: 'local-file' };
+    }
+
+    // ── Strategy 6: YouTube/Vimeo not supported by <video>, skip
+    if (raw.includes('youtube.com') || raw.includes('youtu.be') || raw.includes('vimeo.com')) {
+      return null;
+    }
+
+    // ── Strategy 7: Fallback — try ?download=1 ──
+    const sep = raw.includes('?') ? '&' : '?';
+    return { url: raw + sep + 'download=1', source: 'fallback-dl' };
+
+  } catch (e) {
+    console.warn('oneDriveDirectUrl error for', raw, e);
+    return null;
+  }
+}
+
+// Base64 URL-safe encoding (no padding, - and _ instead of + and /)
+function base64UrlEncode(str) {
+  try {
+    const b64 = btoa(unescape(encodeURIComponent(str)));
+    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  } catch (e) {
+    return '';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════════════════════
 function studentEmail(num) {
@@ -843,25 +993,7 @@ function studentEmail(num) {
 
 function shortStudent(num) {
   if (!num) return '—';
-  const clean = String(num).trim();
-  // show last 5 chars uppercase-ish
-  return clean.slice(-6).toUpperCase();
-}
-
-function oneDriveEmbed(url) {
-  if (!url) return null;
-  try {
-    if (url.includes('1drv.ms')) return url + (url.includes('?') ? '&' : '?') + 'embed=1';
-    if (url.includes('onedrive.live.com/embed')) return url;
-    if (url.includes('onedrive.live.com')) {
-      const u = new URL(url);
-      const resid = u.searchParams.get('resid');
-      if (resid) return 'https://onedrive.live.com/embed?resid=' + encodeURIComponent(resid) + '&authkey=';
-    }
-    // Generic fallback — try appending embed=1
-    if (url.includes('?')) return url + '&embed=1';
-    return url + '?embed=1';
-  } catch (e) { return null; }
+  return String(num).trim().slice(-6).toUpperCase();
 }
 
 function escapeHtml(s) {
