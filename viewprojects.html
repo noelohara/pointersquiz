@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects Overview · Admin</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(145deg, #eef2f7 0%, #dde6f0 100%);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+      color: #1f2a3a;
+    }
+    .container { max-width: 1500px; margin: 0 auto; }
+
+    /* LOGIN */
+    #loginView {
+      max-width: 420px; margin: 6rem auto; text-align: center;
+      background: white; padding: 2.5rem 2rem; border-radius: 24px;
+      box-shadow: 0 20px 40px -12px rgba(0,30,60,0.18);
+    }
+    #loginView .lock-icon { font-size: 3rem; margin-bottom: 1rem; }
+    #loginView h2 { color: #0b2b4f; margin-bottom: 0.5rem; font-size: 1.5rem; }
+    #loginView p { color: #5b7b9c; font-size: 0.9rem; margin-bottom: 1.5rem; }
+    input[type="password"] {
+      width: 100%; padding: 1rem 1.3rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-size: 1rem; font-family: inherit;
+      outline: none; text-align: center; letter-spacing: 3px;
+    }
+    input[type="password"]:focus { border-color: #1e4c7a; box-shadow: 0 0 0 3px rgba(30,76,122,0.15); }
+
+    .btn {
+      background: #1e4c7a; color: white; font-weight: 600;
+      border: none; padding: 0.95rem 2rem; border-radius: 60px;
+      font-size: 1rem; cursor: pointer; font-family: inherit;
+      transition: background 0.15s, transform 0.1s;
+      box-shadow: 0 8px 16px -4px rgba(20,60,110,0.3);
+    }
+    .btn:hover { background: #123a5e; }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; pointer-events: none; }
+    .btn-secondary { background: #e2e8f0; color: #1e2e44; box-shadow: none; }
+    .btn-secondary:hover { background: #cfdae6; }
+    .btn-sm { padding: 0.5rem 1.1rem; font-size: 0.85rem; }
+
+    #loginView .btn { width: 100%; margin-top: 1rem; }
+    .error-msg { color: #b91c1c; margin-top: 1rem; font-size: 0.9rem;
+      min-height: 1.2rem; font-weight: 500; }
+
+    /* HEADER */
+    header.page-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    header.page-head h1 { font-size: 2rem; color: #0b2b4f; font-weight: 700; }
+    header.page-head p { color: #5b7b9c; font-size: 0.95rem; margin-top: 0.2rem; }
+
+    /* ═══════════════════════════════════════════════════ */
+    /* CAROUSEL                                            */
+    /* ═══════════════════════════════════════════════════ */
+    .carousel-section {
+      background: #0b2b4f;
+      border-radius: 24px;
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 20px 40px -14px rgba(20,60,110,0.4);
+      color: white;
+    }
+    .carousel-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.9rem; flex-wrap: wrap; gap: 0.6rem;
+    }
+    .carousel-title { font-size: 1.05rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.5rem; }
+    .carousel-title .live-dot {
+      width: 9px; height: 9px; background: #22c55e; border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+    .carousel-viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #05172b;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .carousel-viewport iframe {
+      width: 100%; height: 100%; border: 0;
+    }
+    .carousel-viewport .placeholder {
+      text-align: center; color: #8ba0b8; padding: 2rem;
+    }
+    .carousel-viewport .placeholder .icon { font-size: 4rem; margin-bottom: 1rem; }
+    .carousel-viewport .placeholder a {
+      color: #93c5fd; text-decoration: none; font-weight: 600;
+    }
+    .carousel-viewport .placeholder a:hover { text-decoration: underline; }
+
+    .carousel-info {
+      margin-top: 0.8rem;
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 0.6rem;
+    }
+    .carousel-info-left { min-width: 0; flex: 1 1 300px; }
+    .carousel-project {
+      font-size: 1.15rem; font-weight: 700; line-height: 1.2;
+      color: white; word-break: break-word;
+    }
+    .carousel-meta {
+      font-size: 0.82rem; color: #b0c5dc; margin-top: 0.2rem;
+    }
+    .carousel-counter {
+      background: rgba(255,255,255,0.12); padding: 0.25rem 0.8rem;
+      border-radius: 30px; font-size: 0.8rem; font-weight: 700;
+      color: #b0c5dc;
+    }
+
+    .carousel-controls {
+      display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.9rem;
+      align-items: center;
+    }
+    .carousel-controls button {
+      background: rgba(255,255,255,0.12); color: white;
+      border: none; padding: 0.55rem 1.1rem; border-radius: 30px;
+      cursor: pointer; font-family: inherit; font-size: 0.85rem;
+      font-weight: 600; transition: background 0.15s;
+      display: inline-flex; align-items: center; gap: 0.35rem;
+    }
+    .carousel-controls button:hover { background: rgba(255,255,255,0.22); }
+    .carousel-controls button:disabled { opacity: 0.35; pointer-events: none; }
+    .carousel-controls button.active { background: #1f7a3e; }
+    .carousel-progress {
+      flex: 1 1 100px; height: 4px; background: rgba(255,255,255,0.15);
+      border-radius: 4px; overflow: hidden; min-width: 100px;
+    }
+    .carousel-progress-bar {
+      height: 100%; background: #22c55e; width: 0%;
+      transition: width 0.2s linear;
+    }
+    .carousel-dots {
+      display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .carousel-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.25); cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .carousel-dot.active { background: #22c55e; transform: scale(1.4); }
+    .carousel-dot:hover { background: rgba(255,255,255,0.5); }
+
+    /* ═══════════════════════════════════════════════════ */
+    /* PROJECT CARDS GRID                                  */
+    /* ═══════════════════════════════════════════════════ */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+      gap: 1.2rem;
+    }
+    @media (max-width: 900px) { .projects-grid { grid-template-columns: 1fr; } }
+
+    .project-card {
+      background: white;
+      border-radius: 22px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 26px -14px rgba(0,30,60,0.15);
+      border: 1px solid #eef2f7;
+      display: flex; flex-direction: column;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .project-card:hover {
+      box-shadow: 0 20px 34px -14px rgba(0,30,60,0.22);
+      transform: translateY(-2px);
+    }
+    .pc-head {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 0.7rem;
+      margin-bottom: 0.7rem; flex-wrap: wrap;
+    }
+    .pc-title {
+      font-size: 1.15rem; font-weight: 700; color: #0b2b4f;
+      line-height: 1.25; flex: 1 1 200px; min-width: 0;
+    }
+    .pc-badges { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .pill {
+      display: inline-block; font-size: 0.68rem; padding: 0.2rem 0.7rem;
+      border-radius: 20px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .pill-advanced { background: #e0e7ff; color: #3730a3; }
+    .pill-gameplay { background: #fef3c7; color: #92400e; }
+    .pill-cat { background: #e9f0f7; color: #3d5b7a; }
+
+    .pc-team {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      background: #f6faff; border-radius: 14px;
+      padding: 0.75rem 0.95rem; margin-bottom: 1rem;
+      border-left: 4px solid #1e4c7a;
+    }
+    .pc-student {
+      font-size: 0.9rem; color: #1e2e44; font-weight: 600;
+      display: flex; align-items: center; gap: 0.5rem;
+      word-break: break-all;
+    }
+    .pc-student .num {
+      font-family: 'Courier New', monospace; font-weight: 700;
+      color: #0b2b4f; font-size: 0.88rem;
+    }
+    .pc-student .icon { flex-shrink: 0; }
+
+    .pc-section {
+      margin-bottom: 0.9rem;
+    }
+    .pc-section:last-child { margin-bottom: 0; }
+    .pc-section-title {
+      font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.6px;
+      color: #5b7b9c; margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .pc-section-title .count {
+      background: #e9f0f7; color: #5b7b9c; padding: 0.1rem 0.55rem;
+      border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+    }
+
+    /* Mini screencast thumbnails */
+    .sc-strip {
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .sc-mini {
+      width: 130px; border-radius: 10px; overflow: hidden;
+      background: #0b2b4f; cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .sc-mini:hover { border-color: #1e4c7a; }
+    .sc-mini.playing { border-color: #1f7a3e; }
+    .sc-mini-thumb {
+      width: 100%; aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 1.5rem; position: relative;
+      background: linear-gradient(135deg, #1e4c7a, #0b2b4f);
+    }
+    .sc-mini-thumb .play-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.15);
+      font-size: 1.8rem;
+      transition: background 0.15s;
+    }
+    .sc-mini:hover .sc-mini-thumb .play-overlay { background: rgba(0,0,0,0.35); }
+    .sc-mini-label {
+      font-size: 0.68rem; color: #5b7b9c; padding: 0.3rem 0.4rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      background: #f8fafc;
+    }
+
+    /* Journals list */
+    .jn-list { display: flex; flex-direction: column; gap: 0.35rem; }
+    .jn-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.85rem; padding: 0.4rem 0.6rem;
+      background: #f8fafc; border-radius: 10px;
+      border-left: 3px solid #2d5a8a;
+      text-decoration: none; color: #1e2e44;
+      transition: background 0.15s;
+    }
+    .jn-item:hover { background: #eef2f7; }
+    .jn-item .who {
+      font-size: 0.7rem; color: #8ba0b8;
+      background: #e9f0f7; padding: 0.1rem 0.45rem;
+      border-radius: 20px; font-weight: 700; flex-shrink: 0;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .jn-item .title {
+      font-weight: 600; flex: 1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* GitHub */
+    .gh-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: #0b2b4f; color: white; text-decoration: none;
+      padding: 0.5rem 1rem; border-radius: 30px;
+      font-size: 0.82rem; font-weight: 600;
+      transition: background 0.15s;
+    }
+    .gh-btn:hover { background: #123a5e; }
+    .gh-none { color: #8ba0b8; font-size: 0.82rem; font-style: italic; }
+
+    .empty-state {
+      background: white; border-radius: 22px; padding: 4rem 2rem;
+      text-align: center; color: #5b7b9c;
+      box-shadow: 0 10px 26px -14px rgba(0,30,60,0.1);
+    }
+    .empty-state .icon { font-size: 4rem; margin-bottom: 1rem; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- LOGIN -->
+  <div id="loginView">
+    <div class="lock-icon">🔒</div>
+    <h2>Admin Access</h2>
+    <p>Enter password to continue</p>
+    <input type="password" id="passwordInput" placeholder="••••••••" autofocus>
+    <button class="btn" id="loginBtn">Unlock</button>
+    <div class="error-msg" id="loginError"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardView" class="hidden">
+    <header class="page-head">
+      <div>
+        <h1>🎬 Projects Overview</h1>
+        <p>Screencast wall + team snapshots</p>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="logoutBtn">Log out</button>
+    </header>
+
+    <!-- CAROUSEL -->
+    <div class="carousel-section">
+      <div class="carousel-header">
+        <div class="carousel-title">
+          <span class="live-dot"></span>
+          Now playing — latest screencast from each project
+        </div>
+        <div class="carousel-counter" id="carouselCounter">0 / 0</div>
+      </div>
+
+      <div class="carousel-viewport" id="carouselViewport">
+        <div class="placeholder">
+          <div class="icon">📼</div>
+          <div>Loading screencasts…</div>
+        </div>
+      </div>
+
+      <div class="carousel-info">
+        <div class="carousel-info-left">
+          <div class="carousel-project" id="carouselProject">—</div>
+          <div class="carousel-meta" id="carouselMeta">—</div>
+        </div>
+      </div>
+
+      <div class="carousel-controls">
+        <button id="prevBtn" title="Previous">⏮ Prev</button>
+        <button id="playPauseBtn" class="active" title="Play/Pause">⏸ Pause</button>
+        <button id="nextBtn" title="Next">Next ⏭</button>
+        <div class="carousel-progress"><div class="carousel-progress-bar" id="progressBar"></div></div>
+        <button id="fullscreenBtn" title="Fullscreen">⛶ Fullscreen</button>
+        <div class="carousel-dots" id="carouselDots"></div>
+      </div>
+    </div>
+
+    <!-- PROJECTS GRID -->
+    <div id="projectsGrid" class="projects-grid">
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="icon">⏳</div>
+        <div>Loading projects…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════
+const ADMIN_PASSWORD = "gesma2026";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
+  authDomain: "ai-project-tool.firebaseapp.com",
+  databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ai-project-tool",
+  storageBucket: "ai-project-tool.firebasestorage.app",
+  messagingSenderId: "658331100512",
+  appId: "1:658331100512:web:72208dc0c1561b95bcaa05",
+  measurementId: "G-R36B3T9FLW"
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const CLASSES = {
+  gameplay: { name: 'Gameplay', icon: '🎮' },
+  advanced: { name: 'Advanced Programming', icon: '💻' }
+};
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let groupsData = {};
+let studentsData = {};
+let allProjects = [];      // flat list: { projectId, projectName, category, classId, className, selection, group }
+let featuredReels = [];    // screencasts for the carousel: { url, embed, title, projectName, className, students, timestamp }
+let currentSlide = 0;
+let isPlaying = true;
+let slideTimer = null;
+let progressTimer = null;
+let progressStart = 0;
+const SLIDE_DURATION = 15000;   // 15 seconds per screencast
+
+// DOM
+const loginView = document.getElementById('loginView');
+const dashboardView = document.getElementById('dashboardView');
+const passwordInput = document.getElementById('passwordInput');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+const carouselViewport = document.getElementById('carouselViewport');
+const carouselProject = document.getElementById('carouselProject');
+const carouselMeta = document.getElementById('carouselMeta');
+const carouselCounter = document.getElementById('carouselCounter');
+const carouselDots = document.getElementById('carouselDots');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const progressBar = document.getElementById('progressBar');
+const projectsGrid = document.getElementById('projectsGrid');
+
+// ═══════════════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════════════
+function checkAuth() {
+  if (sessionStorage.getItem('overview_admin_auth') === 'true') showDashboard();
+}
+loginBtn.addEventListener('click', doLogin);
+passwordInput.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogin() {
+  if (passwordInput.value === ADMIN_PASSWORD) {
+    sessionStorage.setItem('overview_admin_auth', 'true');
+    loginError.textContent = '';
+    showDashboard();
+  } else {
+    loginError.textContent = '❌ Incorrect password.';
+    passwordInput.value = '';
+    passwordInput.focus();
+  }
+}
+
+logoutBtn.addEventListener('click', () => {
+  sessionStorage.removeItem('overview_admin_auth');
+  stopCarousel();
+  dashboardView.classList.add('hidden');
+  loginView.classList.remove('hidden');
+  passwordInput.value = '';
+  passwordInput.focus();
+});
+
+function showDashboard() {
+  loginView.classList.add('hidden');
+  dashboardView.classList.remove('hidden');
+  loadEverything();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DATA LOADING — fetch students, groups, and all project selections
+// ═══════════════════════════════════════════════════════════
+async function loadEverything() {
+  try {
+    const [studentsSnap, groupsSnap, gpProjects, gpSel, advProjects, advSel] = await Promise.all([
+      db.ref('students').once('value'),
+      db.ref('groups').once('value'),
+      db.ref('classes/gameplay/projects').once('value'),
+      db.ref('classes/gameplay/selections').once('value'),
+      db.ref('classes/advanced/projects').once('value'),
+      db.ref('classes/advanced/selections').once('value')
+    ]);
+
+    studentsData = studentsSnap.val() || {};
+    groupsData = groupsSnap.val() || {};
+
+    const gp = gpProjects.val() || {};
+    const gpS = gpSel.val() || {};
+    const adv = advProjects.val() || {};
+    const advS = advSel.val() || {};
+
+    allProjects = [];
+
+    // Gameplay
+    Object.entries(gpS).forEach(([pid, sel]) => {
+      const proj = gp[pid] || { name: pid, category: '—' };
+      allProjects.push({
+        projectId: pid,
+        projectName: proj.name,
+        category: proj.category || 'General',
+        classId: 'gameplay',
+        className: CLASSES.gameplay.name,
+        selection: sel,
+        group: groupsData[sel.groupId] || {}
+      });
+    });
+
+    // Advanced
+    Object.entries(advS).forEach(([pid, sel]) => {
+      const proj = adv[pid] || { name: pid, category: '—' };
+      allProjects.push({
+        projectId: pid,
+        projectName: proj.name,
+        category: proj.category || 'General',
+        classId: 'advanced',
+        className: CLASSES.advanced.name,
+        selection: sel,
+        group: groupsData[sel.groupId] || {}
+      });
+    });
+
+    buildFeaturedReels();
+    renderProjectsGrid();
+    startCarousel();
+
+  } catch (e) {
+    console.error('Load error:', e);
+    projectsGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="icon">❌</div>
+      <div>Failed to load: ${escapeHtml(e.message)}</div>
+    </div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FEATURED REELS — latest screencast from each project
+// ═══════════════════════════════════════════════════════════
+function buildFeaturedReels() {
+  featuredReels = [];
+
+  allProjects.forEach(p => {
+    const scs = p.group.screencasts || {};
+    const entries = Object.entries(scs);
+    if (entries.length === 0) return;
+
+    // Latest by timestamp
+    entries.sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+    const latest = entries[0][1];
+
+    featuredReels.push({
+      url: latest.url,
+      embed: oneDriveEmbed(latest.url),
+      title: latest.title || 'Screencast',
+      projectName: p.projectName,
+      className: p.className,
+      students: [p.selection.student1, p.selection.student2].filter(Boolean),
+      timestamp: latest.timestamp
+    });
+  });
+
+  // Sort newest first
+  featuredReels.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CAROUSEL
+// ═══════════════════════════════════════════════════════════
+function startCarousel() {
+  renderCarouselDots();
+  if (featuredReels.length === 0) {
+    carouselViewport.innerHTML = `
+      <div class="placeholder">
+        <div class="icon">📼</div>
+        <div>No screencasts uploaded yet</div>
+      </div>`;
+    carouselProject.textContent = '—';
+    carouselMeta.textContent = 'Nothing to play';
+    carouselCounter.textContent = '0 / 0';
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    playPauseBtn.disabled = true;
+    fullscreenBtn.disabled = true;
+    return;
+  }
+  prevBtn.disabled = false;
+  nextBtn.disabled = false;
+  playPauseBtn.disabled = false;
+  fullscreenBtn.disabled = false;
+  currentSlide = 0;
+  showSlide(currentSlide);
+  scheduleNext();
+}
+
+function renderCarouselDots() {
+  carouselDots.innerHTML = featuredReels.map((_, i) =>
+    `<div class="carousel-dot${i === currentSlide ? ' active' : ''}" data-idx="${i}"></div>`
+  ).join('');
+  carouselDots.querySelectorAll('.carousel-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      const idx = parseInt(dot.dataset.idx, 10);
+      gotoSlide(idx);
+    });
+  });
+}
+
+function showSlide(idx) {
+  if (featuredReels.length === 0) return;
+  if (idx < 0) idx = featuredReels.length - 1;
+  if (idx >= featuredReels.length) idx = 0;
+  currentSlide = idx;
+
+  const reel = featuredReels[idx];
+  carouselCounter.textContent = (idx + 1) + ' / ' + featuredReels.length;
+  carouselProject.textContent = reel.projectName;
+  const studentList = reel.students.map(s => studentEmail(s)).join(' · ');
+  carouselMeta.textContent = '🎬 ' + reel.title + '  •  ' + reel.className + '  •  ' + studentList;
+
+  if (reel.embed) {
+    carouselViewport.innerHTML = `<iframe src="${escapeHtml(reel.embed)}" allowfullscreen loading="eager"></iframe>`;
+  } else {
+    carouselViewport.innerHTML = `
+      <div class="placeholder">
+        <div class="icon">📼</div>
+        <div>Preview not available</div>
+        <div style="margin-top:0.8rem;">
+          <a href="${escapeHtml(reel.url)}" target="_blank">🔗 Open in OneDrive</a>
+        </div>
+      </div>`;
+  }
+
+  // update dots
+  carouselDots.querySelectorAll('.carousel-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
+  });
+
+  // highlight mini in grid
+  document.querySelectorAll('.sc-mini').forEach(el => el.classList.remove('playing'));
+  const mini = document.querySelector(`.sc-mini[data-url="${cssEscape(reel.url)}"]`);
+  if (mini) mini.classList.add('playing');
+}
+
+function scheduleNext() {
+  stopSlideTimers();
+  if (!isPlaying) return;
+
+  progressStart = Date.now();
+  progressBar.style.width = '0%';
+
+  progressTimer = setInterval(() => {
+    const elapsed = Date.now() - progressStart;
+    const pct = Math.min(100, (elapsed / SLIDE_DURATION) * 100);
+    progressBar.style.width = pct + '%';
+  }, 100);
+
+  slideTimer = setTimeout(() => {
+    showSlide(currentSlide + 1);
+    scheduleNext();
+  }, SLIDE_DURATION);
+}
+
+function stopSlideTimers() {
+  if (slideTimer) { clearTimeout(slideTimer); slideTimer = null; }
+  if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+}
+
+function stopCarousel() {
+  stopSlideTimers();
+  isPlaying = false;
+}
+
+function gotoSlide(idx) {
+  showSlide(idx);
+  scheduleNext();
+}
+
+prevBtn.addEventListener('click', () => {
+  showSlide(currentSlide - 1);
+  scheduleNext();
+});
+
+nextBtn.addEventListener('click', () => {
+  showSlide(currentSlide + 1);
+  scheduleNext();
+});
+
+playPauseBtn.addEventListener('click', () => {
+  isPlaying = !isPlaying;
+  if (isPlaying) {
+    playPauseBtn.textContent = '⏸ Pause';
+    playPauseBtn.classList.add('active');
+    scheduleNext();
+  } else {
+    playPauseBtn.textContent = '▶ Play';
+    playPauseBtn.classList.remove('active');
+    stopSlideTimers();
+    progressBar.style.width = '0%';
+  }
+});
+
+fullscreenBtn.addEventListener('click', () => {
+  const el = carouselViewport;
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else if (el.requestFullscreen) {
+    el.requestFullscreen();
+  } else if (el.webkitRequestFullscreen) {
+    el.webkitRequestFullscreen();
+  } else if (el.msRequestFullscreen) {
+    el.msRequestFullscreen();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  PROJECT GRID
+// ═══════════════════════════════════════════════════════════
+function renderProjectsGrid() {
+  if (allProjects.length === 0) {
+    projectsGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="icon">📭</div>
+      <div>No teams have registered for any project yet.</div>
+    </div>`;
+    return;
+  }
+
+  allProjects.sort((a, b) =>
+    (a.className + a.projectName).localeCompare(b.className + b.projectName)
+  );
+
+  projectsGrid.innerHTML = allProjects.map(p => renderProjectCard(p)).join('');
+
+  // Bind mini screencast clicks
+  document.querySelectorAll('.sc-mini').forEach(el => {
+    el.addEventListener('click', () => {
+      const url = el.dataset.url;
+      const idx = featuredReels.findIndex(r => r.url === url);
+      if (idx >= 0) {
+        gotoSlide(idx);
+        document.querySelector('.carousel-section').scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.open(url, '_blank');
+      }
+    });
+  });
+}
+
+function renderProjectCard(p) {
+  const s1 = p.selection.student1 || '—';
+  const s2 = p.selection.student2 || '—';
+
+  // Class pill
+  const classPill = p.classId === 'advanced'
+    ? '<span class="pill pill-advanced">💻 Advanced</span>'
+    : '<span class="pill pill-gameplay">🎮 Gameplay</span>';
+
+  // Screencasts
+  const scs = p.group.screencasts || {};
+  const scEntries = Object.entries(scs).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+  const scHTML = scEntries.length === 0
+    ? '<div style="color:#8ba0b8; font-size:0.85rem; font-style:italic;">No screencasts yet</div>'
+    : '<div class="sc-strip">' + scEntries.slice(0, 4).map(([id, sc]) => `
+        <div class="sc-mini" data-url="${escapeHtml(sc.url)}" title="${escapeHtml(sc.title || 'Untitled')}">
+          <div class="sc-mini-thumb">
+            <div class="play-overlay">▶</div>
+          </div>
+          <div class="sc-mini-label">${escapeHtml(sc.title || 'Untitled')}</div>
+        </div>
+      `).join('') +
+      (scEntries.length > 4 ? `<div style="align-self:center; color:#5b7b9c; font-size:0.8rem; font-weight:600;">+${scEntries.length - 4}</div>` : '') +
+      '</div>';
+
+  // Journals — merge both students' journals, tag by student
+  const journalsAll = [];
+  const journalsByStudent = p.group.journals || {};
+  Object.entries(journalsByStudent).forEach(([studentNum, jns]) => {
+    Object.entries(jns || {}).forEach(([id, jn]) => {
+      journalsAll.push({ ...jn, studentNum });
+    });
+  });
+  journalsAll.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+  const jnHTML = journalsAll.length === 0
+    ? '<div style="color:#8ba0b8; font-size:0.85rem; font-style:italic;">No journals uploaded</div>'
+    : '<div class="jn-list">' + journalsAll.slice(0, 5).map(jn => `
+        <a class="jn-item" href="${escapeHtml(jn.url)}" target="_blank" title="${escapeHtml(jn.title || '')}">
+          <span class="who">${escapeHtml(shortStudent(jn.studentNum))}</span>
+          <span class="title">${escapeHtml(jn.title || 'Journal')}</span>
+          <span>🔗</span>
+        </a>
+      `).join('') +
+      (journalsAll.length > 5 ? `<div style="color:#5b7b9c; font-size:0.8rem; text-align:center; padding:0.3rem;">+${journalsAll.length - 5} more</div>` : '') +
+      '</div>';
+
+  // GitHub
+  const gh = p.group.githubLink || '';
+  const ghHTML = gh
+    ? `<a class="gh-btn" href="${escapeHtml(gh)}" target="_blank">🐙 Open repository</a>`
+    : '<div class="gh-none">No GitHub link set</div>';
+
+  return `
+    <div class="project-card">
+      <div class="pc-head">
+        <div class="pc-title">${escapeHtml(p.projectName)}</div>
+        <div class="pc-badges">
+          ${classPill}
+          <span class="pill pill-cat">${escapeHtml(p.category)}</span>
+        </div>
+      </div>
+
+      <div class="pc-team">
+        <div class="pc-student"><span class="icon">👤</span><span class="num">${escapeHtml(studentEmail(s1))}</span></div>
+        <div class="pc-student"><span class="icon">👤</span><span class="num">${escapeHtml(studentEmail(s2))}</span></div>
+      </div>
+
+      <div class="pc-section">
+        <div class="pc-section-title">🎬 Screencasts <span class="count">${scEntries.length}</span></div>
+        ${scHTML}
+      </div>
+
+      <div class="pc-section">
+        <div class="pc-section-title">📄 Journals <span class="count">${journalsAll.length}</span></div>
+        ${jnHTML}
+      </div>
+
+      <div class="pc-section">
+        <div class="pc-section-title">🐙 Repository</div>
+        ${ghHTML}
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function studentEmail(num) {
+  if (!num) return '—';
+  const clean = String(num).trim();
+  if (clean.includes('@')) return clean;
+  return clean + '@setu.ie';
+}
+
+function shortStudent(num) {
+  if (!num) return '—';
+  const clean = String(num).trim();
+  // show last 5 chars uppercase-ish
+  return clean.slice(-6).toUpperCase();
+}
+
+function oneDriveEmbed(url) {
+  if (!url) return null;
+  try {
+    if (url.includes('1drv.ms')) return url + (url.includes('?') ? '&' : '?') + 'embed=1';
+    if (url.includes('onedrive.live.com/embed')) return url;
+    if (url.includes('onedrive.live.com')) {
+      const u = new URL(url);
+      const resid = u.searchParams.get('resid');
+      if (resid) return 'https://onedrive.live.com/embed?resid=' + encodeURIComponent(resid) + '&authkey=';
+    }
+    // Generic fallback — try appending embed=1
+    if (url.includes('?')) return url + '&embed=1';
+    return url + '?embed=1';
+  } catch (e) { return null; }
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function cssEscape(s) {
+  if (s == null) return '';
+  return String(s).replace(/(["\\])/g, '\\$1');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+checkAuth();
+</script>
+</body>
+</html>
