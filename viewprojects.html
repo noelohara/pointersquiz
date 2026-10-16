@@ -212,19 +212,23 @@
     .pill-cat { background: #e9f0f7; color: #3d5b7a; }
 
     .pc-team {
-      display: flex; flex-direction: column; gap: 0.35rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
       background: #f6faff; border-radius: 14px;
-      padding: 0.75rem 0.95rem; margin-bottom: 1rem;
+      padding: 0.85rem 1rem; margin-bottom: 1rem;
       border-left: 4px solid #1e4c7a;
     }
     .pc-student {
-      font-size: 0.9rem; color: #1e2e44; font-weight: 600;
-      display: flex; align-items: center; gap: 0.5rem;
-      word-break: break-all;
+      display: flex; flex-direction: column; gap: 0.1rem;
+      word-break: break-word;
     }
-    .pc-student .num {
-      font-family: 'Courier New', monospace; font-weight: 700;
-      color: #0b2b4f; font-size: 0.88rem;
+    .pc-student .name {
+      font-size: 0.92rem; font-weight: 700; color: #0b2b4f;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .pc-student .email {
+      font-family: 'Courier New', monospace; font-weight: 600;
+      color: #5b7b9c; font-size: 0.8rem;
+      padding-left: 1.4rem;
     }
 
     /* SECTIONS */
@@ -251,25 +255,29 @@
     }
     .student-journal:last-child { margin-bottom: 0; }
     .student-journal-head {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex; align-items: flex-start; justify-content: space-between;
       gap: 0.6rem; margin-bottom: 0.6rem; flex-wrap: wrap;
     }
-    .student-name {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-weight: 700; color: #1e2e44; font-size: 0.88rem;
-      font-family: 'Courier New', monospace;
+    .student-name-block {
+      display: flex; flex-direction: column; gap: 0.15rem;
+      min-width: 0; flex: 1;
     }
-    .student-name .you-badge {
-      background: #dbeafe; color: #1e40af;
-      font-size: 0.65rem; padding: 0.15rem 0.5rem;
-      border-radius: 20px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.3px;
-      font-family: 'Inter', sans-serif;
+    .student-name-line {
+      font-weight: 700; color: #0b2b4f; font-size: 0.92rem;
+      display: flex; align-items: center; gap: 0.4rem;
+      word-break: break-word;
+    }
+    .student-email-line {
+      font-family: 'Courier New', monospace; font-weight: 600;
+      color: #5b7b9c; font-size: 0.78rem;
+      padding-left: 1.35rem;
+      word-break: break-all;
     }
     .student-journal-count {
       font-size: 0.72rem; font-weight: 700;
       background: #e9f0f7; color: #3d5b7a;
       padding: 0.2rem 0.6rem; border-radius: 20px;
+      flex-shrink: 0;
     }
     .student-journal-count.zero {
       background: #fee2e2; color: #b91c1c;
@@ -315,9 +323,7 @@
       display: flex; gap: 2px; margin-top: 2px;
       flex-wrap: wrap; justify-content: center;
     }
-    .cal-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-    }
+    .cal-dot { width: 6px; height: 6px; border-radius: 50%; }
     .cal-dot.sc { background: #1f7a3e; }
     .cal-dot.jn { background: #1e4c7a; }
 
@@ -326,9 +332,7 @@
       font-size: 0.68rem; color: #64748b; flex-wrap: wrap;
     }
     .cal-legend-item { display: flex; align-items: center; gap: 0.25rem; }
-    .cal-legend-swatch {
-      width: 8px; height: 8px; border-radius: 50%;
-    }
+    .cal-legend-swatch { width: 8px; height: 8px; border-radius: 50%; }
     .cal-legend-swatch.sc { background: #1f7a3e; }
     .cal-legend-swatch.jn { background: #1e4c7a; }
     .cal-legend-swatch.today { background: #fffbeb; border: 1.5px solid #f59e0b; }
@@ -711,6 +715,21 @@ function applyClassFilter() {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  STUDENT NAME LOOKUP
+//  Look up a student by number and return "First Last" or null.
+// ═══════════════════════════════════════════════════════════
+function lookupStudentName(studentNumber) {
+  if (!studentNumber) return null;
+  const key = String(studentNumber).trim().toLowerCase();
+  const s = studentsData[key];
+  if (!s) return null;
+  const first = (s.firstName || '').trim();
+  const last = (s.lastName || '').trim();
+  if (!first && !last) return null;
+  return (first + ' ' + last).trim();
+}
+
+// ═══════════════════════════════════════════════════════════
 //  FEATURED REELS
 // ═══════════════════════════════════════════════════════════
 function buildFeaturedReels() {
@@ -796,7 +815,7 @@ function showSlide(idx) {
   const reel = featuredReels[idx];
   carouselCounter.textContent = (idx + 1) + ' / ' + featuredReels.length;
   carouselProject.textContent = reel.projectName;
-  const studentList = reel.students.map(s => studentEmail(s)).join(' · ');
+  const studentList = reel.students.map(s => studentLabel(s)).join(' · ');
   carouselMeta.textContent = '🎬 ' + reel.title + '  •  ' + reel.className + '  •  ' + studentList;
 
   carouselDots.querySelectorAll('.carousel-dot').forEach((d, i) => {
@@ -960,22 +979,24 @@ function renderProjectCard(p) {
   const s1Lower = String(s1).trim().toLowerCase();
   const s2Lower = String(s2).trim().toLowerCase();
 
+  const name1 = lookupStudentName(s1);
+  const name2 = lookupStudentName(s2);
+  const email1 = studentEmail(s1);
+  const email2 = studentEmail(s2);
+
   const classPill = p.classId === 'advanced'
     ? '<span class="pill pill-advanced">💻 Advanced</span>'
     : '<span class="pill pill-gameplay">🎮 Gameplay</span>';
 
-  // Screencasts (team-wide)
   const scs = p.group.screencasts || {};
   const scEntries = Object.entries(scs).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
 
-  // Journals per student
   const journalsByStudent = p.group.journals || {};
   const j1 = journalsByStudent[s1Lower] || {};
   const j2 = journalsByStudent[s2Lower] || {};
   const j1Entries = Object.entries(j1).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
   const j2Entries = Object.entries(j2).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
 
-  // Calendar keys
   const calBase = p.classId + ':' + p.projectId;
   const scCalKey = calBase + ':sc';
   const j1CalKey = calBase + ':j1';
@@ -997,8 +1018,14 @@ function renderProjectCard(p) {
       </div>
 
       <div class="pc-team">
-        <div class="pc-student"><span class="icon">👤</span><span class="num">${escapeHtml(studentEmail(s1))}</span></div>
-        <div class="pc-student"><span class="icon">👤</span><span class="num">${escapeHtml(studentEmail(s2))}</span></div>
+        <div class="pc-student">
+          <div class="name">👤 ${name1 ? escapeHtml(name1) : '<span style="color:#8ba0b8;font-style:italic;font-weight:500;">(unknown student)</span>'}</div>
+          <div class="email">${escapeHtml(email1)}</div>
+        </div>
+        <div class="pc-student">
+          <div class="name">👤 ${name2 ? escapeHtml(name2) : '<span style="color:#8ba0b8;font-style:italic;font-weight:500;">(unknown student)</span>'}</div>
+          <div class="email">${escapeHtml(email2)}</div>
+        </div>
       </div>
 
       <!-- TEAM SCREENCASTS -->
@@ -1025,14 +1052,16 @@ function renderProjectCard(p) {
         </div>
       </div>
 
-      <!-- STUDENT 1 JOURNALS -->
+      <!-- INDIVIDUAL JOURNALS -->
       <div class="pc-section">
         <div class="pc-section-title">📄 Individual journals</div>
 
+        <!-- Student 1 -->
         <div class="student-journal">
           <div class="student-journal-head">
-            <div class="student-name">
-              👤 ${escapeHtml(studentEmail(s1))}
+            <div class="student-name-block">
+              <div class="student-name-line">👤 ${name1 ? escapeHtml(name1) : '<span style="color:#8ba0b8;font-style:italic;">(unknown student)</span>'}</div>
+              <div class="student-email-line">${escapeHtml(email1)}</div>
             </div>
             <span class="student-journal-count ${j1Entries.length === 0 ? 'zero' : ''}">
               ${j1Entries.length} journal${j1Entries.length === 1 ? '' : 's'}
@@ -1055,11 +1084,12 @@ function renderProjectCard(p) {
           </div>
         </div>
 
-        <!-- STUDENT 2 JOURNALS -->
+        <!-- Student 2 -->
         <div class="student-journal">
           <div class="student-journal-head">
-            <div class="student-name">
-              👤 ${escapeHtml(studentEmail(s2))}
+            <div class="student-name-block">
+              <div class="student-name-line">👤 ${name2 ? escapeHtml(name2) : '<span style="color:#8ba0b8;font-style:italic;">(unknown student)</span>'}</div>
+              <div class="student-email-line">${escapeHtml(email2)}</div>
             </div>
             <span class="student-journal-count ${j2Entries.length === 0 ? 'zero' : ''}">
               ${j2Entries.length} journal${j2Entries.length === 1 ? '' : 's'}
@@ -1127,15 +1157,12 @@ function renderCalendars() {
     const s1Lower = String(p.selection.student1 || '').trim().toLowerCase();
     const s2Lower = String(p.selection.student2 || '').trim().toLowerCase();
 
-    // Screencasts (team)
     const scItems = Object.values(p.group.screencasts || {});
     renderMiniCalendar(calBase + ':sc', scItems, 'sc');
 
-    // Journals — student 1
     const j1Items = Object.values((p.group.journals || {})[s1Lower] || {});
     renderMiniCalendar(calBase + ':j1', j1Items, 'jn');
 
-    // Journals — student 2
     const j2Items = Object.values((p.group.journals || {})[s2Lower] || {});
     renderMiniCalendar(calBase + ':j2', j2Items, 'jn');
   });
@@ -1286,6 +1313,11 @@ function studentEmail(num) {
   const clean = String(num).trim();
   if (clean.includes('@')) return clean;
   return clean + '@setu.ie';
+}
+
+function studentLabel(num) {
+  const name = lookupStudentName(num);
+  return name ? name + ' (' + studentEmail(num) + ')' : studentEmail(num);
 }
 
 function escapeHtml(s) {
