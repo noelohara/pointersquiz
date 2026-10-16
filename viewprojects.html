@@ -173,9 +173,7 @@
     .carousel-dot.active { background: #22c55e; transform: scale(1.4); }
     .carousel-dot:hover { background: rgba(255,255,255,0.5); }
 
-    /* ═══════════════════════════════════════════════════ */
-    /* PROJECT CARDS GRID                                  */
-    /* ═══════════════════════════════════════════════════ */
+    /* PROJECT CARDS GRID */
     .projects-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
@@ -229,9 +227,7 @@
       color: #0b2b4f; font-size: 0.88rem;
     }
 
-    /* ═══════════════════════════════════════════════════ */
-    /* MINI CALENDAR                                       */
-    /* ═══════════════════════════════════════════════════ */
+    /* MINI CALENDAR */
     .pc-section { margin-bottom: 1rem; }
     .pc-section:last-child { margin-bottom: 0; }
     .pc-section-title {
@@ -250,9 +246,7 @@
       align-items: center; margin-bottom: 0.4rem;
     }
     .cal-month { font-size: 0.9rem; font-weight: 700; color: #1e2e44; }
-    .cal-nav {
-      display: flex; gap: 0.3rem;
-    }
+    .cal-nav { display: flex; gap: 0.3rem; }
     .cal-nav button {
       background: #eef2f7; border: none; padding: 0.25rem 0.65rem;
       border-radius: 20px; cursor: pointer; font-weight: 700;
@@ -282,7 +276,6 @@
     .cal-day.today { border-color: #f59e0b; background: #fffbeb; }
     .cal-day .cal-num { font-weight: 600; font-size: 0.7rem; line-height: 1; }
 
-    /* Colored dots for screencasts + journals */
     .cal-dots {
       display: flex; gap: 2px; margin-top: 2px;
       flex-wrap: wrap; justify-content: center;
@@ -293,7 +286,6 @@
     .cal-dot.sc { background: #1f7a3e; }
     .cal-dot.jn { background: #1e4c7a; }
 
-    /* Legend */
     .cal-legend {
       display: flex; gap: 0.8rem; margin-top: 0.5rem;
       font-size: 0.7rem; color: #64748b; flex-wrap: wrap;
@@ -306,7 +298,6 @@
     .cal-legend-swatch.jn { background: #1e4c7a; }
     .cal-legend-swatch.today { background: #fffbeb; border: 1.5px solid #f59e0b; }
 
-    /* Links below the calendar */
     .links-strip {
       display: flex; flex-direction: column; gap: 0.3rem;
       margin-top: 0.6rem;
@@ -451,7 +442,9 @@
 // ═══════════════════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════════════════
-const ADMIN_PASSWORD = "gesma2026";
+
+// SHA-256 hash of the admin password
+const ADMIN_PASSWORD_HASH = "6ce26e8cbed41418dc5c19f54c99d869ab95848438df0ab6d259bb2b0668e897";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
@@ -473,6 +466,16 @@ const CLASSES = {
 };
 
 // ═══════════════════════════════════════════════════════════
+//  PASSWORD HASHING HELPER
+// ═══════════════════════════════════════════════════════════
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)]
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// ═══════════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════════
 let currentClass = 'gameplay';
@@ -489,8 +492,6 @@ let currentVideoEl = null;
 let slideFallbackTimer = null;
 const FALLBACK_DURATION = 8000;
 
-// Per-project calendar state (year + month for each project's calendar)
-// Keyed by "classId:projectId:type"
 let calState = {};
 
 // DOM
@@ -527,18 +528,37 @@ const MONTH_NAMES_LONG = ['January','February','March','April','May','June',
 function checkAuth() {
   if (sessionStorage.getItem('overview_admin_auth') === 'true') showDashboard();
 }
+
 loginBtn.addEventListener('click', doLogin);
 passwordInput.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
 
-function doLogin() {
-  if (passwordInput.value === ADMIN_PASSWORD) {
-    sessionStorage.setItem('overview_admin_auth', 'true');
-    loginError.textContent = '';
-    showDashboard();
-  } else {
-    loginError.textContent = '❌ Incorrect password.';
-    passwordInput.value = '';
-    passwordInput.focus();
+async function doLogin() {
+  if (!passwordInput.value) {
+    loginError.textContent = 'Please enter a password.';
+    return;
+  }
+
+  loginBtn.disabled = true;
+  const originalText = loginBtn.textContent;
+  loginBtn.textContent = 'Checking…';
+  loginError.textContent = '';
+
+  try {
+    const enteredHash = await sha256Hex(passwordInput.value);
+    if (enteredHash === ADMIN_PASSWORD_HASH) {
+      sessionStorage.setItem('overview_admin_auth', 'true');
+      loginError.textContent = '';
+      showDashboard();
+    } else {
+      loginError.textContent = '❌ Incorrect password.';
+      passwordInput.value = '';
+      passwordInput.focus();
+    }
+  } catch (e) {
+    loginError.textContent = '⚠️ Browser error: ' + e.message + ' (HTTPS required)';
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = originalText;
   }
 }
 
@@ -900,6 +920,7 @@ function renderProjectsGrid() {
   allProjects.sort((a, b) => a.projectName.localeCompare(b.projectName));
 
   projectsGrid.innerHTML = allProjects.map(p => renderProjectCard(p)).join('');
+  renderCalendars();
 }
 
 function renderProjectCard(p) {
@@ -910,7 +931,6 @@ function renderProjectCard(p) {
     ? '<span class="pill pill-advanced">💻 Advanced</span>'
     : '<span class="pill pill-gameplay">🎮 Gameplay</span>';
 
-  // Gather screencasts (team-wide) and journals (per student)
   const scs = p.group.screencasts || {};
   const scEntries = Object.entries(scs).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
 
@@ -923,12 +943,10 @@ function renderProjectCard(p) {
   });
   journalsAll.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-  // Calendar ID prefixes (unique per card + type)
   const calKey = p.classId + ':' + p.projectId;
   const scCalKey = calKey + ':sc';
   const jnCalKey = calKey + ':jn';
 
-  // Init calendar state if not present
   const now = new Date();
   if (!calState[scCalKey]) calState[scCalKey] = { year: now.getFullYear(), monthIdx: now.getMonth() };
   if (!calState[jnCalKey]) calState[jnCalKey] = { year: now.getFullYear(), monthIdx: now.getMonth() };
@@ -968,7 +986,7 @@ function renderProjectCard(p) {
           ${scEntries.length === 0
             ? '<div class="links-none">No screencasts yet</div>'
             : scEntries.slice(0, 3).map(([id, sc]) => linkRowSC(sc)).join('') +
-              (scEntries.length > 3 ? `<div class="links-none" style="font-style:normal;">+${scEntries.length - 3} more below in the calendar</div>` : '')
+              (scEntries.length > 3 ? `<div class="links-none" style="font-style:normal;">+${scEntries.length - 3} more in the calendar</div>` : '')
           }
         </div>
       </div>
@@ -988,7 +1006,7 @@ function renderProjectCard(p) {
           ${journalsAll.length === 0
             ? '<div class="links-none">No journals uploaded</div>'
             : journalsAll.slice(0, 3).map(jn => linkRowJN(jn)).join('') +
-              (journalsAll.length > 3 ? `<div class="links-none" style="font-style:normal;">+${journalsAll.length - 3} more below in the calendar</div>` : '')
+              (journalsAll.length > 3 ? `<div class="links-none" style="font-style:normal;">+${journalsAll.length - 3} more in the calendar</div>` : '')
           }
         </div>
       </div>
@@ -1021,7 +1039,7 @@ function linkRowJN(jn) {
   const dateStr = d ? d.getDate() + ' ' + MONTH_NAMES[d.getMonth()] : '—';
   return `
     <a class="link-row jn" href="${escapeHtml(jn.url)}" target="_blank" title="${escapeHtml(jn.title || '')}">
-      <span class="date">${dateStr}</span>
+      <span class="date">${escapeHtml(dateStr)}</span>
       <span class="who">${escapeHtml(shortStudent(jn.studentNum))}</span>
       <span class="title">${escapeHtml(jn.title || 'Journal')}</span>
       <span class="open">Open ↗</span>
@@ -1031,21 +1049,17 @@ function linkRowJN(jn) {
 
 // ═══════════════════════════════════════════════════════════
 //  CALENDAR RENDERING
-//  Called after grid renders so each card's calendar builds itself.
 // ═══════════════════════════════════════════════════════════
 function renderCalendars() {
-  // Walk through all project cards and populate the two calendars
   allProjects.forEach(p => {
     const calKey = p.classId + ':' + p.projectId;
     const scCalKey = calKey + ':sc';
     const jnCalKey = calKey + ':jn';
 
-    // Screencasts
     const scs = p.group.screencasts || {};
     const scItems = Object.values(scs);
     renderMiniCalendar(scCalKey, scItems, ['sc']);
 
-    // Journals (all students' combined)
     const jnItems = [];
     const journalsByStudent = p.group.journals || {};
     Object.entries(journalsByStudent).forEach(([studentNum, jns]) => {
@@ -1070,7 +1084,6 @@ function renderMiniCalendar(calKey, items, dotTypes) {
   let startOffset = firstDay.getDay() - 1;
   if (startOffset < 0) startOffset = 6;
 
-  // Bucket items by day
   const byDay = {};
   items.forEach(item => {
     if (!item.timestamp) return;
@@ -1099,10 +1112,10 @@ function renderMiniCalendar(calKey, items, dotTypes) {
     let dotsHtml = '';
     if (dayItems.length > 0) {
       dotsHtml = '<div class="cal-dots">';
-      // show up to 3 dots
       const shown = dayItems.slice(0, 3);
+      const dotClass = dotTypes[0] === 'jn' ? 'jn' : 'sc';
       shown.forEach(() => {
-        dotsHtml += '<div class="cal-dot sc"></div>';
+        dotsHtml += `<div class="cal-dot ${dotClass}"></div>`;
       });
       if (dayItems.length > 3) {
         dotsHtml += `<span style="font-size:0.55rem; color:#64748b; font-weight:700;">+${dayItems.length - 3}</span>`;
@@ -1124,7 +1137,6 @@ window.calNav = function(calKey, delta) {
   if (state.monthIdx < 0) { state.monthIdx = 11; state.year--; }
   if (state.monthIdx > 11) { state.monthIdx = 0; state.year++; }
 
-  // Determine which project this calendar belongs to
   const parts = calKey.split(':');
   const classId = parts[0];
   const projectId = parts[1];
@@ -1213,18 +1225,6 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-
-// ═══════════════════════════════════════════════════════════
-//  PATCH: after renderProjectsGrid, render calendars
-// ═══════════════════════════════════════════════════════════
-const _origRenderProjectsGrid = renderProjectsGrid;
-renderProjectsGrid = function() {
-  _origRenderProjectsGrid();
-  renderCalendars();
-};
-
-// Also refresh after class switch
-const _origShowDashboard = showDashboard;
 
 // ═══════════════════════════════════════════════════════════
 //  INIT
