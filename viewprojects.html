@@ -176,10 +176,10 @@
     /* PROJECT CARDS GRID */
     .projects-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
       gap: 1.2rem;
     }
-    @media (max-width: 960px) { .projects-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1000px) { .projects-grid { grid-template-columns: 1fr; } }
 
     .project-card {
       background: white; border-radius: 22px; padding: 1.5rem;
@@ -227,8 +227,8 @@
       color: #0b2b4f; font-size: 0.88rem;
     }
 
-    /* MINI CALENDAR */
-    .pc-section { margin-bottom: 1rem; }
+    /* SECTIONS */
+    .pc-section { margin-bottom: 1.2rem; }
     .pc-section:last-child { margin-bottom: 0; }
     .pc-section-title {
       font-size: 0.78rem; font-weight: 700;
@@ -241,16 +241,51 @@
       border-radius: 20px; font-size: 0.7rem; font-weight: 700;
     }
 
+    /* STUDENT JOURNAL BLOCK */
+    .student-journal {
+      background: #fbfdff;
+      border: 1.5px solid #dbeafe;
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .student-journal:last-child { margin-bottom: 0; }
+    .student-journal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 0.6rem; margin-bottom: 0.6rem; flex-wrap: wrap;
+    }
+    .student-name {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-weight: 700; color: #1e2e44; font-size: 0.88rem;
+      font-family: 'Courier New', monospace;
+    }
+    .student-name .you-badge {
+      background: #dbeafe; color: #1e40af;
+      font-size: 0.65rem; padding: 0.15rem 0.5rem;
+      border-radius: 20px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.3px;
+      font-family: 'Inter', sans-serif;
+    }
+    .student-journal-count {
+      font-size: 0.72rem; font-weight: 700;
+      background: #e9f0f7; color: #3d5b7a;
+      padding: 0.2rem 0.6rem; border-radius: 20px;
+    }
+    .student-journal-count.zero {
+      background: #fee2e2; color: #b91c1c;
+    }
+
+    /* MINI CALENDAR */
     .cal-header {
       display: flex; justify-content: space-between;
       align-items: center; margin-bottom: 0.4rem;
     }
-    .cal-month { font-size: 0.9rem; font-weight: 700; color: #1e2e44; }
+    .cal-month { font-size: 0.85rem; font-weight: 700; color: #1e2e44; }
     .cal-nav { display: flex; gap: 0.3rem; }
     .cal-nav button {
-      background: #eef2f7; border: none; padding: 0.25rem 0.65rem;
+      background: #eef2f7; border: none; padding: 0.2rem 0.55rem;
       border-radius: 20px; cursor: pointer; font-weight: 700;
-      font-family: inherit; font-size: 0.75rem; color: #1e2e44;
+      font-family: inherit; font-size: 0.7rem; color: #1e2e44;
       transition: background 0.15s;
     }
     .cal-nav button:hover { background: #dde6f0; }
@@ -265,16 +300,16 @@
     }
     .cal-day {
       background: white; border-radius: 6px;
-      min-height: 38px; padding: 0.25rem 0.15rem;
+      min-height: 36px; padding: 0.25rem 0.15rem;
       display: flex; flex-direction: column;
       align-items: center; justify-content: flex-start;
-      font-size: 0.72rem; color: #1f2a3a;
+      font-size: 0.7rem; color: #1f2a3a;
       border: 1.5px solid transparent;
       position: relative;
     }
     .cal-day.empty-day { background: #f8fafc; opacity: 0.3; }
     .cal-day.today { border-color: #f59e0b; background: #fffbeb; }
-    .cal-day .cal-num { font-weight: 600; font-size: 0.7rem; line-height: 1; }
+    .cal-day .cal-num { font-weight: 600; font-size: 0.68rem; line-height: 1; }
 
     .cal-dots {
       display: flex; gap: 2px; margin-top: 2px;
@@ -287,8 +322,8 @@
     .cal-dot.jn { background: #1e4c7a; }
 
     .cal-legend {
-      display: flex; gap: 0.8rem; margin-top: 0.5rem;
-      font-size: 0.7rem; color: #64748b; flex-wrap: wrap;
+      display: flex; gap: 0.8rem; margin-top: 0.4rem;
+      font-size: 0.68rem; color: #64748b; flex-wrap: wrap;
     }
     .cal-legend-item { display: flex; align-items: center; gap: 0.25rem; }
     .cal-legend-swatch {
@@ -304,8 +339,8 @@
     }
     .link-row {
       display: flex; align-items: center; gap: 0.5rem;
-      font-size: 0.82rem; padding: 0.4rem 0.6rem;
-      background: #f8fafc; border-radius: 10px;
+      font-size: 0.8rem; padding: 0.35rem 0.55rem;
+      background: white; border-radius: 10px;
       border-left: 3px solid #1f7a3e;
       text-decoration: none; color: #1e2e44;
       transition: background 0.15s;
@@ -313,24 +348,22 @@
     .link-row.jn { border-left-color: #1e4c7a; }
     .link-row:hover { background: #eef2f7; }
     .link-row .date {
-      font-size: 0.68rem; color: #94a3b8; font-weight: 700;
+      font-size: 0.65rem; color: #94a3b8; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0;
-      min-width: 45px;
-    }
-    .link-row .who {
-      font-size: 0.68rem; color: #3d5b7a;
-      background: #e9f0f7; padding: 0.1rem 0.45rem;
-      border-radius: 20px; font-weight: 700; flex-shrink: 0;
+      min-width: 42px;
     }
     .link-row .title {
       font-weight: 600; flex: 1;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .link-row .open { color: #1e4c7a; font-weight: 700; flex-shrink: 0; }
+    .link-row .open { color: #1e4c7a; font-weight: 700; flex-shrink: 0; font-size: 0.75rem; }
 
     .links-none {
-      color: #94a3b8; font-size: 0.8rem; font-style: italic;
-      text-align: center; padding: 0.4rem;
+      color: #94a3b8; font-size: 0.78rem; font-style: italic;
+      text-align: center; padding: 0.35rem;
+    }
+    .links-none.missing {
+      color: #b91c1c; font-weight: 600; font-style: normal;
     }
 
     .gh-btn {
@@ -379,7 +412,7 @@
     <header class="page-head">
       <div>
         <h1>🎬 Projects Overview</h1>
-        <p>Screencast wall + submission timelines</p>
+        <p>Screencast wall + per-student journal timelines</p>
       </div>
       <button class="btn btn-secondary btn-sm" id="logoutBtn">Log out</button>
     </header>
@@ -442,8 +475,6 @@
 // ═══════════════════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════════════════
-
-// SHA-256 hash of the admin password
 const ADMIN_PASSWORD_HASH = "6ce26e8cbed41418dc5c19f54c99d869ab95848438df0ab6d259bb2b0668e897";
 
 const firebaseConfig = {
@@ -926,30 +957,34 @@ function renderProjectsGrid() {
 function renderProjectCard(p) {
   const s1 = p.selection.student1 || '—';
   const s2 = p.selection.student2 || '—';
+  const s1Lower = String(s1).trim().toLowerCase();
+  const s2Lower = String(s2).trim().toLowerCase();
 
   const classPill = p.classId === 'advanced'
     ? '<span class="pill pill-advanced">💻 Advanced</span>'
     : '<span class="pill pill-gameplay">🎮 Gameplay</span>';
 
+  // Screencasts (team-wide)
   const scs = p.group.screencasts || {};
   const scEntries = Object.entries(scs).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
 
-  const journalsAll = [];
+  // Journals per student
   const journalsByStudent = p.group.journals || {};
-  Object.entries(journalsByStudent).forEach(([studentNum, jns]) => {
-    Object.entries(jns || {}).forEach(([id, jn]) => {
-      journalsAll.push({ ...jn, studentNum });
-    });
-  });
-  journalsAll.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  const j1 = journalsByStudent[s1Lower] || {};
+  const j2 = journalsByStudent[s2Lower] || {};
+  const j1Entries = Object.entries(j1).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+  const j2Entries = Object.entries(j2).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
 
-  const calKey = p.classId + ':' + p.projectId;
-  const scCalKey = calKey + ':sc';
-  const jnCalKey = calKey + ':jn';
+  // Calendar keys
+  const calBase = p.classId + ':' + p.projectId;
+  const scCalKey = calBase + ':sc';
+  const j1CalKey = calBase + ':j1';
+  const j2CalKey = calBase + ':j2';
 
   const now = new Date();
   if (!calState[scCalKey]) calState[scCalKey] = { year: now.getFullYear(), monthIdx: now.getMonth() };
-  if (!calState[jnCalKey]) calState[jnCalKey] = { year: now.getFullYear(), monthIdx: now.getMonth() };
+  if (!calState[j1CalKey]) calState[j1CalKey] = { year: now.getFullYear(), monthIdx: now.getMonth() };
+  if (!calState[j2CalKey]) calState[j2CalKey] = { year: now.getFullYear(), monthIdx: now.getMonth() };
 
   return `
     <div class="project-card">
@@ -966,9 +1001,9 @@ function renderProjectCard(p) {
         <div class="pc-student"><span class="icon">👤</span><span class="num">${escapeHtml(studentEmail(s2))}</span></div>
       </div>
 
-      <!-- SCREENCASTS -->
+      <!-- TEAM SCREENCASTS -->
       <div class="pc-section">
-        <div class="pc-section-title">🎬 Screencasts <span class="count">${scEntries.length}</span></div>
+        <div class="pc-section-title">🎬 Team screencasts <span class="count">${scEntries.length}</span></div>
         <div class="cal-header">
           <div class="cal-month" id="${scCalKey}-label">—</div>
           <div class="cal-nav">
@@ -978,8 +1013,7 @@ function renderProjectCard(p) {
         </div>
         <div class="cal-grid" id="${scCalKey}-grid"></div>
         <div class="cal-legend">
-          <div class="cal-legend-item"><div class="cal-legend-swatch sc"></div>Screencast</div>
-          <div class="cal-legend-item"><div class="cal-legend-swatch jn"></div>Journal</div>
+          <div class="cal-legend-item"><div class="cal-legend-swatch sc"></div>Screencast uploaded</div>
           <div class="cal-legend-item"><div class="cal-legend-swatch today"></div>Today</div>
         </div>
         <div class="links-strip">
@@ -991,23 +1025,61 @@ function renderProjectCard(p) {
         </div>
       </div>
 
-      <!-- JOURNALS -->
+      <!-- STUDENT 1 JOURNALS -->
       <div class="pc-section">
-        <div class="pc-section-title">📄 Journals <span class="count">${journalsAll.length}</span></div>
-        <div class="cal-header">
-          <div class="cal-month" id="${jnCalKey}-label">—</div>
-          <div class="cal-nav">
-            <button onclick="calNav('${jnCalKey}', -1)">←</button>
-            <button onclick="calNav('${jnCalKey}', 1)">→</button>
+        <div class="pc-section-title">📄 Individual journals</div>
+
+        <div class="student-journal">
+          <div class="student-journal-head">
+            <div class="student-name">
+              👤 ${escapeHtml(studentEmail(s1))}
+            </div>
+            <span class="student-journal-count ${j1Entries.length === 0 ? 'zero' : ''}">
+              ${j1Entries.length} journal${j1Entries.length === 1 ? '' : 's'}
+            </span>
+          </div>
+          <div class="cal-header">
+            <div class="cal-month" id="${j1CalKey}-label">—</div>
+            <div class="cal-nav">
+              <button onclick="calNav('${j1CalKey}', -1)">←</button>
+              <button onclick="calNav('${j1CalKey}', 1)">→</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="${j1CalKey}-grid"></div>
+          <div class="links-strip">
+            ${j1Entries.length === 0
+              ? '<div class="links-none missing">⚠️ No journals submitted by this student</div>'
+              : j1Entries.slice(0, 3).map(([id, jn]) => linkRowJN(jn)).join('') +
+                (j1Entries.length > 3 ? `<div class="links-none" style="font-style:normal;">+${j1Entries.length - 3} more in the calendar</div>` : '')
+            }
           </div>
         </div>
-        <div class="cal-grid" id="${jnCalKey}-grid"></div>
-        <div class="links-strip">
-          ${journalsAll.length === 0
-            ? '<div class="links-none">No journals uploaded</div>'
-            : journalsAll.slice(0, 3).map(jn => linkRowJN(jn)).join('') +
-              (journalsAll.length > 3 ? `<div class="links-none" style="font-style:normal;">+${journalsAll.length - 3} more in the calendar</div>` : '')
-          }
+
+        <!-- STUDENT 2 JOURNALS -->
+        <div class="student-journal">
+          <div class="student-journal-head">
+            <div class="student-name">
+              👤 ${escapeHtml(studentEmail(s2))}
+            </div>
+            <span class="student-journal-count ${j2Entries.length === 0 ? 'zero' : ''}">
+              ${j2Entries.length} journal${j2Entries.length === 1 ? '' : 's'}
+            </span>
+          </div>
+          <div class="cal-header">
+            <div class="cal-month" id="${j2CalKey}-label">—</div>
+            <div class="cal-nav">
+              <button onclick="calNav('${j2CalKey}', -1)">←</button>
+              <button onclick="calNav('${j2CalKey}', 1)">→</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="${j2CalKey}-grid"></div>
+          <div class="links-strip">
+            ${j2Entries.length === 0
+              ? '<div class="links-none missing">⚠️ No journals submitted by this student</div>'
+              : j2Entries.slice(0, 3).map(([id, jn]) => linkRowJN(jn)).join('') +
+                (j2Entries.length > 3 ? `<div class="links-none" style="font-style:normal;">+${j2Entries.length - 3} more in the calendar</div>` : '')
+            }
+          </div>
         </div>
       </div>
 
@@ -1040,7 +1112,6 @@ function linkRowJN(jn) {
   return `
     <a class="link-row jn" href="${escapeHtml(jn.url)}" target="_blank" title="${escapeHtml(jn.title || '')}">
       <span class="date">${escapeHtml(dateStr)}</span>
-      <span class="who">${escapeHtml(shortStudent(jn.studentNum))}</span>
       <span class="title">${escapeHtml(jn.title || 'Journal')}</span>
       <span class="open">Open ↗</span>
     </a>
@@ -1052,24 +1123,25 @@ function linkRowJN(jn) {
 // ═══════════════════════════════════════════════════════════
 function renderCalendars() {
   allProjects.forEach(p => {
-    const calKey = p.classId + ':' + p.projectId;
-    const scCalKey = calKey + ':sc';
-    const jnCalKey = calKey + ':jn';
+    const calBase = p.classId + ':' + p.projectId;
+    const s1Lower = String(p.selection.student1 || '').trim().toLowerCase();
+    const s2Lower = String(p.selection.student2 || '').trim().toLowerCase();
 
-    const scs = p.group.screencasts || {};
-    const scItems = Object.values(scs);
-    renderMiniCalendar(scCalKey, scItems, ['sc']);
+    // Screencasts (team)
+    const scItems = Object.values(p.group.screencasts || {});
+    renderMiniCalendar(calBase + ':sc', scItems, 'sc');
 
-    const jnItems = [];
-    const journalsByStudent = p.group.journals || {};
-    Object.entries(journalsByStudent).forEach(([studentNum, jns]) => {
-      Object.values(jns || {}).forEach(jn => jnItems.push({ ...jn, studentNum }));
-    });
-    renderMiniCalendar(jnCalKey, jnItems, ['jn']);
+    // Journals — student 1
+    const j1Items = Object.values((p.group.journals || {})[s1Lower] || {});
+    renderMiniCalendar(calBase + ':j1', j1Items, 'jn');
+
+    // Journals — student 2
+    const j2Items = Object.values((p.group.journals || {})[s2Lower] || {});
+    renderMiniCalendar(calBase + ':j2', j2Items, 'jn');
   });
 }
 
-function renderMiniCalendar(calKey, items, dotTypes) {
+function renderMiniCalendar(calKey, items, dotClass) {
   const state = calState[calKey];
   if (!state) return;
 
@@ -1113,7 +1185,6 @@ function renderMiniCalendar(calKey, items, dotTypes) {
     if (dayItems.length > 0) {
       dotsHtml = '<div class="cal-dots">';
       const shown = dayItems.slice(0, 3);
-      const dotClass = dotTypes[0] === 'jn' ? 'jn' : 'sc';
       shown.forEach(() => {
         dotsHtml += `<div class="cal-dot ${dotClass}"></div>`;
       });
@@ -1145,16 +1216,18 @@ window.calNav = function(calKey, delta) {
   const p = allProjects.find(x => x.classId === classId && x.projectId === projectId);
   if (!p) return;
 
+  const s1Lower = String(p.selection.student1 || '').trim().toLowerCase();
+  const s2Lower = String(p.selection.student2 || '').trim().toLowerCase();
+
   if (type === 'sc') {
     const items = Object.values(p.group.screencasts || {});
-    renderMiniCalendar(calKey, items, ['sc']);
-  } else {
-    const jnItems = [];
-    const journalsByStudent = p.group.journals || {};
-    Object.entries(journalsByStudent).forEach(([studentNum, jns]) => {
-      Object.values(jns || {}).forEach(jn => jnItems.push({ ...jn, studentNum }));
-    });
-    renderMiniCalendar(calKey, jnItems, ['jn']);
+    renderMiniCalendar(calKey, items, 'sc');
+  } else if (type === 'j1') {
+    const items = Object.values((p.group.journals || {})[s1Lower] || {});
+    renderMiniCalendar(calKey, items, 'jn');
+  } else if (type === 'j2') {
+    const items = Object.values((p.group.journals || {})[s2Lower] || {});
+    renderMiniCalendar(calKey, items, 'jn');
   }
 };
 
@@ -1213,11 +1286,6 @@ function studentEmail(num) {
   const clean = String(num).trim();
   if (clean.includes('@')) return clean;
   return clean + '@setu.ie';
-}
-
-function shortStudent(num) {
-  if (!num) return '—';
-  return String(num).trim().slice(-6).toUpperCase();
 }
 
 function escapeHtml(s) {
