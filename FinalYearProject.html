@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Final Year Games Project · My Journal</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(145deg, #f3e8ff 0%, #e9eef3 100%);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+      color: #1f2a3a;
+    }
+    .container { max-width: 1050px; margin: 0 auto; }
+
+    /* LOGIN */
+    #loginView {
+      max-width: 440px; margin: 5rem auto; text-align: center;
+      background: white; padding: 2.5rem 2rem; border-radius: 26px;
+      box-shadow: 0 20px 40px -12px rgba(76,29,149,0.2);
+    }
+    #loginView .icon { font-size: 3rem; margin-bottom: 1rem; }
+    #loginView h2 { color: #4c1d95; margin-bottom: 0.4rem; font-size: 1.6rem; }
+    #loginView p { color: #5b7b9c; font-size: 0.92rem; margin-bottom: 1.8rem; }
+    #loginView input {
+      width: 100%; padding: 1rem 1.3rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-size: 1rem; font-family: inherit;
+      outline: none; margin-bottom: 0.9rem; text-align: center; letter-spacing: 1px;
+    }
+    #loginView input:focus { border-color: #6b21a8; box-shadow: 0 0 0 3px rgba(107,33,168,0.15); }
+
+    .btn {
+      background: #6b21a8; color: white; font-weight: 600; border: none;
+      padding: 1rem 2rem; border-radius: 60px; font-size: 1rem;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.15s, transform 0.1s;
+      box-shadow: 0 8px 16px -4px rgba(107,33,168,0.3);
+    }
+    .btn:hover { background: #4c1d95; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; pointer-events: none; }
+    .btn-secondary { background: #e2e8f0; color: #1e2e44; box-shadow: none; }
+    .btn-secondary:hover { background: #cfdae6; }
+    .btn-sm { padding: 0.5rem 1.2rem; font-size: 0.85rem; }
+    .btn-block { width: 100%; }
+    .error-msg { color: #b91c1c; margin-top: 0.5rem; font-size: 0.9rem;
+      min-height: 1.2rem; font-weight: 500; }
+
+    /* HEADER */
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    header h1 { font-size: 1.9rem; color: #4c1d95; }
+    header p { color: #6b21a8; margin-top: 0.2rem; font-size: 0.95rem; }
+
+    /* BANNER */
+    .banner {
+      background: linear-gradient(135deg, #4c1d95 0%, #6b21a8 100%);
+      color: white; border-radius: 24px; padding: 2rem; margin-bottom: 1.5rem;
+      position: relative; overflow: hidden;
+      box-shadow: 0 16px 32px -10px rgba(107,33,168,0.4);
+    }
+    .banner::after {
+      content: ""; position: absolute; right: -50px; top: -50px;
+      width: 200px; height: 200px; background: rgba(255,255,255,0.06); border-radius: 50%;
+    }
+    .banner-label {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.2px;
+      opacity: 0.75; font-weight: 600; margin-bottom: 0.5rem;
+    }
+    .banner-name { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    .banner-you {
+      display: inline-block; background: rgba(255,255,255,0.25);
+      font-size: 0.75rem; padding: 0.3rem 0.9rem; border-radius: 20px;
+      font-weight: 600; margin-top: 0.8rem;
+    }
+
+    /* CARDS */
+    .card {
+      background: white; border-radius: 22px; padding: 1.8rem;
+      box-shadow: 0 10px 26px -12px rgba(30,20,60,0.12);
+      margin-bottom: 1.2rem; border: 1px solid #f3e8ff;
+    }
+    .card h3 {
+      font-size: 1.15rem; color: #4c1d95; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .card h3 .count {
+      background: #f3e8ff; color: #6b21a8; font-size: 0.75rem;
+      padding: 0.15rem 0.6rem; border-radius: 20px; font-weight: 700;
+    }
+
+    /* BOOK UPLOAD ROW */
+    .book-upload-row {
+      display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center;
+      margin-bottom: 1rem; padding: 1rem;
+      background: #faf5ff; border-radius: 14px;
+      border: 1.5px dashed #d8b4fe;
+    }
+    .book-upload-row input[type="text"] {
+      flex: 1 1 200px; padding: 0.7rem 1rem;
+      border: 1.5px solid #e9d5ff; border-radius: 12px;
+      background: white; font-family: inherit; font-size: 0.9rem; outline: none;
+    }
+    .book-upload-row input[type="text"]:focus {
+      border-color: #6b21a8; box-shadow: 0 0 0 3px rgba(107,33,168,0.1);
+    }
+
+    /* BOOK */
+    .book-container {
+      background: linear-gradient(135deg, #f4ede0 0%, #e8dcc7 100%);
+      border-radius: 22px; padding: 1.5rem;
+      box-shadow:
+        0 20px 40px -14px rgba(80,50,20,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .book-title {
+      font-size: 1.1rem; font-weight: 700; color: #5c3d1e;
+      margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+      font-family: 'Georgia', serif; font-style: italic;
+    }
+    .book-viewer {
+      position: relative; perspective: 2000px;
+      background: #fdfaf5; border-radius: 12px; overflow: hidden;
+      box-shadow:
+        inset 0 0 30px rgba(120,90,50,0.15),
+        0 8px 20px rgba(80,50,20,0.15);
+      min-height: 400px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .book-page {
+      width: 100%; max-height: 600px; object-fit: contain;
+      display: block; cursor: zoom-in;
+    }
+    .book-empty {
+      padding: 3rem 2rem; text-align: center; color: #8b6f47;
+      font-family: 'Georgia', serif; font-style: italic;
+    }
+    .book-empty .icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+
+    .book-controls {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 1rem; gap: 1rem; flex-wrap: wrap;
+    }
+    .book-nav { display: flex; gap: 0.5rem; align-items: center; }
+    .book-nav button {
+      background: #8b6f47; color: white; border: none;
+      padding: 0.6rem 1.2rem; border-radius: 30px;
+      font-family: 'Georgia', serif; font-weight: 700; font-size: 0.9rem;
+      cursor: pointer; transition: background 0.15s, transform 0.1s;
+      box-shadow: 0 3px 8px rgba(80,50,20,0.2);
+    }
+    .book-nav button:hover { background: #6d5535; }
+    .book-nav button:active { transform: scale(0.96); }
+    .book-nav button:disabled { opacity: 0.35; pointer-events: none; }
+    .book-page-info {
+      font-family: 'Georgia', serif; color: #6d5535; font-size: 0.95rem;
+      font-weight: 600; text-align: center; min-width: 130px;
+    }
+    .book-page-title {
+      font-family: 'Georgia', serif; color: #5c3d1e; font-size: 0.9rem;
+      font-style: italic; text-align: center; margin-top: 0.3rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .book-strip {
+      display: flex; gap: 0.5rem; overflow-x: auto;
+      padding: 0.5rem 0.2rem; margin-top: 0.8rem;
+    }
+    .book-thumb {
+      flex-shrink: 0; width: 60px; height: 45px;
+      border-radius: 6px; overflow: hidden;
+      border: 2px solid transparent; cursor: pointer;
+      background: #d4c4ac; transition: all 0.15s; position: relative;
+    }
+    .book-thumb:hover { border-color: #8b6f47; }
+    .book-thumb.active { border-color: #5c3d1e; box-shadow: 0 0 0 2px #8b6f47; }
+    .book-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .book-thumb .num {
+      position: absolute; bottom: 1px; right: 2px;
+      background: rgba(92,61,30,0.85); color: white;
+      font-size: 0.6rem; font-weight: 700; padding: 0.05rem 0.3rem;
+      border-radius: 6px;
+    }
+
+    /* SCREENCASTS */
+    .input-row { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .input-row input {
+      flex: 1 1 200px; padding: 0.85rem 1.2rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-size: 0.95rem; font-family: inherit; outline: none;
+    }
+    .input-row input:focus { border-color: #6b21a8; box-shadow: 0 0 0 3px rgba(107,33,168,0.15); }
+
+    .screencast-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem; margin-top: 1.2rem;
+    }
+    .screencast-card {
+      background: #fbf8ff; border-radius: 16px; overflow: hidden;
+      border: 1px solid #f3e8ff; display: flex; flex-direction: column;
+    }
+    .thumb {
+      position: relative; width: 100%; aspect-ratio: 16/9;
+      background: #4c1d95; display: flex; align-items: center; justify-content: center;
+    }
+    .thumb video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+    .thumb-placeholder {
+      color: #c4b5fd; font-size: 0.9rem; text-align: center; padding: 1rem;
+    }
+    .sc-body { padding: 0.9rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+    .sc-title { font-weight: 600; color: #4c1d95; font-size: 0.95rem; word-break: break-word; }
+    .sc-meta { font-size: 0.75rem; color: #8ba0b8; }
+    .sc-actions { display: flex; gap: 0.4rem; margin-top: 0.4rem; flex-wrap: wrap; }
+    .chip {
+      display: inline-block; background: #f3e8ff; color: #6b21a8;
+      font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 20px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px;
+      text-decoration: none; cursor: pointer; border: none;
+    }
+    .chip:hover { background: #e9d5ff; }
+
+    /* CALENDARS */
+    .cal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.5rem; margin-top: 1.5rem;
+    }
+    .cal-month { font-size: 0.95rem; font-weight: 700; color: #4c1d95; }
+    .cal-nav { display: flex; gap: 0.3rem; }
+    .cal-nav button {
+      background: #f3e8ff; border: none; padding: 0.3rem 0.7rem;
+      border-radius: 20px; cursor: pointer; font-weight: 700;
+      font-family: inherit; font-size: 0.75rem; color: #6b21a8;
+      transition: background 0.15s;
+    }
+    .cal-nav button:hover { background: #e9d5ff; }
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 2px; background: #f3e8ff; border-radius: 10px; padding: 4px;
+    }
+    .cal-head {
+      text-align: center; font-size: 0.6rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.4px;
+      color: #a78bfa; padding: 0.25rem 0;
+    }
+    .cal-day {
+      background: white; border-radius: 6px; min-height: 36px; padding: 0.25rem 0.15rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      font-size: 0.7rem; color: #1f2a3a; border: 1.5px solid transparent; position: relative;
+    }
+    .cal-day.empty-day { background: #faf5ff; opacity: 0.3; }
+    .cal-day.today { border-color: #f59e0b; background: #fffbeb; }
+    .cal-day .cal-num { font-weight: 600; font-size: 0.68rem; line-height: 1; }
+    .cal-dots { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; justify-content: center; }
+    .cal-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .cal-dot.pg { background: #6b21a8; }
+    .cal-dot.sc { background: #1f7a3e; }
+    .cal-legend {
+      display: flex; gap: 0.8rem; margin-top: 0.5rem;
+      font-size: 0.7rem; color: #64748b; flex-wrap: wrap;
+    }
+    .cal-legend-item { display: flex; align-items: center; gap: 0.25rem; }
+    .cal-legend-swatch { width: 8px; height: 8px; border-radius: 50%; }
+    .cal-legend-swatch.pg { background: #6b21a8; }
+    .cal-legend-swatch.sc { background: #1f7a3e; }
+    .cal-legend-swatch.today { background: #fffbeb; border: 1.5px solid #f59e0b; }
+
+    /* GITHUB */
+    .github-row { display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
+    .github-row input {
+      flex: 1 1 300px; padding: 0.9rem 1.2rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.95rem; outline: none;
+    }
+    .github-row input:focus { border-color: #6b21a8; box-shadow: 0 0 0 3px rgba(107,33,168,0.15); }
+    .github-link { color: #6b21a8; text-decoration: none; font-weight: 600; }
+    .github-link:hover { text-decoration: underline; }
+
+    /* MODALS */
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(10,20,35,0.65);
+      display: none; align-items: center; justify-content: center;
+      padding: 1.5rem; z-index: 999;
+    }
+    .modal-bg.show { display: flex; }
+    .modal {
+      background: white; border-radius: 22px; padding: 2rem;
+      max-width: 480px; width: 100%; text-align: center;
+      box-shadow: 0 30px 60px -20px rgba(0,20,40,0.4);
+    }
+    .modal h3 { color: #4c1d95; font-size: 1.4rem; margin-bottom: 0.5rem; }
+    .modal p { color: #5b7b9c; margin-bottom: 1.5rem; font-size: 0.95rem; }
+    .modal input {
+      width: 100%; padding: 0.95rem 1.2rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 1rem;
+      outline: none; margin-bottom: 0.9rem; text-align: center; letter-spacing: 1.5px;
+    }
+    .modal input:focus { border-color: #6b21a8; box-shadow: 0 0 0 3px rgba(107,33,168,0.15); }
+    #pnInput { text-align: left; letter-spacing: normal; }
+
+    /* Image zoom */
+    .modal-bg.zoom { background: rgba(0,0,0,0.92); cursor: zoom-out; }
+    .modal-bg.zoom .modal { background: transparent; box-shadow: none; max-width: 95vw; padding: 0; }
+    .modal-bg.zoom img { max-width: 100%; max-height: 90vh; border-radius: 8px; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOGIN                                              -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div id="loginView">
+    <div class="icon">📖</div>
+    <h2>Final Year Games Project</h2>
+    <p id="loginSubtitle">Enter your student number</p>
+    <input type="text" id="studentNumber" placeholder="Student number (e.g. c00295678)" autocomplete="off">
+    <input type="password" id="userPassword" placeholder="Password" autocomplete="off" style="display:none;">
+    <button class="btn btn-block" id="loginBtn">Continue</button>
+    <div class="error-msg" id="loginError"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- DASHBOARD                                          -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div id="dashboardView" class="hidden">
+
+    <header>
+      <div>
+        <h1 id="greeting">Welcome</h1>
+        <p id="classSubtitle">Final Year Games Project</p>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="logoutBtn">Log out</button>
+    </header>
+
+    <div class="banner">
+      <div class="banner-label">My Project</div>
+      <div class="banner-name" id="projectName">—</div>
+      <div class="banner-you" id="loggedInAs">—</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- HANDWRITTEN JOURNAL BOOK                      -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="card">
+      <h3>📖 My handwritten journal <span class="count" id="bookCount">0 pages</span></h3>
+      <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
+        <strong>Private to you.</strong> Paste a link to a photo of your handwritten journal page
+        (OneDrive / Google Drive / any image URL). They appear in a book you can flip through.
+      </p>
+
+      <!-- Link input -->
+      <div class="book-upload-row">
+        <input type="text" id="bookTitle" placeholder="Page title (e.g. Week 3 — Combat)">
+        <input type="text" id="bookImageUrl" placeholder="Image link (https://…)" style="flex:2 1 300px;">
+        <button class="btn btn-sm" id="bookAddBtn">➕ Add page</button>
+      </div>
+      <div id="bookMsg" style="font-size:0.85rem; margin-bottom:1rem; min-height:1.2rem;"></div>
+
+      <!-- Book -->
+      <div class="book-container">
+        <div class="book-title">📖 My Development Journal</div>
+        <div class="book-viewer" id="bookViewer">
+          <div class="book-empty">
+            <span class="icon">📓</span>
+            No pages yet. Paste a link above to add your first handwritten journal page.
+          </div>
+        </div>
+        <div class="book-controls">
+          <div class="book-nav">
+            <button id="bookPrevBtn" disabled>← Previous</button>
+            <button id="bookNextBtn" disabled>Next →</button>
+          </div>
+          <div class="book-page-info" id="bookPageInfo">0 / 0</div>
+          <div class="book-nav">
+            <button id="bookDeleteBtn" disabled style="background:#b91c1c;">🗑️ Delete page</button>
+          </div>
+        </div>
+        <div class="book-page-title" id="bookPageTitle"></div>
+        <div class="book-strip" id="bookStrip"></div>
+      </div>
+
+      <!-- Book calendar -->
+      <div class="cal-header">
+        <div class="cal-month" id="bookCalMonth">—</div>
+        <div class="cal-nav">
+          <button onclick="bookCalPrev()">← Prev</button>
+          <button onclick="bookCalNext()">Next →</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="bookCalGrid"></div>
+      <div class="cal-legend">
+        <div class="cal-legend-item"><div class="cal-legend-swatch pg"></div>Journal page added</div>
+        <div class="cal-legend-item"><div class="cal-legend-swatch today"></div>Today</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SCREENCASTS                                    -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="card">
+      <h3>🎬 My screencasts <span class="count" id="scCount">0</span></h3>
+      <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
+        Paste a public video link (OneDrive / YouTube / Vimeo).
+      </p>
+      <div class="input-row">
+        <input type="text" id="scTitle" placeholder="Short title (e.g. Milestone 1 demo)">
+        <input type="text" id="scUrl" placeholder="Video link (https://…)" style="flex:2 1 400px;">
+        <button class="btn btn-sm" id="addScBtn">➕ Add screencast</button>
+      </div>
+      <div id="scList" class="screencast-grid"></div>
+      <div id="scEmpty" style="padding:1.5rem; text-align:center; color:#8ba0b8; font-style:italic;">
+        No screencasts yet.
+      </div>
+
+      <!-- Screencast calendar -->
+      <div class="cal-header">
+        <div class="cal-month" id="scCalMonth">—</div>
+        <div class="cal-nav">
+          <button onclick="scCalPrev()">← Prev</button>
+          <button onclick="scCalNext()">Next →</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="scCalGrid"></div>
+      <div class="cal-legend">
+        <div class="cal-legend-item"><div class="cal-legend-swatch sc"></div>Screencast added</div>
+        <div class="cal-legend-item"><div class="cal-legend-swatch today"></div>Today</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- GITHUB                                         -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="card">
+      <h3>🐙 GitHub repository</h3>
+      <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
+        Link to your game's GitHub repository.
+      </p>
+      <div class="github-row">
+        <input type="url" id="githubInput" placeholder="https://github.com/username/repo">
+        <button class="btn btn-sm" id="saveGhBtn">Save</button>
+      </div>
+      <div id="ghStatus" style="margin-top:0.8rem; font-size:0.9rem;"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- CHANGE PASSWORD MODAL                              -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="pwdModal" class="modal-bg">
+  <div class="modal">
+    <h3>🔐 Change your password</h3>
+    <p>Your password is <strong>123456</strong>. Set a new one before continuing.</p>
+    <input type="password" id="newPwd" placeholder="New password (min 6 chars)">
+    <input type="password" id="newPwd2" placeholder="Repeat new password">
+    <button class="btn btn-block" id="savePwdBtn">Save password &amp; continue</button>
+    <div class="error-msg" id="pwdError"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- NAME PROJECT MODAL                                 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="pnModal" class="modal-bg">
+  <div class="modal">
+    <h3>📖 Name your project</h3>
+    <p>You're starting <strong id="pnCurrentName">Project Blank 1</strong>.
+       Give it a real title — this shows on your journal, screencasts, and in the admin dashboard.</p>
+    <input type="text" id="pnInput" placeholder="e.g. Space Shooter Deluxe" maxlength="60">
+    <button class="btn btn-block" id="pnSaveBtn">Save project name</button>
+    <div class="error-msg" id="pnError"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- IMAGE ZOOM MODAL                                   -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="zoomModal" class="modal-bg zoom">
+  <div class="modal">
+    <img id="zoomImg" src="" alt="">
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
+  authDomain: "ai-project-tool.firebaseapp.com",
+  databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ai-project-tool",
+  storageBucket: "ai-project-tool.firebasestorage.app",
+  messagingSenderId: "658331100512",
+  appId: "1:658331100512:web:72208dc0c1561b95bcaa05",
+  measurementId: "G-R36B3T9FLW"
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ═══════════════════════════════════════════════════════════
+//  DOM
+// ═══════════════════════════════════════════════════════════
+const loginView = document.getElementById('loginView');
+const dashboardView = document.getElementById('dashboardView');
+const studentNumberInput = document.getElementById('studentNumber');
+const userPasswordInput = document.getElementById('userPassword');
+const loginBtn = document.getElementById('loginBtn');
+const loginSubtitle = document.getElementById('loginSubtitle');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+const greeting = document.getElementById('greeting');
+const classSubtitle = document.getElementById('classSubtitle');
+const projectNameEl = document.getElementById('projectName');
+const loggedInAs = document.getElementById('loggedInAs');
+
+const bookCount = document.getElementById('bookCount');
+const bookViewer = document.getElementById('bookViewer');
+const bookPrevBtn = document.getElementById('bookPrevBtn');
+const bookNextBtn = document.getElementById('bookNextBtn');
+const bookDeleteBtn = document.getElementById('bookDeleteBtn');
+const bookPageInfo = document.getElementById('bookPageInfo');
+const bookPageTitle = document.getElementById('bookPageTitle');
+const bookStrip = document.getElementById('bookStrip');
+const bookTitle = document.getElementById('bookTitle');
+const bookImageUrl = document.getElementById('bookImageUrl');
+const bookAddBtn = document.getElementById('bookAddBtn');
+const bookMsg = document.getElementById('bookMsg');
+
+const scTitle = document.getElementById('scTitle');
+const scUrl = document.getElementById('scUrl');
+const addScBtn = document.getElementById('addScBtn');
+const scList = document.getElementById('scList');
+const scEmpty = document.getElementById('scEmpty');
+const scCount = document.getElementById('scCount');
+
+const githubInput = document.getElementById('githubInput');
+const saveGhBtn = document.getElementById('saveGhBtn');
+const ghStatus = document.getElementById('ghStatus');
+
+const pwdModal = document.getElementById('pwdModal');
+const newPwd = document.getElementById('newPwd');
+const newPwd2 = document.getElementById('newPwd2');
+const savePwdBtn = document.getElementById('savePwdBtn');
+const pwdError = document.getElementById('pwdError');
+
+const pnModal = document.getElementById('pnModal');
+const pnCurrentName = document.getElementById('pnCurrentName');
+const pnInput = document.getElementById('pnInput');
+const pnSaveBtn = document.getElementById('pnSaveBtn');
+const pnError = document.getElementById('pnError');
+
+const zoomModal = document.getElementById('zoomModal');
+const zoomImg = document.getElementById('zoomImg');
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let currentGroup = null;
+let currentStudent = null;
+let currentStudentDisplay = null;
+let groupListener = null;
+let pendingGroup = null;
+let expectingPassword = false;
+
+let bookPages = [];
+let bookIndex = 0;
+
+let bookCalYear, bookCalMonthIdx;
+let bookCalData = {};
+
+let scCalYear, scCalMonthIdx;
+let scCalData = {};
+
+(function initCal() {
+  const now = new Date();
+  bookCalYear = now.getFullYear();
+  bookCalMonthIdx = now.getMonth();
+  scCalYear = now.getFullYear();
+  scCalMonthIdx = now.getMonth();
+})();
+
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_NAMES_LONG = ['January','February','March','April','May','June',
+                          'July','August','September','October','November','December'];
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;
