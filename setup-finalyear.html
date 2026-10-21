@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup · Final Year Games Project</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(145deg, #f3e8ff 0%, #e9eef3 100%);
+      min-height: 100vh; padding: 2rem 1.5rem; color: #1f2a3a; }
+    .container { max-width: 800px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 2rem; }
+    h1 { font-size: 2rem; color: #4c1d95; margin-bottom: 0.4rem; }
+    p.sub { color: #6b21a8; }
+    .card { background: white; border-radius: 22px; padding: 2rem;
+      box-shadow: 0 20px 40px -14px rgba(0,30,60,0.15);
+      margin-bottom: 1.5rem; }
+    .student-list { display: flex; flex-direction: column; gap: 0.4rem;
+      max-height: 400px; overflow-y: auto; padding: 0.8rem;
+      background: #f8f5ff; border-radius: 12px; margin-bottom: 1rem; }
+    .student-row { display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.5rem 0.8rem; background: white; border-radius: 8px;
+      font-size: 0.9rem; }
+    .student-row .num { font-family: monospace; color: #5b7b9c; font-weight: 600; min-width: 100px; }
+    .student-row .name { flex: 1; font-weight: 600; color: #1e2e44; }
+    .student-row .project { color: #6b21a8; font-weight: 700; font-size: 0.85rem; }
+    .status { padding: 0.8rem 1rem; border-radius: 12px; margin-bottom: 1rem;
+      font-size: 0.9rem; font-weight: 600; }
+    .status.info { background: #ede9fe; color: #4c1d95; }
+    .status.success { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #8b1e2b; }
+    .btn { background: #6b21a8; color: white; font-weight: 600; border: none;
+      padding: 0.95rem 2rem; border-radius: 60px; font-size: 1rem;
+      cursor: pointer; font-family: inherit; width: 100%;
+      transition: background 0.15s; box-shadow: 0 8px 16px -4px rgba(107,33,168,0.3); }
+    .btn:hover { background: #4c1d95; }
+    .btn:disabled { opacity: 0.5; pointer-events: none; }
+    .btn-secondary { background: #e2e8f0; color: #1e2e44; box-shadow: none; }
+    .btn-secondary:hover { background: #cfdae6; }
+    .btn-danger { background: #b91c1c; }
+    .btn-danger:hover { background: #8b1e2b; }
+    .actions { display: grid; gap: 0.7rem; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 600px) { .actions { grid-template-columns: 1fr; } }
+    .progress-bar { height: 8px; background: #e9d5ff; border-radius: 10px;
+      overflow: hidden; margin-top: 1rem; display: none; }
+    .progress-bar.show { display: block; }
+    .progress-fill { height: 100%; background: #6b21a8; width: 0%;
+      transition: width 0.3s; }
+    .progress-text { text-align: center; margin-top: 0.5rem;
+      font-size: 0.85rem; color: #6b21a8; font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>📖 Final Year Games Project — Setup</h1>
+    <p class="sub">Assign solo projects to the 14 students</p>
+  </header>
+
+  <div class="card">
+    <h3 style="color:#4c1d95; margin-bottom: 1rem;">Preview</h3>
+    <div class="student-list" id="preview"></div>
+
+    <div class="status info">
+      This will create <strong>14 solo groups</strong>, one per student, each assigned a project named
+      <strong>Project Blank 1</strong> through <strong>Project Blank 14</strong>.
+      Students can rename their own project on first login.
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="createBtn">✅ Create 14 solo groups</button>
+      <button class="btn btn-danger" id="wipeBtn">🗑️ Wipe finalyear data</button>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText"></div>
+
+    <div id="resultBox" style="margin-top: 1.5rem;"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="color:#4c1d95; margin-bottom: 0.8rem;">📋 Instructions to give students</h3>
+    <div style="background:#f8f5ff; padding:1.2rem; border-radius:12px; font-size:0.9rem; line-height:1.6;">
+      <p><strong>Step 1:</strong> Go to <code>group.html</code></p>
+      <p><strong>Step 2:</strong> Log in with your student number</p>
+      <p><strong>Step 3:</strong> Password: <code>123456</code></p>
+      <p><strong>Step 4:</strong> Change your password when prompted</p>
+      <p><strong>Step 5:</strong> Change your project name when prompted</p>
+      <p style="margin-top:0.8rem; color:#6b21a8;">
+        <strong>You'll then be able to upload handwritten journal pages as a book.</strong>
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
+  authDomain: "ai-project-tool.firebaseapp.com",
+  databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ai-project-tool",
+  storageBucket: "ai-project-tool.firebasestorage.app",
+  messagingSenderId: "658331100512",
+  appId: "1:658331100512:web:72208dc0c1561b95bcaa05",
+  measurementId: "G-R36B3T9FLW"
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const FINALYEAR_STUDENTS = [
+  { firstName: "Stephen", lastName: "Arthur", studentNumber: "c00295678" },
+  { firstName: "Dima", lastName: "Atiyeh", studentNumber: "c00301176" },
+  { firstName: "Leo", lastName: "Bolaks", studentNumber: "c00299368" },
+  { firstName: "Ostap-Demyan", lastName: "Boychuk", studentNumber: "c00301627" },
+  { firstName: "Dhruv", lastName: "Dagar", studentNumber: "c00303423" },
+  { firstName: "Conor", lastName: "Foley", studentNumber: "c00301460" },
+  { firstName: "Ethan", lastName: "Hislop", studentNumber: "c00296735" },
+  { firstName: "Jack", lastName: "Kane", studentNumber: "c00300324" },
+  { firstName: "Vitalii", lastName: "Lazarev", studentNumber: "c00299313" },
+  { firstName: "Nathan", lastName: "Mas", studentNumber: "c00296838" },
+  { firstName: "Daniel", lastName: "Mendioza Serment", studentNumber: "c00274269" },
+  { firstName: "Tadhg", lastName: "Murphy", studentNumber: "c00273712" },
+  { firstName: "Ian", lastName: "Perez Bunuel", studentNumber: "c00294680" },
+  { firstName: "Jack", lastName: "Sweeney", studentNumber: "c00262459" }
+];
+
+const DEFAULT_PASSWORD = "123456";
+
+const previewEl = document.getElementById('preview');
+const createBtn = document.getElementById('createBtn');
+const wipeBtn = document.getElementById('wipeBtn');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const resultBox = document.getElementById('resultBox');
+
+// Preview
+previewEl.innerHTML = FINALYEAR_STUDENTS.map((s, i) => `
+  <div class="student-row">
+    <span class="num">${s.studentNumber}</span>
+    <span class="name">${s.firstName} ${s.lastName}</span>
+    <span class="project">Project Blank ${i + 1}</span>
+  </div>
+`).join('');
+
+function generateGroupId() {
+  return 'grp_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function updateProgress(current, total, msg) {
+  progressBar.classList.add('show');
+  const pct = Math.round((current / total) * 100);
+  progressFill.style.width = pct + '%';
+  progressText.textContent = msg + ` (${current}/${total})`;
+}
+
+createBtn.addEventListener('click', async () => {
+  if (!confirm('Create 14 solo groups for Final Year Games Project?')) return;
+
+  createBtn.disabled = true;
+  wipeBtn.disabled = true;
+
+  try {
+    // First — make sure all students exist in the roster with class=finalyear
+    updateProgress(0, FINALYEAR_STUDENTS.length + 1, 'Adding students to roster…');
+    const studentUpdates = {};
+    FINALYEAR_STUDENTS.forEach(s => {
+      const key = s.studentNumber.toLowerCase();
+      studentUpdates[key] = {
+        studentNumber: s.studentNumber,
+        firstName: s.firstName,
+        lastName: s.lastName,
+        class: 'finalyear',
+        email: ''
+      };
+    });
+    await db.ref('students').update(studentUpdates);
+
+    // Then — create projects + selections + groups
+    let done = 0;
+    for (let i = 0; i < FINALYEAR_STUDENTS.length; i++) {
+      const s = FINALYEAR_STUDENTS[i];
+      const projectName = `Project Blank ${i + 1}`;
+      const projectId = `fy_blank_${i + 1}`;
+      const groupId = generateGroupId();
+
+      // 1. Create the project
+      await db.ref(`classes/finalyear/projects/${projectId}`).set({
+        name: projectName,
+        category: 'Final Year Games Project',
+        isFinalYear: true,
+        editableByStudent: true   // can be renamed by the student
+      });
+
+      // 2. Create the selection (claiming the project for this student)
+      await db.ref(`classes/finalyear/selections/${projectId}`).set({
+        groupId,
+        groupName: `${s.firstName} ${s.lastName}`,
+        student1: s.studentNumber,
+        student2: '',                     // solo project — no second student
+        student1Name: `${s.firstName} ${s.lastName}`,
+        student2Name: '',
+        class: 'Final Year Games Project',
+        timestamp: Date.now()
+      });
+
+      // 3. Create the group record
+      await db.ref(`groups/${groupId}`).set({
+        groupId,
+        groupName: `${s.firstName} ${s.lastName}`,
+        class: 'finalyear',
+        className: 'Final Year Games Project',
+        projectId,
+        projectName,
+        student1: s.studentNumber,
+        student2: '',
+        student1Name: `${s.firstName} ${s.lastName}`,
+        student2Name: '',
+        password: DEFAULT_PASSWORD,
+        mustChangePassword: true,
+        mustSetProjectName: true,        // triggers the rename prompt
+        createdAt: Date.now(),
+        screencasts: {},
+        journals: {},
+        githubLink: ''
+      });
+
+      done++;
+      updateProgress(done + 1, FINALYEAR_STUDENTS.length + 1,
+        `Created ${projectName} for ${s.firstName} ${s.lastName}`);
+    }
+
+    updateProgress(FINALYEAR_STUDENTS.length + 1, FINALYEAR_STUDENTS.length + 1, 'Done!');
+    resultBox.innerHTML = `
+      <div class="status success">
+        ✅ All 14 solo groups created successfully.<br><br>
+        <strong>Login instructions for students:</strong><br>
+        1. Go to <code>group.html</code><br>
+        2. Log in with your student number<br>
+        3. Password: <code>123456</code><br>
+        4. Change password + project name on first login
+      </div>
+    `;
+  } catch (e) {
+    resultBox.innerHTML = `<div class="status error">❌ Error: ${escapeHtml(e.message)}</div>`;
+  } finally {
+    createBtn.disabled = false;
+    wipeBtn.disabled = false;
+    setTimeout(() => progressBar.classList.remove('show'), 3000);
+  }
+});
+
+wipeBtn.addEventListener('click', async () => {
+  if (!confirm('⚠️ Delete ALL Final Year Games Project data?\n\nThis removes:\n• All 14 projects\n• All 14 selections\n• All 14 group records\n\nThe students themselves stay in the roster.')) return;
+  if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
+
+  wipeBtn.disabled = true;
+  createBtn.disabled = true;
+
+  try {
+    // Remove selections
+    const selSnap = await db.ref('classes/finalyear/selections').once('value');
+    const selections = selSnap.val() || {};
+    const groupIds = Object.values(selections).map(s => s.groupId).filter(Boolean);
+
+    // Remove groups
+    for (const gid of groupIds) {
+      await db.ref('groups/' + gid).remove();
+    }
+
+    // Remove projects + selections
+    await db.ref('classes/finalyear/projects').remove();
+    await db.ref('classes/finalyear/selections').remove();
+
+    resultBox.innerHTML = `<div class="status success">🗑️ Wiped all Final Year data. Students are still in the roster.</div>`;
+  } catch (e) {
+    resultBox.innerHTML = `<div class="status error">❌ Error: ${escapeHtml(e.message)}</div>`;
+  } finally {
+    wipeBtn.disabled = false;
+    createBtn.disabled = false;
+  }
+});
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+</script>
+</body>
+</html>
