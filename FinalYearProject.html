@@ -17,7 +17,6 @@
     }
     .container { max-width: 1050px; margin: 0 auto; }
 
-    /* LOGIN */
     #loginView {
       max-width: 440px; margin: 5rem auto; text-align: center;
       background: white; padding: 2.5rem 2rem; border-radius: 26px;
@@ -50,7 +49,6 @@
     .error-msg { color: #b91c1c; margin-top: 0.5rem; font-size: 0.9rem;
       min-height: 1.2rem; font-weight: 500; }
 
-    /* HEADER */
     header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
@@ -58,7 +56,6 @@
     header h1 { font-size: 1.9rem; color: #4c1d95; }
     header p { color: #6b21a8; margin-top: 0.2rem; font-size: 0.95rem; }
 
-    /* BANNER */
     .banner {
       background: linear-gradient(135deg, #4c1d95 0%, #6b21a8 100%);
       color: white; border-radius: 24px; padding: 2rem; margin-bottom: 1.5rem;
@@ -80,7 +77,6 @@
       font-weight: 600; margin-top: 0.8rem;
     }
 
-    /* CARDS */
     .card {
       background: white; border-radius: 22px; padding: 1.8rem;
       box-shadow: 0 10px 26px -12px rgba(30,20,60,0.12);
@@ -95,7 +91,6 @@
       padding: 0.15rem 0.6rem; border-radius: 20px; font-weight: 700;
     }
 
-    /* BOOK INPUT */
     .book-input-row {
       display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center;
       margin-bottom: 1rem; padding: 1rem;
@@ -110,7 +105,6 @@
     }
     .book-input-row input:focus { border-color: #6b21a8; box-shadow: 0 0 0 3px rgba(107,33,168,0.1); }
 
-    /* BOOK VIEWER */
     .book-container {
       background: linear-gradient(135deg, #f4ede0 0%, #e8dcc7 100%);
       border-radius: 22px; padding: 1.5rem;
@@ -172,7 +166,6 @@
     .book-thumb.active { border-color: #5c3d1e; box-shadow: 0 0 0 2px #8b6f47; }
     .book-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* SCREENCASTS */
     .input-row { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1rem; }
     .input-row input {
       flex: 1 1 200px; padding: 0.85rem 1.2rem; border-radius: 60px;
@@ -199,7 +192,6 @@
     }
     .chip:hover { background: #e9d5ff; }
 
-    /* CALENDAR */
     .cal-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 0.5rem; margin-top: 1.5rem;
@@ -233,7 +225,6 @@
     .cal-dot.pg { background: #6b21a8; }
     .cal-dot.sc { background: #1f7a3e; }
 
-    /* GITHUB */
     .github-row { display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
     .github-row input {
       flex: 1 1 300px; padding: 0.9rem 1.2rem; border-radius: 60px;
@@ -242,7 +233,6 @@
     .github-row input:focus { border-color: #6b21a8; box-shadow: 0 0 0 3px rgba(107,33,168,0.15); }
     .github-link { color: #6b21a8; text-decoration: none; font-weight: 600; }
 
-    /* MODALS */
     .modal-bg {
       position: fixed; inset: 0; background: rgba(10,20,35,0.65);
       display: none; align-items: center; justify-content: center;
@@ -274,7 +264,6 @@
 <body>
 <div class="container">
 
-  <!-- LOGIN -->
   <div id="loginView">
     <div class="icon">📖</div>
     <h2>Final Year Games Project</h2>
@@ -285,7 +274,6 @@
     <div class="error-msg" id="loginError"></div>
   </div>
 
-  <!-- DASHBOARD -->
   <div id="dashboardView" class="hidden">
 
     <header>
@@ -302,12 +290,11 @@
       <div class="banner-you" id="loggedInAs">—</div>
     </div>
 
-    <!-- HANDWRITTEN BOOK -->
     <div class="card">
       <h3>📖 My handwritten journal <span class="count" id="bookCount">0 pages</span></h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
-        <strong>Private to you.</strong> Paste a link to a photo of your handwritten journal page
-        (OneDrive / Google Drive / any image URL). They appear as a flipbook.
+        <strong>Private to you.</strong> Paste a link to a photo of your handwritten journal page.
+        The image is saved to the server so it loads instantly and never breaks.
       </p>
 
       <div class="book-input-row">
@@ -349,7 +336,6 @@
       <div class="cal-grid" id="bookCalGrid"></div>
     </div>
 
-    <!-- SCREENCASTS -->
     <div class="card">
       <h3>🎬 My screencasts <span class="count" id="scCount">0</span></h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
@@ -375,7 +361,6 @@
       <div class="cal-grid" id="scCalGrid"></div>
     </div>
 
-    <!-- GITHUB -->
     <div class="card">
       <h3>🐙 GitHub repository</h3>
       <p style="color:#5b7b9c; font-size:0.88rem; margin-bottom:1rem;">
@@ -391,7 +376,6 @@
   </div>
 </div>
 
-<!-- CHANGE PASSWORD MODAL -->
 <div id="pwdModal" class="modal-bg">
   <div class="modal">
     <h3>🔐 Change your password</h3>
@@ -403,11 +387,10 @@
   </div>
 </div>
 
-<!-- NAME PROJECT MODAL -->
 <div id="pnModal" class="modal-bg">
   <div class="modal">
     <h3>📖 Name your project</h3>
-    <p>You're starting <strong id="pnCurrentName">Project Blank 1</strong>.
+    <p>You're starting <strong id="pnCurrentName">Project Blank</strong>.
        Give it a real title — this shows everywhere.</p>
     <input type="text" id="pnInput" placeholder="e.g. Space Shooter Deluxe" maxlength="60">
     <button class="btn btn-block" id="pnSaveBtn">Save project name</button>
@@ -415,7 +398,6 @@
   </div>
 </div>
 
-<!-- IMAGE ZOOM -->
 <div id="zoomModal" class="modal-bg zoom">
   <div class="modal">
     <img id="zoomImg" src="" alt="">
@@ -476,34 +458,12 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// Convert OneDrive/Google Drive share links to direct image URLs
-function toDirectImageUrl(url) {
+// If image was saved locally by the server, use it directly.
+// Otherwise route through the image proxy (fallback for old entries).
+function imageSrc(url) {
   if (!url) return null;
-  try {
-    // OneDrive
-    if (url.includes('onedrive.live.com')) {
-      const u = new URL(url);
-      const resid = u.searchParams.get('resid');
-      if (resid && !url.includes('download')) {
-        // Add download=1 to force direct image
-        return url + (url.includes('?') ? '&' : '?') + 'download=1';
-      }
-      return url;
-    }
-    if (url.includes('1drv.ms')) {
-      // 1drv.ms short link → try direct with ?download=1
-      return url + (url.includes('?') ? '&' : '?') + 'download=1';
-    }
-    // Google Drive
-    const gd = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-    if (gd) return `https://drive.google.com/uc?export=view&id=${gd[1]}`;
-    // Google Drive open?id= format
-    const gd2 = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
-    if (gd2) return `https://drive.google.com/uc?export=view&id=${gd2[1]}`;
-
-    // Otherwise, use as-is (probably already a direct image URL)
-    return url;
-  } catch (e) { return url; }
+  if (url.startsWith('/uploads/') || url.startsWith(location.origin)) return url;
+  return '/api/img?url=' + encodeURIComponent(url);
 }
 
 // ============================================================
@@ -518,7 +478,6 @@ const loginSubtitle = document.getElementById('loginSubtitle');
 const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
 const greeting = document.getElementById('greeting');
-const classSubtitle = document.getElementById('classSubtitle');
 const projectNameEl = document.getElementById('projectName');
 const loggedInAs = document.getElementById('loggedInAs');
 
@@ -565,12 +524,8 @@ const zoomImg = document.getElementById('zoomImg');
 //  LOGIN
 // ============================================================
 loginBtn.addEventListener('click', doLogin);
-passwordEnterHandler();
-function passwordEnterHandler() {
-  [studentNumberInput, userPasswordInput].forEach(inp => {
-    inp.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
-  });
-}
+studentNumberInput.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+userPasswordInput.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
 
 async function doLogin() {
   const studentNum = studentNumberInput.value.trim();
@@ -607,7 +562,6 @@ async function doLogin() {
       return;
     }
 
-    // If password not set yet OR needs change → show change password modal
     if (!match.password || match.mustChangePassword) {
       pendingGroup = { group: match, student: numLower, display: studentNum };
       pwdModal.classList.add('show');
@@ -620,7 +574,6 @@ async function doLogin() {
       return;
     }
 
-    // Password set → reveal password field
     if (!expectingPassword) {
       expectingPassword = true;
       userPasswordInput.style.display = 'block';
@@ -631,7 +584,6 @@ async function doLogin() {
       return;
     }
 
-    // Verify password
     const enteredPwd = userPasswordInput.value.trim();
     if (enteredPwd !== match.password) {
       loginError.textContent = '❌ Incorrect password.';
@@ -642,7 +594,6 @@ async function doLogin() {
       return;
     }
 
-    // Success
     currentStudent = numLower;
     currentStudentDisplay = studentNum;
     currentGroup = match;
@@ -726,479 +677,9 @@ pnSaveBtn.addEventListener('click', async () => {
       mustSetProjectName: false
     });
 
-    await db.ref(`classes/finalyear/selections/${currentGroup.projectId}`).update({
+    await db.ref('classes/finalyear/selections/' + currentGroup.projectId).update({
       projectName: newName
     });
 
-    await db.ref(`classes/finalyear/projects/${currentGroup.projectId}`).update({
-      name: newName
-    });
-
-    currentGroup.projectName = newName;
-    currentGroup.mustSetProjectName = false;
-
-    projectNameEl.textContent = newName;
-    pnModal.classList.remove('show');
-
-  } catch (e) {
-    pnError.textContent = '❌ ' + e.message;
-  } finally {
-    pnSaveBtn.disabled = false;
-    pnSaveBtn.textContent = 'Save project name';
-  }
-});
-
-// ============================================================
-//  DASHBOARD
-// ============================================================
-function showDashboard() {
-  loginView.classList.add('hidden');
-  dashboardView.classList.remove('hidden');
-
-  const g = currentGroup;
-  projectNameEl.textContent = g.projectName || g.projectId || '—';
-  greeting.textContent = 'Hi ' + (g.student1Name || currentStudentDisplay) + ' 👋';
-  classSubtitle.textContent = 'Final Year Games Project';
-  loggedInAs.textContent = '👤 ' + currentStudentDisplay;
-  githubInput.value = g.githubLink || '';
-  renderGithubStatus();
-
-  // Prompt to name project if not set yet
-  if (g.mustSetProjectName) {
-    pnCurrentName.textContent = g.projectName || 'Project Blank';
-    pnInput.value = '';
-    pnError.textContent = '';
-    pnModal.classList.add('show');
-    setTimeout(() => pnInput.focus(), 100);
-  }
-
-  // Attach listener to update everything
-  if (groupListener) groupListener.off();
-  groupListener = db.ref('groups/' + g.groupId);
-  groupListener.on('value', snap => {
-    const fresh = snap.val();
-    if (!fresh) return;
-    currentGroup = { groupId: g.groupId, ...fresh };
-
-    // Update project name (in case it changed elsewhere)
-    projectNameEl.textContent = fresh.projectName || '—';
-
-    // Update book + calendar
-    renderBook();
-    renderBookCalendar();
-
-    // Update screencasts + calendar
-    renderScreencasts(fresh.screencasts || {});
-    renderScCalendar();
-
-    // GitHub
-    githubInput.value = fresh.githubLink || '';
-    renderGithubStatus();
-  });
-}
-
-// ============================================================
-//  BOOK — handwritten journal
-// ============================================================
-function renderBook() {
-  const jns = (currentGroup.journals && currentGroup.journals[currentStudent]) || {};
-
-  bookPages = Object.entries(jns)
-    .map(([id, p]) => ({ id, ...p }))
-    .filter(p => p.imageUrl)
-    .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-
-  bookCount.textContent = bookPages.length + (bookPages.length === 1 ? ' page' : ' pages');
-
-  if (bookPages.length === 0) {
-    bookViewer.innerHTML = `
-      <div class="book-empty">
-        <span class="icon">📓</span>
-        No pages yet. Paste a link above to add your first page.
-      </div>`;
-    bookPrevBtn.disabled = true;
-    bookNextBtn.disabled = true;
-    bookDeleteBtn.disabled = true;
-    bookPageInfo.textContent = '0 / 0';
-    bookPageTitle.textContent = '';
-    bookStrip.innerHTML = '';
-    return;
-  }
-
-  if (bookIndex >= bookPages.length) bookIndex = bookPages.length - 1;
-  if (bookIndex < 0) bookIndex = 0;
-
-  showBookPage(bookIndex);
-
-  bookStrip.innerHTML = bookPages.map((p, i) => `
-    <div class="book-thumb ${i === bookIndex ? 'active' : ''}" data-idx="${i}" title="${escapeHtml(p.title || 'Page ' + (i+1))}">
-      <img src="${escapeHtml(toDirectImageUrl(p.imageUrl))}" alt="page ${i+1}" loading="lazy" onerror="this.style.opacity='0.3'">
-    </div>
-  `).join('');
-
-  bookStrip.querySelectorAll('.book-thumb').forEach(el => {
-    el.addEventListener('click', () => {
-      bookIndex = parseInt(el.dataset.idx, 10);
-      showBookPage(bookIndex);
-    });
-  });
-}
-
-function showBookPage(idx) {
-  if (bookPages.length === 0) return;
-  bookIndex = idx;
-  const page = bookPages[bookIndex];
-  const directUrl = toDirectImageUrl(page.imageUrl);
-
-  bookViewer.innerHTML = `<img src="${escapeHtml(directUrl)}" alt="page" class="book-page"
-    onerror="this.parentElement.innerHTML='<div class=&quot;book-empty&quot;><span class=&quot;icon&quot;>⚠️</span>Image could not be loaded.<br><a href=&quot;${escapeHtml(page.imageUrl)}&quot; target=&quot;_blank&quot; style=&quot;color:#6b21a8;&quot;>Open original link</a></div>'">`;
-
-  bookViewer.querySelector('img').addEventListener('click', () => {
-    zoomImg.src = directUrl;
-    zoomModal.classList.add('show');
-  });
-
-  bookPageInfo.textContent = `${bookIndex + 1} / ${bookPages.length}`;
-  bookPageTitle.textContent = page.title || 'Untitled page';
-  bookPrevBtn.disabled = bookIndex === 0;
-  bookNextBtn.disabled = bookIndex === bookPages.length - 1;
-  bookDeleteBtn.disabled = false;
-
-  bookStrip.querySelectorAll('.book-thumb').forEach((el, i) => {
-    el.classList.toggle('active', i === bookIndex);
-  });
-}
-
-bookPrevBtn.addEventListener('click', () => { if (bookIndex > 0) showBookPage(bookIndex - 1); });
-bookNextBtn.addEventListener('click', () => { if (bookIndex < bookPages.length - 1) showBookPage(bookIndex + 1); });
-
-bookDeleteBtn.addEventListener('click', async () => {
-  if (bookPages.length === 0) return;
-  const page = bookPages[bookIndex];
-  if (!confirm(`Delete "${page.title || 'this page'}"?`)) return;
-  try {
-    await db.ref(`groups/${currentGroup.groupId}/journals/${currentStudent}/${page.id}`).remove();
-    bookIndex = Math.max(0, bookIndex - 1);
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
-});
-
-bookAddBtn.addEventListener('click', async () => {
-  const title = bookTitle.value.trim() || `Page ${bookPages.length + 1}`;
-  const url = bookImageUrl.value.trim();
-  if (!url) { bookMsg.innerHTML = '<span style="color:#b91c1c;">Please paste an image link.</span>'; return; }
-  if (!/^https?:\/\//i.test(url)) { bookMsg.innerHTML = '<span style="color:#b91c1c;">Link must start with http:// or https://</span>'; return; }
-
-  bookAddBtn.disabled = true;
-  bookAddBtn.textContent = 'Adding…';
-
-  try {
-    const id = 'pg_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    await db.ref(`groups/${currentGroup.groupId}/journals/${currentStudent}/${id}`).set({
-      id,
-      title,
-      imageUrl: url,
-      addedBy: currentStudentDisplay,
-      timestamp: firebase.database.ServerValue.TIMESTAMP
-    });
-
-    bookTitle.value = '';
-    bookImageUrl.value = '';
-    bookMsg.innerHTML = '<span style="color:#15803d;">✅ Page added to your book.</span>';
-    setTimeout(() => { bookMsg.innerHTML = ''; }, 3000);
-  } catch (e) {
-    bookMsg.innerHTML = '<span style="color:#b91c1c;">❌ ' + escapeHtml(e.message) + '</span>';
-  } finally {
-    bookAddBtn.disabled = false;
-    bookAddBtn.textContent = '➕ Add page';
-  }
-});
-
-// ============================================================
-//  BOOK CALENDAR
-// ============================================================
-window.bookCalPrev = function() {
-  bookCalMonthIdx--;
-  if (bookCalMonthIdx < 0) { bookCalMonthIdx = 11; bookCalYear--; }
-  renderBookCalendar();
-};
-window.bookCalNext = function() {
-  bookCalMonthIdx++;
-  if (bookCalMonthIdx > 11) { bookCalMonthIdx = 0; bookCalYear++; }
-  renderBookCalendar();
-};
-
-function renderBookCalendar() {
-  const label = document.getElementById('bookCalMonth');
-  const grid = document.getElementById('bookCalGrid');
-  if (!label || !grid) return;
-
-  label.textContent = MONTH_NAMES_LONG[bookCalMonthIdx] + ' ' + bookCalYear;
-
-  const firstDay = new Date(bookCalYear, bookCalMonthIdx, 1);
-  const daysInMonth = new Date(bookCalYear, bookCalMonthIdx + 1, 0).getDate();
-  let startOffset = firstDay.getDay() - 1;
-  if (startOffset < 0) startOffset = 6;
-
-  const byDay = {};
-  bookPages.forEach(p => {
-    if (!p.timestamp) return;
-    const d = new Date(p.timestamp);
-    if (d.getFullYear() !== bookCalYear || d.getMonth() !== bookCalMonthIdx) return;
-    const day = d.getDate();
-    if (!byDay[day]) byDay[day] = 0;
-    byDay[day]++;
-  });
-
-  const today = new Date();
-  const isThisMonth = today.getFullYear() === bookCalYear && today.getMonth() === bookCalMonthIdx;
-  const todayDay = today.getDate();
-
-  let html = '';
-  ['M','T','W','T','F','S','S'].forEach(d => {
-    html += `<div class="cal-head">${d}</div>`;
-  });
-  for (let i = 0; i < startOffset; i++) {
-    html += '<div class="cal-day empty-day"></div>';
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const classes = ['cal-day'];
-    if (isThisMonth && d === todayDay) classes.push('today');
-    const count = byDay[d] || 0;
-    let dots = '';
-    if (count > 0) {
-      dots = '<div class="cal-dots">';
-      for (let i = 0; i < Math.min(count, 3); i++) {
-        dots += '<div class="cal-dot pg"></div>';
-      }
-      if (count > 3) dots += `<span style="font-size:0.55rem;color:#6b21a8;font-weight:700;">+${count-3}</span>`;
-      dots += '</div>';
-    }
-    html += `<div class="${classes.join(' ')}"><div class="cal-num">${d}</div>${dots}</div>`;
-  }
-  grid.innerHTML = html;
-}
-
-// ============================================================
-//  SCREENCASTS
-// ============================================================
-function renderScreencasts(scs) {
-  const entries = Object.entries(scs || {}).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
-  scCount.textContent = entries.length;
-
-  if (entries.length === 0) {
-    scList.innerHTML = '';
-    scEmpty.style.display = 'block';
-    return;
-  }
-  scEmpty.style.display = 'none';
-
-  scList.innerHTML = entries.map(([id, sc]) => {
-    const date = sc.timestamp ? new Date(sc.timestamp).toLocaleString('en-GB', {
-      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    }) : '';
-    return `
-      <div class="screencast-card">
-        <div class="sc-body">
-          <div class="sc-title">${escapeHtml(sc.title || 'Untitled')}</div>
-          <div class="sc-meta">${escapeHtml(date)} · by ${escapeHtml(sc.addedBy || '—')}</div>
-          <div class="sc-actions">
-            <a href="${escapeHtml(sc.url)}" target="_blank" class="chip">🔗 Open</a>
-            <button class="chip" onclick="deleteSc('${escapeHtml(id)}')">🗑️ Remove</button>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-window.deleteSc = async function(id) {
-  if (!confirm('Remove this screencast?')) return;
-  try {
-    await db.ref(`groups/${currentGroup.groupId}/screencasts/${id}`).remove();
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
-};
-
-addScBtn.addEventListener('click', async () => {
-  const title = scTitle.value.trim() || 'Untitled';
-  const url = scUrl.value.trim();
-  if (!url) { alert('Please paste a link.'); return; }
-  if (!/^https?:\/\//i.test(url)) { alert('URL must start with http:// or https://'); return; }
-
-  addScBtn.disabled = true;
-  addScBtn.textContent = 'Adding…';
-
-  try {
-    const id = 'sc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    await db.ref(`groups/${currentGroup.groupId}/screencasts/${id}`).set({
-      id, title, url,
-      addedBy: currentStudentDisplay,
-      timestamp: firebase.database.ServerValue.TIMESTAMP
-    });
-    scTitle.value = '';
-    scUrl.value = '';
-  } catch (e) {
-    alert('Error: ' + e.message);
-  } finally {
-    addScBtn.disabled = false;
-    addScBtn.textContent = '➕ Add screencast';
-  }
-});
-
-// ============================================================
-//  SCREENCAST CALENDAR
-// ============================================================
-window.scCalPrev = function() {
-  scCalMonthIdx--;
-  if (scCalMonthIdx < 0) { scCalMonthIdx = 11; scCalYear--; }
-  renderScCalendar();
-};
-window.scCalNext = function() {
-  scCalMonthIdx++;
-  if (scCalMonthIdx > 11) { scCalMonthIdx = 0; scCalYear++; }
-  renderScCalendar();
-};
-
-function renderScCalendar() {
-  const label = document.getElementById('scCalMonth');
-  const grid = document.getElementById('scCalGrid');
-  if (!label || !grid) return;
-
-  label.textContent = MONTH_NAMES_LONG[scCalMonthIdx] + ' ' + scCalYear;
-
-  const firstDay = new Date(scCalYear, scCalMonthIdx, 1);
-  const daysInMonth = new Date(scCalYear, scCalMonthIdx + 1, 0).getDate();
-  let startOffset = firstDay.getDay() - 1;
-  if (startOffset < 0) startOffset = 6;
-
-  const scs = (currentGroup.screencasts) || {};
-  const byDay = {};
-  Object.values(scs).forEach(sc => {
-    if (!sc.timestamp) return;
-    const d = new Date(sc.timestamp);
-    if (d.getFullYear() !== scCalYear || d.getMonth() !== scCalMonthIdx) return;
-    const day = d.getDate();
-    if (!byDay[day]) byDay[day] = 0;
-    byDay[day]++;
-  });
-
-  const today = new Date();
-  const isThisMonth = today.getFullYear() === scCalYear && today.getMonth() === scCalMonthIdx;
-  const todayDay = today.getDate();
-
-  let html = '';
-  ['M','T','W','T','F','S','S'].forEach(d => {
-    html += `<div class="cal-head">${d}</div>`;
-  });
-  for (let i = 0; i < startOffset; i++) {
-    html += '<div class="cal-day empty-day"></div>';
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const classes = ['cal-day'];
-    if (isThisMonth && d === todayDay) classes.push('today');
-    const count = byDay[d] || 0;
-    let dots = '';
-    if (count > 0) {
-      dots = '<div class="cal-dots">';
-      for (let i = 0; i < Math.min(count, 3); i++) {
-        dots += '<div class="cal-dot sc"></div>';
-      }
-      if (count > 3) dots += `<span style="font-size:0.55rem;color:#1f7a3e;font-weight:700;">+${count-3}</span>`;
-      dots += '</div>';
-    }
-    html += `<div class="${classes.join(' ')}"><div class="cal-num">${d}</div>${dots}</div>`;
-  }
-  grid.innerHTML = html;
-}
-
-// ============================================================
-//  GITHUB
-// ============================================================
-saveGhBtn.addEventListener('click', async () => {
-  const url = githubInput.value.trim();
-  if (url && !/^https?:\/\//i.test(url)) {
-    ghStatus.innerHTML = '<span style="color:#b91c1c;">⚠️ URL must start with http:// or https://</span>';
-    return;
-  }
-  saveGhBtn.disabled = true;
-  saveGhBtn.textContent = 'Saving…';
-  try {
-    await db.ref('groups/' + currentGroup.groupId + '/githubLink').set(url);
-    ghStatus.innerHTML = '<span style="color:#15803d;">✅ Saved</span>';
-    setTimeout(() => { ghStatus.innerHTML = ''; }, 2500);
-  } catch (e) {
-    ghStatus.innerHTML = '<span style="color:#b91c1c;">Error: ' + escapeHtml(e.message) + '</span>';
-  } finally {
-    saveGhBtn.disabled = false;
-    saveGhBtn.textContent = 'Save';
-  }
-});
-
-function renderGithubStatus() {
-  const url = currentGroup.githubLink;
-  if (url) {
-    ghStatus.innerHTML = '🔗 <a class="github-link" href="' + escapeHtml(url) + '" target="_blank">' + escapeHtml(url) + '</a>';
-  } else {
-    ghStatus.innerHTML = '<span style="color:#8ba0b8;">No GitHub link set yet.</span>';
-  }
-}
-
-// ============================================================
-//  ZOOM / LOGOUT
-// ============================================================
-zoomModal.addEventListener('click', () => {
-  zoomModal.classList.remove('show');
-});
-
-logoutBtn.addEventListener('click', () => {
-  sessionStorage.removeItem('fy_session');
-  if (groupListener) { groupListener.off(); groupListener = null; }
-  currentGroup = null;
-  currentStudent = null;
-  currentStudentDisplay = null;
-  pendingGroup = null;
-  expectingPassword = false;
-  dashboardView.classList.add('hidden');
-  loginView.classList.remove('hidden');
-  studentNumberInput.value = '';
-  userPasswordInput.value = '';
-  userPasswordInput.style.display = 'none';
-  loginSubtitle.textContent = 'Enter your student number';
-  loginError.textContent = '';
-  loginBtn.disabled = false;
-  loginBtn.textContent = 'Continue';
-  studentNumberInput.focus();
-});
-
-// ============================================================
-//  AUTO-LOGIN FROM SESSION
-// ============================================================
-(async function init() {
-  const saved = sessionStorage.getItem('fy_session');
-  if (!saved) return;
-  try {
-    const s = JSON.parse(saved);
-    const snap = await db.ref('groups/' + s.groupId).once('value');
-    if (snap.exists()) {
-      const fresh = snap.val();
-      if (fresh.class === 'finalyear') {
-        currentGroup = { groupId: s.groupId, ...fresh };
-        currentStudent = s.student;
-        currentStudentDisplay = s.display;
-        showDashboard();
-      } else {
-        sessionStorage.removeItem('fy_session');
-      }
-    } else {
-      sessionStorage.removeItem('fy_session');
-    }
-  } catch (e) {
-    sessionStorage.removeItem('fy_session');
-  }
-})();
-</script>
-</body>
-</html>
+    await db.ref('classes/finalyear/projects/' + currentGroup.projectId).update({
+      name: new
