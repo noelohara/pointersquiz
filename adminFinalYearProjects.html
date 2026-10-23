@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Final Year · Supervisor Dashboard</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(145deg, #f3e8ff 0%, #e9eef3 100%);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+      color: #1f2a3a;
+    }
+    .container { max-width: 1600px; margin: 0 auto; }
+
+    #loginView {
+      max-width: 420px; margin: 6rem auto; text-align: center;
+      background: white; padding: 2.5rem 2rem; border-radius: 24px;
+      box-shadow: 0 20px 40px -12px rgba(76,29,149,0.2);
+    }
+    #loginView .lock-icon { font-size: 3rem; margin-bottom: 1rem; }
+    #loginView h2 { color: #4c1d95; margin-bottom: 0.5rem; font-size: 1.5rem; }
+    #loginView p { color: #5b7b9c; font-size: 0.9rem; margin-bottom: 1.5rem; }
+    input[type="password"] {
+      width: 100%; padding: 1rem 1.3rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-size: 1rem; font-family: inherit;
+      outline: none; text-align: center; letter-spacing: 3px;
+    }
+    input[type="password"]:focus { border-color: #6b21a8; box-shadow: 0 0 0 3px rgba(107,33,168,0.15); }
+
+    .btn {
+      background: #6b21a8; color: white; font-weight: 600; border: none;
+      padding: 0.85rem 1.6rem; border-radius: 60px; font-size: 0.9rem;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.15s, transform 0.1s;
+      box-shadow: 0 8px 16px -4px rgba(107,33,168,0.3);
+    }
+    .btn:hover { background: #4c1d95; }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; pointer-events: none; }
+    .btn-secondary { background: #e2e8f0; color: #1e2e44; box-shadow: none; }
+    .btn-secondary:hover { background: #cfdae6; }
+    .btn-sm { padding: 0.45rem 1rem; font-size: 0.8rem; }
+    .btn-block { width: 100%; }
+    .btn-danger { background: #b91c1c; }
+    .btn-danger:hover { background: #8b1e2b; }
+    .btn-meeting { background: #0369a1; }
+    .btn-meeting:hover { background: #075985; }
+
+    #loginView .btn { width: 100%; margin-top: 1rem; }
+    .error-msg { color: #b91c1c; margin-top: 1rem; font-size: 0.9rem;
+      min-height: 1.2rem; font-weight: 500; }
+
+    header.page-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    header.page-head h1 { font-size: 2rem; color: #4c1d95; font-weight: 700; }
+    header.page-head p { color: #6b21a8; font-size: 0.95rem; margin-top: 0.2rem; }
+
+    /* SUMMARY STATS */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem; margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: white; padding: 1rem 1.3rem; border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(76,29,149,0.08);
+      border-left: 4px solid #6b21a8;
+    }
+    .stat-num { font-size: 1.8rem; font-weight: 700; color: #4c1d95; line-height: 1; }
+    .stat-label {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.7px;
+      color: #6b21a8; font-weight: 600; margin-top: 0.3rem;
+    }
+    .stat.warn { border-left-color: #dc2626; }
+    .stat.warn .stat-num, .stat.warn .stat-label { color: #b91c1c; }
+    .stat.ok { border-left-color: #16a34a; }
+    .stat.ok .stat-num, .stat.ok .stat-label { color: #15803d; }
+
+    /* TOOLBAR */
+    .toolbar {
+      display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+      align-items: center;
+    }
+    .search-input {
+      flex: 1 1 300px; padding: 0.85rem 1.3rem; border-radius: 60px;
+      border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.95rem;
+      outline: none; background: white;
+    }
+    .search-input:focus { border-color: #6b21a8; box-shadow: 0 0 0 3px rgba(107,33,168,0.15); }
+
+    /* GRID */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 1.4rem;
+    }
+    @media (max-width: 850px) { .projects-grid { grid-template-columns: 1fr; } }
+
+    .project-card {
+      background: white; border-radius: 22px; padding: 1.5rem;
+      box-shadow: 0 10px 26px -14px rgba(76,29,149,0.15);
+      border: 2px solid #f3e8ff;
+      display: flex; flex-direction: column;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .project-card:hover { box-shadow: 0 20px 34px -14px rgba(76,29,149,0.22); }
+    .project-card.overdue {
+      border-color: #fecaca;
+      box-shadow: 0 10px 26px -14px rgba(220,38,38,0.2);
+    }
+    .project-card.warning {
+      border-color: #fed7aa;
+    }
+
+    .pc-head {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 0.7rem;
+      margin-bottom: 0.8rem; flex-wrap: wrap;
+    }
+    .pc-title {
+      font-size: 1.15rem; font-weight: 700; color: #4c1d95;
+      line-height: 1.25; flex: 1 1 200px; min-width: 0;
+    }
+    .pc-badge {
+      display: inline-block; font-size: 0.68rem; padding: 0.2rem 0.7rem;
+      border-radius: 20px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.4px; background: #f3e8ff; color: #6b21a8;
+    }
+    .pc-badge.overdue { background: #fee2e2; color: #b91c1c; }
+    .pc-badge.warning { background: #fef3c7; color: #92400e; }
+    .pc-badge.ok { background: #dcfce7; color: #15803d; }
+
+    .pc-student {
+      display: flex; flex-direction: column; gap: 0.15rem;
+      background: #faf5ff; border-radius: 14px;
+      padding: 0.85rem 1rem; margin-bottom: 1rem;
+      border-left: 4px solid #6b21a8;
+      word-break: break-word;
+    }
+    .pc-student .name { font-size: 0.95rem; font-weight: 700; color: #4c1d95; }
+    .pc-student .email {
+      font-family: 'Courier New', monospace; font-weight: 600;
+      color: #6b21a8; font-size: 0.82rem;
+    }
+
+    /* MEETING STATUS */
+    .meeting-status {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border-radius: 14px; padding: 1rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid #0369a1;
+    }
+    .meeting-status.overdue {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border-left-color: #dc2626;
+    }
+    .meeting-status.warning {
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      border-left-color: #d97706;
+    }
+    .meeting-status.ok {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border-left-color: #16a34a;
+    }
+    .meeting-status-label {
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.6px;
+      color: #0369a1; margin-bottom: 0.3rem;
+    }
+    .meeting-status.overdue .meeting-status-label { color: #b91c1c; }
+    .meeting-status.warning .meeting-status-label { color: #b45309; }
+    .meeting-status.ok .meeting-status-label { color: #15803d; }
+    .meeting-status-text {
+      font-size: 0.88rem; font-weight: 600; color: #1e2e44;
+    }
+    .meeting-status-sub {
+      font-size: 0.78rem; color: #64748b; margin-top: 0.2rem;
+    }
+
+    /* SECTIONS */
+    .pc-section { margin-bottom: 1rem; }
+    .pc-section:last-child { margin-bottom: 0; }
+    .pc-section-title {
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.6px;
+      color: #6b21a8; margin-bottom: 0.6rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .pc-section-title .count {
+      background: #f3e8ff; color: #6b21a8; padding: 0.1rem 0.55rem;
+      border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+    }
+
+    /* BOOK PREVIEW */
+    .book-preview {
+      background: linear-gradient(135deg, #f4ede0 0%, #e8dcc7 100%);
+      border-radius: 14px; padding: 0.8rem;
+    }
+    .book-cover {
+      background: #fdfaf5; border-radius: 8px;
+      aspect-ratio: 3/4; max-height: 240px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; cursor: pointer;
+    }
+    .book-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .book-cover-empty {
+      padding: 2rem 1rem; text-align: center; color: #8b6f47;
+      font-family: 'Georgia', serif; font-style: italic; font-size: 0.85rem;
+    }
+    .book-cover-empty .icon { font-size: 2.5rem; margin-bottom: 0.5rem; display: block; }
+    .book-info-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 0.6rem; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .book-page-count {
+      font-family: 'Georgia', serif; color: #5c3d1e;
+      font-size: 0.85rem; font-weight: 700;
+    }
+    .book-open-btn {
+      background: #8b6f47; color: white; border: none;
+      padding: 0.4rem 1rem; border-radius: 30px;
+      font-family: 'Georgia', serif; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer;
+    }
+    .book-open-btn:hover { background: #6d5535; }
+    .book-open-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+    /* SCREENCASTS MINI */
+    .sc-mini-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .sc-mini {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.45rem 0.7rem;
+      background: #faf5ff; border-radius: 10px;
+      border-left: 3px solid #6b21a8;
+      text-decoration: none; color: #1e2e44; font-size: 0.82rem;
+    }
+    .sc-mini:hover { background: #f3e8ff; }
+    .sc-mini .date {
+      font-size: 0.65rem; color: #8ba0b8; font-weight: 700;
+      text-transform: uppercase; flex-shrink: 0;
+    }
+    .sc-mini .title {
+      font-weight: 600; flex: 1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .sc-none {
+      padding: 0.7rem; text-align: center; color: #8ba0b8;
+      font-size: 0.8rem; font-style: italic;
+      background: #faf5ff; border-radius: 10px;
+    }
+
+    /* CALENDAR */
+    .cal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.5rem; margin-top: 0.6rem;
+    }
+    .cal-month { font-size: 0.85rem; font-weight: 700; color: #1e2e44; }
+    .cal-nav { display: flex; gap: 0.3rem; }
+    .cal-nav button {
+      background: #f3e8ff; border: none; padding: 0.2rem 0.55rem;
+      border-radius: 20px; cursor: pointer; font-weight: 700;
+      font-family: inherit; font-size: 0.72rem; color: #6b21a8;
+    }
+    .cal-nav button:hover { background: #e9d5ff; }
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 2px; background: #f3e8ff; border-radius: 10px; padding: 4px;
+    }
+    .cal-head {
+      text-align: center; font-size: 0.55rem; font-weight: 700;
+      text-transform: uppercase; color: #a78bfa; padding: 0.2rem 0;
+    }
+    .cal-day {
+      background: white; border-radius: 5px; min-height: 32px; padding: 0.2rem 0.1rem;
+      display: flex; flex-direction: column; align-items: center;
+      font-size: 0.65rem; border: 1.5px solid transparent;
+    }
+    .cal-day.empty-day { background: #faf5ff; opacity: 0.3; }
+    .cal-day.today { border-color: #f59e0b; background: #fffbeb; }
+    .cal-day .cal-num { font-weight: 600; font-size: 0.62rem; }
+    .cal-dots { display: flex; gap: 2px; margin-top: 1px; flex-wrap: wrap; justify-content: center; }
+    .cal-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .cal-dot.pg { background: #6b21a8; }
+    .cal-dot.sc { background: #1f7a3e; }
+    .cal-dot.mt { background: #0369a1; }
+    .cal-legend {
+      display: flex; gap: 0.6rem; margin-top: 0.4rem;
+      font-size: 0.65rem; color: #64748b; flex-wrap: wrap;
+    }
+    .cal-legend-item { display: flex; align-items: center; gap: 0.25rem; }
+    .cal-legend-swatch { width: 7px; height: 7px; border-radius: 50%; }
+    .cal-legend-swatch.pg { background: #6b21a8; }
+    .cal-legend-swatch.sc { background: #1f7a3e; }
+    .cal-legend-swatch.mt { background: #0369a1; }
+    .cal-legend-swatch.today { background: #fffbeb; border: 1.5px solid #f59e0b; }
+
+    /* MEETINGS LIST */
+    .meeting-list {
+      display: flex; flex-direction: column; gap: 0.5rem;
+      max-height: 200px; overflow-y: auto;
+      padding: 0.5rem;
+      background: #f0f9ff;
+      border-radius: 10px;
+    }
+    .meeting-item {
+      background: white; border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      border-left: 3px solid #0369a1;
+      display: flex; flex-direction: column; gap: 0.2rem;
+      font-size: 0.82rem;
+    }
+    .meeting-item-head {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 0.5rem;
+    }
+    .meeting-date {
+      font-weight: 700; color: #0369a1; font-size: 0.78rem;
+    }
+    .meeting-item .summary {
+      color: #1e2e44; line-height: 1.4;
+      word-break: break-word;
+    }
+    .meeting-item .delete-btn {
+      background: transparent; border: none; cursor: pointer;
+      color: #b91c1c; font-size: 0.9rem; padding: 0.1rem 0.3rem;
+      border-radius: 4px;
+    }
+    .meeting-item .delete-btn:hover { background: #fee2e2; }
+    .meeting-none {
+      padding: 1rem; text-align: center; color: #8ba0b8;
+      font-size: 0.85rem; font-style: italic;
+    }
+
+    /* MODAL */
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(10,20,35,0.85);
+      display: none; align-items: center; justify-content: center;
+      padding: 1.5rem; z-index: 1000;
+    }
+    .modal-bg.show { display: flex; }
+    .modal {
+      background: white; border-radius: 22px; padding: 2rem;
+      max-width: 560px; width: 100%; max-height: 90vh; overflow: auto;
+      box-shadow: 0 30px 60px -20px rgba(0,20,40,0.5);
+    }
+    .modal h3 { color: #4c1d95; font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .modal p { color: #5b7b9c; font-size: 0.88rem; margin-bottom: 1.2rem; }
+    .modal .form-row { margin-bottom: 1rem; }
+    .modal .form-row label {
+      display: block; font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      color: #0369a1; margin-bottom: 0.4rem;
+    }
+    .modal input[type="date"],
+    .modal textarea {
+      width: 100%; padding: 0.8rem 1rem; border-radius: 12px;
+      border: 1.5px solid #cbd5e1; font-family: inherit;
+      font-size: 0.92rem; outline: none;
+    }
+    .modal textarea {
+      min-height: 100px; resize: vertical;
+    }
+    .modal input:focus, .modal textarea:focus {
+      border-color: #0369a1; box-shadow: 0 0 0 3px rgba(3,105,161,0.15);
+    }
+    .modal-actions {
+      display: flex; gap: 0.6rem; margin-top: 1.2rem;
+    }
+    .modal-actions .btn { flex: 1; }
+
+    /* BOOK MODAL */
+    .book-modal {
+      background: white; border-radius: 22px; padding: 1.2rem;
+      max-width: 1000px; width: 100%; max-height: 92vh; overflow: auto;
+    }
+    .book-modal-container {
+      background: linear-gradient(135deg, #f4ede0 0%, #e8dcc7 100%);
+      border-radius: 18px; padding: 1.5rem;
+    }
+    .book-modal-title {
+      font-size: 1.1rem; font-weight: 700; color: #5c3d1e;
+      margin-bottom: 1rem; font-family: 'Georgia', serif; font-style: italic;
+    }
+    .book-modal-viewer {
+      background: #fdfaf5; border-radius: 12px; overflow: hidden;
+      min-height: 400px; display: flex; align-items: center; justify-content: center;
+    }
+    .book-modal-viewer img {
+      width: 100%; max-height: 65vh; object-fit: contain; display: block;
+      cursor: zoom-in;
+    }
+    .book-modal-broken {
+      padding: 3rem 2rem; text-align: center; color: #8b6f47;
+      font-family: 'Georgia', serif; font-style: italic;
+    }
+    .book-modal-controls {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 1rem; gap: 1rem; flex-wrap: wrap;
+    }
+    .book-modal-nav { display: flex; gap: 0.5rem; }
+    .book-modal-nav button {
+      background: #8b6f47; color: white; border: none;
+      padding: 0.6rem 1.2rem; border-radius: 30px;
+      font-family: 'Georgia', serif; font-weight: 700; font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .book-modal-nav button:hover { background: #6d5535; }
+    .book-modal-nav button:disabled { opacity: 0.35; pointer-events: none; }
+    .book-modal-page-info {
+      font-family: 'Georgia', serif; color: #6d5535; font-size: 0.95rem;
+      font-weight: 600; min-width: 130px; text-align: center;
+    }
+    .book-modal-page-title {
+      font-family: 'Georgia', serif; color: #5c3d1e; font-size: 0.9rem;
+      font-style: italic; text-align: center; margin-top: 0.3rem;
+    }
+    .book-modal-strip {
+      display: flex; gap: 0.5rem; overflow-x: auto;
+      padding: 0.5rem 0.2rem; margin-top: 0.8rem;
+    }
+    .book-modal-thumb {
+      flex-shrink: 0; width: 60px; height: 45px;
+      border-radius: 6px; overflow: hidden;
+      border: 2px solid transparent; cursor: pointer;
+      background: #d4c4ac;
+    }
+    .book-modal-thumb.active { border-color: #5c3d1e; box-shadow: 0 0 0 2px #8b6f47; }
+    .book-modal-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .modal-bg.zoom { background: rgba(0,0,0,0.95); cursor: zoom-out; }
+    .modal-bg.zoom .book-modal { background: transparent; box-shadow: none; max-width: 95vw; padding: 0; }
+    .modal-bg.zoom img { max-width: 100%; max-height: 90vh; border-radius: 8px; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- LOGIN -->
+  <div id="loginView">
+    <div class="lock-icon">🔒</div>
+    <h2>Supervisor Access</h2>
+    <p>Enter password to view Final Year students</p>
+    <input type="password" id="passwordInput" placeholder="••••••••" autofocus>
+    <button class="btn" id="loginBtn">Unlock</button>
+    <div class="error-msg" id="loginError"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardView" class="hidden">
+    <header class="page-head">
+      <div>
+        <h1>🎓 Final Year · Supervisor Dashboard</h1>
+        <p>Weekly meetings · journals · screencasts · repositories</p>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="logoutBtn">Log out</button>
+    </header>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">Students</div>
+      </div>
+      <div class="stat ok">
+        <div class="stat-num" id="statMetThisWeek">0</div>
+        <div class="stat-label">Met this week</div>
+      </div>
+      <div class="stat warn">
+        <div class="stat-num" id="statOverdue">0</div>
+        <div class="stat-label">Overdue (&gt;7 days)</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statTotalMeetings">0</div>
+        <div class="stat-label">Total meetings</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search by name, student number, or project…">
+      <button class="btn btn-secondary btn-sm" id="refreshBtn">↻ Refresh</button>
+    </div>
+
+    <div id="projectsGrid" class="projects-grid">
+      <div class="stat" style="grid-column:1/-1; text-align:center; padding:3rem;">
+        Loading…
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MEETING MODAL -->
+<div class="modal-bg" id="meetingModal">
+  <div class="modal">
+    <h3>📅 Record a meeting</h3>
+    <p id="meetingModalStudent">—</p>
+    <div class="form-row">
+      <label>Meeting date</label>
+      <input type="date" id="meetingDate">
+    </div>
+    <div class="form-row">
+      <label>Summary (optional)</label>
+      <textarea id="meetingSummary" placeholder="What was discussed? Progress, blockers, next steps…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="meetingCancelBtn">Cancel</button>
+      <button class="btn btn-meeting" id="meetingSaveBtn">Save meeting</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOK MODAL -->
+<div class="modal-bg" id="bookModal">
+  <div class="book-modal">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0.5rem 1rem; flex-wrap:wrap; gap:1rem;">
+      <h3 id="bookModalTitle" style="color:#4c1d95; font-size:1.2rem;">Handwritten Journal</h3>
+      <button class="btn btn-secondary btn-sm" onclick="closeBookModal()">Close</button>
+    </div>
+    <div class="book-modal-container">
+      <div class="book-modal-title">📖 Development Journal</div>
+      <div class="book-modal-viewer" id="bookModalViewer"></div>
+      <div class="book-modal-controls">
+        <div class="book-modal-nav">
+          <button id="bookModalPrev" disabled>← Previous</button>
+          <button id="bookModalNext" disabled>Next →</button>
+        </div>
+        <div class="book-modal-page-info" id="bookModalPageInfo">0 / 0</div>
+        <div class="book-modal-nav" style="visibility:hidden;">
+          <button>←</button>
+        </div>
+      </div>
+      <div class="book-modal-page-title" id="bookModalPageTitle"></div>
+      <div class="book-modal-strip" id="bookModalStrip"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ZOOM MODAL -->
+<div id="zoomModal" class="modal-bg zoom">
+  <div class="book-modal">
+    <img id="zoomImg" src="" alt="">
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  CONFIG
+// ============================================================
+const ADMIN_PASSWORD = "gesma2026";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFX4zlwK_VGEFbvdTV0FObiIFa2lmWF2I",
+  authDomain: "ai-project-tool.firebaseapp.com",
+  databaseURL: "https://ai-project-tool-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ai-project-tool",
+  storageBucket: "ai-project-tool.firebasestorage.app",
+  messagingSenderId: "658331100512",
+  appId: "1:658331100512:web:72208dc0c1561b95bcaa05"
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+
+const MONTH_NAMES_LONG = ['January','February','March','April','May','June',
+                          'July','August','September','October','November','December'];
+
+// ============================================================
+//  STATE
+// ============================================================
+let allStudents = [];
+let studentsData = {};
+let groupsData = {};
+let selectionsData = {};
+let projectsData = {};
+let meetingsData = {};       // { studentKey: { meetingId: { date, summary, timestamp } } }
+
+let calState = {};
+let currentBookPages = [];
+let currentBookIndex = 0;
+let pendingMeetingStudent = null;
+
+const now = new Date();
+
+// DOM
+const loginView = document.getElementById('loginView');
+const dashboardView = document.getElementById('dashboardView');
+const passwordInput = document.getElementById('passwordInput');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+const searchInput = document.getElementById('searchInput');
+const refreshBtn = document.getElementById('refreshBtn');
+const projectsGrid = document.getElementById('projectsGrid');
+
+const statTotal = document.getElementById('statTotal');
+const statMetThisWeek = document.getElementById('statMetThisWeek');
+const statOverdue = document.getElementById('statOverdue');
+const statTotalMeetings = document.getElementById('statTotalMeetings');
+
+const meetingModal = document.getElementById('meetingModal');
+const meetingModalStudent = document.getElementById('meetingModalStudent');
+const meetingDate = document.getElementById('meetingDate');
+const meetingSummary = document.getElementById('meetingSummary');
+const meetingCancelBtn = document.getElementById('meetingCancelBtn');
+const meetingSaveBtn = document.getElementById('meetingSaveBtn');
+
+const bookModal = document.getElementById('bookModal');
+const bookModalTitle = document.getElementById('bookModalTitle');
+const bookModalViewer = document.getElementById('bookModalViewer');
+const bookModalPrev = document.getElementById('bookModalPrev');
+const bookModalNext = document.getElementById('bookModalNext');
+const bookModalPageInfo = document.getElementById('bookModalPageInfo');
+const bookModalPageTitle = document.getElementById('bookModalPageTitle');
+const bookModalStrip = document.getElementById('bookModalStrip');
+
+const zoomModal = document.getElementById('zoomModal');
+const zoomImg = document.getElementById('zoomImg');
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function studentEmail(num) {
+  if (!num) return '—';
+  const clean = String(num).trim();
+  if (clean.includes('@')) return clean;
+  return clean + '@setu.ie';
+}
+
+function lookupStudentName(num) {
+  if (!num) return null;
+  const key = String(num).trim().toLowerCase();
+  const s = studentsData[key];
+  if (!s) return null;
+  const first = (s.firstName || '').trim();
+  const last = (s.lastName || '').trim();
+  if (!first && !last) return null;
+  return (first + ' ' + last).trim();
+}
+
+function imageSrc(url) { return url || null; }
+
+function fmtDate(ms) {
+  if (!ms) return 'Never';
+  const d = new Date(ms);
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function daysAgo(ms) {
+  if (!ms) return null;
+  return Math.floor((Date.now() - ms) / (24 * 60 * 60 * 1000));
+}
+
+// ============================================================
+//  AUTH
+// ============================================================
+function checkAuth() {
+  if (sessionStorage.getItem('fy_supervisor_auth') === 'true') showDashboard();
+}
+
+loginBtn.addEventListener('click', doLogin);
+passwordInput.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogin() {
+  if (!passwordInput.value) {
+    loginError.textContent = 'Please enter a password.';
+    return;
+  }
+  loginError.textContent = '';
+  if (passwordInput.value === ADMIN_PASSWORD) {
+    sessionStorage.setItem('fy_supervisor_auth', 'true');
+    showDashboard();
+  } else {
+    loginError.textContent = '❌ Incorrect password.';
+    passwordInput.value = '';
+    passwordInput.focus();
+  }
+}
+
+logoutBtn.addEventListener('click', () => {
+  sessionStorage.removeItem('fy_supervisor_auth');
+  dashboardView.classList.add('hidden');
+  loginView.classList.remove('hidden');
+  passwordInput.value = '';
+  passwordInput.focus();
+});
+
+function showDashboard() {
+  loginView.classList.add('hidden');
+  dashboardView.classList.remove('hidden');
+  loadEverything();
+}
+
+// ============================================================
+//  DATA LOADING
+// ============================================================
+async function loadEverything() {
+  try {
+    const [studentsSnap, groupsSnap, projectsSnap, selectionsSnap, meetingsSnap] = await Promise.all([
+      db.ref('students').once('value'),
+      db.ref('groups').once('value'),
+      db.ref('classes/finalyear/projects').once('value'),
+      db.ref('classes/finalyear/selections').once('value'),
+      db.ref('meetings').once('value')
+    ]);
+
+    studentsData = studentsSnap.val() || {};
+    groupsData = groupsSnap.val() || {};
+    projectsData = projectsSnap.val() || {};
+    selectionsData = selectionsSnap.val() || {};
+    meetingsData = meetingsSnap.val() || {};
+
+    buildStudentsList();
+    renderStats();
+    renderGrid();
+
+  } catch (e) {
+    console.error('Load error:', e);
+    projectsGrid.innerHTML = `<div class="stat" style="grid-column:1/-1; text-align:center; padding:3rem; color:#b91c1c;">
+      Failed to load: ${escapeHtml(e.message)}
+    </div>`;
+  }
+}
+
+function buildStudentsList() {
+  allStudents = [];
+
+  Object.entries(selectionsData).forEach(([projectId, sel]) => {
+    const group = groupsData[sel.groupId] || {};
+    const proj = projectsData[projectId] || { name: projectId };
+    const studentNum = sel.student1 || '';
+    const key = studentNum.toLowerCase();
+    const name = lookupStudentName(studentNum) || sel.student1Name || studentNum;
+
+    // Get meetings for this student
+    const studentMeetings = meetingsData[key] || {};
+    const meetings = Object.entries(studentMeetings)
+      .map(([id, m]) => ({ id, ...m }))
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+    const lastMeeting = meetings[0] || null;
+    const lastMeetingMs = lastMeeting ? lastMeeting.timestamp : 0;
+    const daysSince = daysAgo(lastMeetingMs);
+
+    let meetingStatus = 'never';
+    if (!lastMeeting) meetingStatus = 'never';
+    else if (daysSince > 7) meetingStatus = 'overdue';
+    else if (daysSince > 5) meetingStatus = 'warning';
+    else meetingStatus = 'ok';
+
+    allStudents.push({
+      projectId,
+      groupId: sel.groupId,
+      studentNumber: studentNum,
+      studentName: name,
+      projectName: group.projectName || proj.name || projectId,
+      group,
+      studentKey: key,
+      meetings,
+      lastMeetingMs,
+      daysSince,
+      meetingStatus
+    });
+  });
+
+  allStudents.sort((a, b) => (a.studentName || '').localeCompare(b.studentName || ''));
+}
+
+function renderStats() {
+  statTotal.textContent = allStudents.length;
+
+  let met = 0, overdue = 0, totalMeetings = 0;
+  allStudents.forEach(s => {
+    totalMeetings += s.meetings.length;
+    if (s.meetingStatus === 'ok' || s.meetingStatus === 'warning') met++;
+    if (s.meetingStatus === 'overdue' || s.meetingStatus === 'never') overdue++;
+  });
+
+  statMetThisWeek.textContent = met;
+  statOverdue.textContent = overdue;
+  statTotalMeetings.textContent = totalMeetings;
+}
+
+// ============================================================
+//  GRID
+// ============================================================
+function renderGrid() {
+  const q = searchInput.value.trim().toLowerCase();
+
+  let filtered = allStudents;
+  if (q) {
+    filtered = allStudents.filter(s => {
+      return (s.studentNumber || '').toLowerCase().includes(q) ||
+             (s.studentName || '').toLowerCase().includes(q) ||
+             (s.projectName || '').toLowerCase().includes(q);
+    });
+  }
+
+  if (filtered.length === 0) {
+    projectsGrid.innerHTML = `<div class="stat" style="grid-column:1/-1; text-align:center; padding:3rem;">
+      No students match your search.
+    </div>`;
+    return;
+  }
+
+  projectsGrid.innerHTML = filtered.map(s => renderStudentCard(s)).join('');
+
+  // Render calendars after DOM is in place
+  filtered.forEach(s => {
+    renderCalendarFor(s.studentNumber, 'pg');
+    renderCalendarFor(s.studentNumber, 'sc');
+    renderCalendarFor(s.studentNumber, 'mt');
+  });
+}
+
+function renderStudentCard(s) {
+  const name = s.studentName || '(unknown)';
+  const email = studentEmail(s.studentNumber);
+
+  const studentKey = String(s.studentNumber).trim().toLowerCase();
+  const journalMap = (s.group.journals && s.group.journals[studentKey]) || {};
+  const journalEntries = Object.entries(journalMap)
+    .filter(([, p]) => p.imageUrl && String(p.imageUrl).startsWith('/uploads/'))
+    .sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0));
+
+  const pageCount = journalEntries.length;
+  const firstImage = journalEntries[0] ? imageSrc(journalEntries[0][1].imageUrl) : null;
+
+  const scEntries = Object.entries(s.group.screencasts || {})
+    .sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+
+  // Meeting status
+  let statusClass = 'ok';
+  let statusLabel = '🟢 Met this week';
+  let statusText = '';
+  if (s.meetingStatus === 'never') {
+    statusClass = 'overdue';
+    statusLabel = '🔴 Never met';
+    statusText = 'No meetings recorded yet';
+  } else if (s.meetingStatus === 'overdue') {
+    statusClass = 'overdue';
+    statusLabel = `🔴 ${s.daysSince} days since last meeting`;
+    statusText = `Last: ${fmtDate(s.lastMeetingMs)} — overdue`;
+  } else if (s.meetingStatus === 'warning') {
+    statusClass = 'warning';
+    statusLabel = `🟡 ${s.daysSince} days ago`;
+    statusText = `Last: ${fmtDate(s.lastMeetingMs)}`;
+  } else {
+    statusClass = 'ok';
+    statusLabel = `🟢 ${s.daysSince === 0 ? 'Today' : s.daysSince === 1 ? 'Yesterday' : s.daysSince + ' days ago'}`;
+    statusText = `Last: ${fmtDate(s.lastMeetingMs)}`;
+  }
+
+  const overdueClass = s.meetingStatus === 'overdue' || s.meetingStatus === 'never' ? 'overdue'
+    : s.meetingStatus === 'warning' ? 'warning' : '';
+
+  // Badge on card
+  let cardBadge = '';
+  if (s.meetingStatus === 'never') cardBadge = `<span class="pc-badge overdue">🔴 Not met</span>`;
+  else if (s.meetingStatus === 'overdue') cardBadge = `<span class="pc-badge overdue">🔴 ${s.daysSince}d overdue</span>`;
+  else if (s.meetingStatus === 'warning') cardBadge = `<span class="pc-badge warning">🟡 ${s.daysSince}d</span>`;
+  else cardBadge = `<span class="pc-badge ok">🟢 ${s.daysSince}d</span>`;
+
+  // Calendar keys
+  const pgKey = s.studentNumber + ':pg';
+  const scKey = s.studentNumber + ':sc';
+  const mtKey = s.studentNumber + ':mt';
+  if (!calState[pgKey]) calState[pgKey] = { year: now.getFullYear(), monthIdx: now.getMonth() };
+  if (!calState[scKey]) calState[scKey] = { year: now.getFullYear(), monthIdx: now.getMonth() };
+  if (!calState[mtKey]) calState[mtKey] = { year: now.getFullYear(), monthIdx: now.getMonth() };
+
+  // Book preview
+  const bookPreview = firstImage
+    ? `<div class="book-preview">
+        <div class="book-cover" onclick="openBook('${escapeHtml(s.studentNumber)}')">
+          <img src="${escapeHtml(firstImage)}" alt="cover"
+               onerror="this.parentElement.innerHTML='<div class=&quot;book-cover-empty&quot;><span class=&quot;icon&quot;>⚠️</span>Unavailable</div>'">
+        </div>
+        <div class="book-info-row">
+          <div class="book-page-count">📖 ${pageCount} page${pageCount === 1 ? '' : 's'}</div>
+          <button class="book-open-btn" onclick="openBook('${escapeHtml(s.studentNumber)}')">Read book →</button>
+        </div>
+      </div>`
+    : `<div class="book-preview">
+        <div class="book-cover">
+          <div class="book-cover-empty"><span class="icon">📓</span>No pages yet</div>
+        </div>
+        <div class="book-info-row">
+          <div class="book-page-count" style="color:#b91c1c;">⚠️ 0 pages</div>
+        </div>
+      </div>`;
+
+  // Screencasts preview
+  const scHTML = scEntries.length === 0
+    ? '<div class="sc-none">No screencasts yet</div>'
+    : '<div class="sc-mini-list">' + scEntries.slice(0, 2).map(([id, sc]) => {
+        const date = sc.timestamp ? new Date(sc.timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '';
+        return `<a class="sc-mini" href="${escapeHtml(sc.url)}" target="_blank">
+          <span class="date">${escapeHtml(date)}</span>
+          <span class="title">${escapeHtml(sc.title || 'Untitled')}</span>
+          <span>↗</span>
+        </a>`;
+      }).join('') + (scEntries.length > 2 ? `<div class="sc-none">+${scEntries.length - 2} more</div>` : '') + '</div>';
+
+  // Meetings list
+  const meetingHTML = s.meetings.length === 0
+    ? '<div class="meeting-none">No meetings recorded yet</div>'
+    : '<div class="meeting-list">' + s.meetings.slice(0, 5).map(m => `
+        <div class="meeting-item">
+          <div class="meeting-item-head">
+            <span class="meeting-date">📅 ${fmtDate(m.timestamp)}</span>
+            <button class="delete-btn" onclick="deleteMeeting('${escapeHtml(s.studentKey)}', '${escapeHtml(m.id)}', '${escapeHtml(name)}')" title="Delete meeting">🗑️</button>
+          </div>
+          ${m.summary ? `<div class="summary">${escapeHtml(m.summary)}</div>` : ''}
+        </div>
+      `).join('') +
+      (s.meetings.length > 5 ? `<div style="text-align:center; font-size:0.75rem; color:#8ba0b8; padding:0.3rem;">+${s.meetings.length - 5} older meetings</div>` : '') +
+      '</div>';
+
+  return `
+    <div class="project-card ${overdueClass}">
+      <div class="pc-head">
+        <div class="pc-title">${escapeHtml(s.projectName)}</div>
+        ${cardBadge}
+      </div>
+
+      <div class="pc-student">
+        <div class="name">👤 ${escapeHtml(name)}</div>
+        <div class="email">${escapeHtml(email)}</div>
+      </div>
+
+      <!-- MEETING STATUS -->
+      <div class="meeting-status ${statusClass}">
+        <div class="meeting-status-label">${statusLabel}</div>
+        <div class="meeting-status-sub">${statusText}</div>
+        <button class="btn btn-meeting btn-sm" style="margin-top:0.6rem;" onclick="openMeetingModal('${escapeHtml(s.studentKey)}', '${escapeHtml(name)}')">📅 Record meeting</button>
+      </div>
+
+      <!-- MEETINGS LIST + CALENDAR -->
+      <div class="pc-section">
+        <div class="pc-section-title">📅 Meetings <span class="count">${s.meetings.length}</span></div>
+        ${meetingHTML}
+        <div class="cal-header">
+          <div class="cal-month" id="${escapeHtml(mtKey)}-label">—</div>
+          <div class="cal-nav">
+            <button onclick="calNav('${escapeHtml(mtKey)}', -1)">←</button>
+            <button onclick="calNav('${escapeHtml(mtKey)}', 1)">→</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="${escapeHtml(mtKey)}-grid"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item"><div class="cal-legend-swatch mt"></div>Meeting</div>
+          <div class="cal-legend-item"><div class="cal-legend-swatch today"></div>Today</div>
+        </div>
+      </div>
+
+      <!-- JOURNAL -->
+      <div class="pc-section">
+        <div class="pc-section-title">📖 Handwritten journal <span class="count">${pageCount} page${pageCount === 1 ? '' : 's'}</span></div>
+        ${bookPreview}
+        <div class="cal-header">
+          <div class="cal-month" id="${escapeHtml(pgKey)}-label">—</div>
+          <div class="cal-nav">
+            <button onclick="calNav('${escapeHtml(pgKey)}', -1)">←</button>
+            <button onclick="calNav('${escapeHtml(pgKey)}', 1)">→</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="${escapeHtml(pgKey)}-grid"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item"><div class="cal-legend-swatch pg"></div>Journal</div>
+          <div class="cal-legend-item"><div class="cal-legend-swatch today"></div>Today</div>
+        </div>
+      </div>
+
+      <!-- SCREENCASTS -->
+      <div class="pc-section">
+        <div class="pc-section-title">🎬 Screencasts <span class="count">${scEntries.length}</span></div>
+        ${scHTML}
+        <div class="cal-header">
+          <div class="cal-month" id="${escapeHtml(scKey)}-label">—</div>
+          <div class="cal-nav">
+            <button onclick="calNav('${escapeHtml(scKey)}', -1)">←</button>
+            <button onclick="calNav('${escapeHtml(scKey)}', 1)">→</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="${escapeHtml(scKey)}-grid"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item"><div class="cal-legend-swatch sc"></div>Screencast</div>
+          <div class="cal-legend-item"><div class="cal-legend-swatch today"></div>Today</div>
+        </div>
+      </div>
+
+      <!-- GITHUB -->
+      <div class="pc-section">
+        <div class="pc-section-title">🐙 Repository</div>
+        ${s.group.githubLink
+          ? `<a class="btn btn-secondary btn-sm" href="${escapeHtml(s.group.githubLink)}" target="_blank" style="text-decoration:none;">🐙 Open repository</a>`
+          : '<div class="sc-none">No GitHub link set</div>'}
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+//  CALENDAR
+// ============================================================
+window.calNav = function(key, delta) {
+  const state = calState[key];
+  if (!state) return;
+  state.monthIdx += delta;
+  if (state.monthIdx < 0) { state.monthIdx = 11; state.year--; }
+  if (state.monthIdx > 11) { state.monthIdx = 0; state.year++; }
+  const [studentNum, type] = key.split(':');
+  renderCalendarFor(studentNum, type);
+};
+
+function renderCalendarFor(studentNumber, type) {
+  const key = studentNumber + ':' + type;
+  const state = calState[key];
+  if (!state) return;
+
+  const label = document.getElementById(key + '-label');
+  const grid = document.getElementById(key + '-grid');
+  if (!label || !grid) return;
+
+  label.textContent = MONTH_NAMES_LONG[state.monthIdx] + ' ' + state.year;
+
+  const s = allStudents.find(x => x.studentNumber === studentNumber);
+  if (!s) return;
+
+  const studentKey = String(studentNumber).trim().toLowerCase();
+  let items = [];
+
+  if (type === 'pg') {
+    const journalMap = (s.group.journals && s.group.journals[studentKey]) || {};
+    items = Object.values(journalMap).filter(p => p.imageUrl && String(p.imageUrl).startsWith('/uploads/'));
+  } else if (type === 'sc') {
+    items = Object.values(s.group.screencasts || {});
+  } else if (type === 'mt') {
+    items = s.meetings.map(m => ({ timestamp: m.timestamp }));
+  }
+
+  const byDay = {};
+  items.forEach(item => {
+    if (!item.timestamp) return;
+    const d = new Date(item.timestamp);
+    if (d.getFullYear() !== state.year || d.getMonth() !== state.monthIdx) return;
+    const day = d.getDate();
+    if (!byDay[day]) byDay[day] = 0;
+    byDay[day]++;
+  });
+
+  const firstDay = new Date(state.year, state.monthIdx, 1);
+  const daysInMonth = new Date(state.year, state.monthIdx + 1, 0).getDate();
+  let startOffset = firstDay.getDay() - 1;
+  if (startOffset < 0) startOffset = 6;
+
+  const today = new Date();
+  const isThisMonth = today.getFullYear() === state.year && today.getMonth() === state.monthIdx;
+  const todayDay = today.getDate();
+
+  let html = '';
+  ['M','T','W','T','F','S','S'].forEach(d => {
+    html += '<div class="cal-head">' + d + '</div>';
+  });
+  for (let i = 0; i < startOffset; i++) html += '<div class="cal-day empty-day"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const classes = ['cal-day'];
+    if (isThisMonth && d === todayDay) classes.push('today');
+    const count = byDay[d] || 0;
+    let dots = '';
+    if (count > 0) {
+      dots = '<div class="cal-dots">';
+      for (let i = 0; i < Math.min(count, 3); i++) {
+        dots += '<div class="cal-dot ' + type + '"></div>';
+      }
+      if (count > 3) dots += '<span style="font-size:0.55rem;color:#6b21a8;font-weight:700;">+' + (count - 3) + '</span>';
+      dots += '</div>';
+    }
+    html += '<div class="' + classes.join(' ') + '"><div class="cal-num">' + d + '</div>' + dots + '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+// ============================================================
+//  MEETING MODAL
+// ============================================================
+window.openMeetingModal = function(studentKey, name) {
+  pendingMeetingStudent = { key: studentKey, name };
+  meetingModalStudent.textContent = 'Meeting with ' + name;
+
+  const today = new Date();
+  meetingDate.value = today.toISOString().split('T')[0];
+  meetingSummary.value = '';
+
+  meetingModal.classList.add('show');
+  setTimeout(() => meetingSummary.focus(), 100);
+};
+
+meetingCancelBtn.addEventListener('click', () => {
+  meetingModal.classList.remove('show');
+  pendingMeetingStudent = null;
+});
+
+meetingSaveBtn.addEventListener('click', async () => {
+  if (!pendingMeetingStudent) return;
+
+  const dateVal = meetingDate.value;
+  if (!dateVal) {
+    alert('Please pick a date.');
+    return;
+  }
+  const summary = meetingSummary.value.trim();
+
+  meetingSaveBtn.disabled = true;
+  meetingSaveBtn.textContent = 'Saving…';
+
+  try {
+    const meetingTs = new Date(dateVal + 'T12:00:00').getTime();
+    const meetingId = 'mt_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+    await db.ref('meetings/' + pendingMeetingStudent.key + '/' + meetingId).set({
+      id: meetingId,
+      date: dateVal,
+      summary,
+      timestamp: meetingTs,
+      createdAt: Date.now()
+    });
+
+    meetingModal.classList.remove('show');
+    pendingMeetingStudent = null;
+    await loadEverything();
+  } catch (e) {
+    console.error(e);
+    alert('❌ Error: ' + e.message);
+  } finally {
+    meetingSaveBtn.disabled = false;
+    meetingSaveBtn.textContent = 'Save meeting';
+  }
+});
+
+meetingModal.addEventListener('click', (e) => {
+  if (e.target === meetingModal) {
+    meetingModal.classList.remove('show');
+    pendingMeetingStudent = null;
+  }
+});
+
+// ============================================================
+//  DELETE MEETING
+// ============================================================
+window.deleteMeeting = async function(studentKey, meetingId, name) {
+  if (!confirm('Delete this meeting record?\n\nDate/summary will be permanently removed.')) return;
+  try {
+    await db.ref('meetings/' + studentKey + '/' + meetingId).remove();
+    await loadEverything();
+  } catch (e) {
+    console.error(e);
+    alert('❌ Error: ' + e.message);
+  }
+};
+
+// ============================================================
+//  BOOK MODAL
+// ============================================================
+window.openBook = function(studentNumber) {
+  const s = allStudents.find(x => x.studentNumber === studentNumber);
+  if (!s) return;
+
+  const studentKey = String(studentNumber).trim().toLowerCase();
+  const journalMap = (s.group.journals && s.group.journals[studentKey]) || {};
+  currentBookPages = Object.entries(journalMap)
+    .filter(([, p]) => p.imageUrl && String(p.imageUrl).startsWith('/uploads/'))
+    .sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0))
+    .map(([id, p]) => ({ id, ...p }));
+
+  if (currentBookPages.length === 0) {
+    alert('No pages in this book yet.');
+    return;
+  }
+
+  currentBookIndex = 0;
+  bookModalTitle.textContent = (s.studentName || studentNumber) + ' — ' + (s.projectName || 'Journal');
+  renderBookPage();
+  bookModal.classList.add('show');
+};
+
+window.closeBookModal = function() {
+  bookModal.classList.remove('show');
+  bookModalViewer.innerHTML = '';
+};
+
+function renderBookPage() {
+  if (currentBookPages.length === 0) return;
+  const page = currentBookPages[currentBookIndex];
+  const src = imageSrc(page.imageUrl);
+
+  bookModalViewer.innerHTML = `
+    <img src="${escapeHtml(src)}" alt="page" id="modalBookImg" style="cursor:zoom-in;">
+    <div id="modalBookFallback" class="book-modal-broken" style="display:none;">
+      <div style="font-size:3rem; margin-bottom:1rem;">⚠️</div>
+      <div style="color:#b91c1c; font-weight:700;">Image could not be loaded</div>
+      <div style="font-size:0.8rem; margin-top:0.5rem; background:rgba(0,0,0,0.05); padding:0.5rem 1rem; border-radius:8px; word-break:break-all;">${escapeHtml(page.imageUrl)}</div>
+    </div>
+  `;
+
+  const img = document.getElementById('modalBookImg');
+  const fallback = document.getElementById('modalBookFallback');
+  img.addEventListener('load', () => { img.style.display = 'block'; fallback.style.display = 'none'; });
+  img.addEventListener('error', () => { img.style.display = 'none'; fallback.style.display = 'block'; });
+  if (img.complete && img.naturalWidth === 0) { img.style.display = 'none'; fallback.style.display = 'block'; }
+  img.addEventListener('click', () => {
+    if (img.naturalWidth > 0) { zoomImg.src = src; zoomModal.classList.add('show'); }
+  });
+
+  bookModalPageInfo.textContent = (currentBookIndex + 1) + ' / ' + currentBookPages.length;
+  bookModalPageTitle.textContent = page.title || 'Untitled page';
+  bookModalPrev.disabled = currentBookIndex === 0;
+  bookModalNext.disabled = currentBookIndex === currentBookPages.length - 1;
+
+  bookModalStrip.innerHTML = currentBookPages.map((p, i) => `
+    <div class="book-modal-thumb ${i === currentBookIndex ? 'active' : ''}"
+         onclick="jumpBookPage(${i})"
+         title="${escapeHtml(p.title || 'Page ' + (i + 1))}">
+      <img src="${escapeHtml(imageSrc(p.imageUrl))}" alt="" loading="lazy"
+           onerror="this.parentElement.style.background='#fee2e2';">
+    </div>
+  `).join('');
+}
+
+window.jumpBookPage = function(idx) {
+  currentBookIndex = idx;
+  renderBookPage();
+};
+
+bookModalPrev.addEventListener('click', () => {
+  if (currentBookIndex > 0) { currentBookIndex--; renderBookPage(); }
+});
+bookModalNext.addEventListener('click', () => {
+  if (currentBookIndex < currentBookPages.length - 1) { currentBookIndex++; renderBookPage(); }
+});
+bookModal.addEventListener('click', (e) => { if (e.target === bookModal) closeBookModal(); });
+zoomModal.addEventListener('click', () => zoomModal.classList.remove('show'));
+
+// ============================================================
+//  SEARCH + REFRESH
+// ============================================================
+searchInput.addEventListener('input', renderGrid);
+refreshBtn.addEventListener('click', loadEverything);
+
+// ============================================================
+//  INIT
+// ============================================================
+checkAuth();
+</script>
+</body>
+</html>
